@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"os"
 	"vcs_backend/gorm/controllers"
 	"vcs_backend/gorm/initializers"
 
@@ -9,14 +11,16 @@ import (
 
 func init() {
 	initializers.LoadEnvVariables()
-	initializers.ConnectDatabase()
+	db := initializers.ConnectDatabase() // Modify this line
+	controllers.SetDB(db)                // Add this line
+	// initializers.SeedDatabase()
 
 }
 func main() {
 	r := gin.Default()
-	// gin.SetMode(gin.ReleaseMode)
+	gin.SetMode(gin.ReleaseMode)
 	// routes.UserRoute(router)
-	r.GET("/post", controllers.Posts)
-	// fmt.Println("Server is running on port ", os.Getenv("PORT"))
+	r.GET("/posts", controllers.PostController)
+	fmt.Println("Server is running on port ", os.Getenv("PORT"))
 	r.Run()
 }
