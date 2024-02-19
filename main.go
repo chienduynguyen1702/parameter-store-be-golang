@@ -5,8 +5,7 @@ import (
 	"os"
 	"vcs_backend/gorm/controllers"
 	"vcs_backend/gorm/initializers"
-
-	"github.com/gin-gonic/gin"
+	"vcs_backend/gorm/routes"
 )
 
 func init() {
@@ -14,13 +13,11 @@ func init() {
 	db := initializers.ConnectDatabase() // Modify this line
 	controllers.SetDB(db)                // Add this line
 	// initializers.SeedDatabase()
+	fmt.Println("")
 
 }
 func main() {
-	r := gin.Default()
-	gin.SetMode(gin.ReleaseMode)
-	// routes.UserRoute(router)
-	r.GET("/posts", controllers.PostController)
-	fmt.Println("Server is running on port ", os.Getenv("PORT"))
-	r.Run()
+	r := routes.SetupRouter()
+	fmt.Println("Server is running on port", os.Getenv("PORT"))
+	r.Run(":" + os.Getenv("PORT"))
 }

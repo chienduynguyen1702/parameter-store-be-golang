@@ -7,11 +7,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func PostController(c *gin.Context) {
-	var posts []models.Post
-	db.Find(&posts)
-	// fmt.Println(posts)
+func AuthorController(c *gin.Context) {
+	var authors []models.Author
+	db.Find(&authors)
+	// fmt.Println(authors)
 	c.JSON(http.StatusOK, gin.H{
-		"posts": posts,
+		"authors": authors,
 	})
 }
