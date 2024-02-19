@@ -12,11 +12,14 @@ import (
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	gin.SetMode(gin.ReleaseMode)
+	r.GET("/api/v1", controllers.MainController)
+	v1 := r.Group("/api/v1")
+	{
+		SetupAuthorRouter(v1)
+		SetupPostRouter(v1)
 
-	// Define your routes here
-	r.GET("/", controllers.MainController)
-	r.GET("/posts", controllers.PostController)
-	r.GET("/authors", controllers.AuthorController)
+		// Add other route setups here if needed
+	}
 
 	return r
 }

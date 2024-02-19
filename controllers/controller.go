@@ -18,6 +18,6 @@ func SetDB(database *gorm.DB) {
 
 func MainController(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "this is the main page",
+		"message": "this is first index api ",
 	})
 }
