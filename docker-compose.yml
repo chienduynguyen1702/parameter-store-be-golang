@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:12-alpine
+    container_name: learning_gorm
+    ports:
+      - "5431:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: learning_gorm
+    volumes:
+      - learning_gorm_volume:/var/lib/postgresql/data
+
+volumes:
+  learning_gorm_volume:
