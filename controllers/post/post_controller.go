@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	main "vcs_backend/gorm/controllers"
 	"vcs_backend/gorm/models"
@@ -55,4 +56,17 @@ func GetPostsByAuthorID(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"posts": posts})
+}
+
+func GetPostByID(c *gin.Context) {
+	postId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post id"})
+		return
+	}
+	var post models.Post
+	if err := main.DB.First(&post, postId).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+	}
+	c.JSON(http.StatusOK, gin.H{"post": post})
 }
