@@ -45,7 +45,7 @@ func GetAllPosts(c *gin.Context) {
 }
 
 func GetPostsByAuthorID(c *gin.Context) {
-	authorID := c.Query("author-id")
+	authorID := c.Param("author-id")
 
 	var posts []models.Post
 	if err := main.DB.

@@ -13,6 +13,7 @@ func SetupPostRouter(r *gin.RouterGroup) {
 	postGroup := r.Group("/posts")
 	{
 		postGroup.GET("/", pc.GetPosts)
+		postGroup.GET("/by-author-id/:author-id", pc.GetPostsByAuthorID)
 		postGroup.GET("/:id", pc.GetPostByID)
 		// postGroup.GET("/", pc.GetPostsByAuthorID)
 		// postGroup.POST("/", pc.CreateNewPost)

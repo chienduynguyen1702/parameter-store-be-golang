@@ -157,6 +157,8 @@ func UpdateAuthorInfo(c *gin.Context) {
 	// Return success response
 	c.JSON(http.StatusOK, gin.H{"message": "Author updated successfully", "author": author})
 }
+
+// DELETE
 func DeleteAuthor(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -172,4 +174,58 @@ func DeleteAuthor(c *gin.Context) {
 		c.JSON(404, gin.H{"error": "User not found"})
 		return
 	}
+}
+func DeletePostOfAuthor(c *gin.Context) {
+
+	// Parse author ID from URL parameter
+	authorID, err := strconv.Atoi(c.Param("author-id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid author ID",
+		})
+		return
+	}
+
+	// Retrieve author based on author ID
+	var author models.Author
+	if err := main.DB.First(&author, authorID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Author not found",
+		})
+		return
+	}
+
+	// Parse post ID from query parameter
+	postID, err := strconv.Atoi(c.Query("post_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid post ID",
+		})
+		return
+	}
+
+	// Check if the post exists
+	var post models.Post
+	if err := main.DB.First(&post, postID).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Post not found",
+		})
+		return
+	}
+	// Remove the association between the author and the post
+	if err := main.DB.Table("author_posts").Where("author_id = ? AND post_id = ?", authorID, postID).Delete(nil).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to delete association",
+		})
+		return
+	}
+	// Delete post
+	if err = main.DB.Delete(&post).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to delete post",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Post deleted successfully"})
 }

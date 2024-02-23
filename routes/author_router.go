@@ -24,5 +24,6 @@ func SetupAuthorRouter(r *gin.RouterGroup) {
 
 		// DELETE
 		authorGroup.DELETE("/:id", ac.DeleteAuthor)
+		authorGroup.DELETE("/delete-post/:author-id", ac.DeletePostOfAuthor)
 	}
 }
