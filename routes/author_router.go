@@ -3,7 +3,7 @@
 package routes
 
 import (
-	"vcs_backend/gorm/controllers"
+	ac "vcs_backend/gorm/controllers/author"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +12,16 @@ import (
 func SetupAuthorRouter(r *gin.RouterGroup) {
 	authorGroup := r.Group("/authors")
 	{
-		authorGroup.GET("/", controllers.AuthorController)
-		// Add more author routes here if needed
+		// CREATE
+		authorGroup.POST("/register", ac.RegisterAuthor)
+		// READ
+		authorGroup.GET("/by-id", ac.GetAuthorById)
+		authorGroup.GET("/by-name", ac.GetAuthorsByName)
+		authorGroup.GET("/", ac.GetAuthors)
+		// UPDATE
+		authorGroup.PUT("/:id", ac.UpdateAuthorInfo)
+
+		// DELETE
+		authorGroup.DELETE("/:id", ac.DeleteAuthor)
 	}
 }

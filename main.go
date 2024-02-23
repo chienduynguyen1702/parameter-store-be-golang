@@ -10,8 +10,8 @@ import (
 
 func init() {
 	initializers.LoadEnvVariables()
-	db := initializers.ConnectDatabase() // Modify this line
-	controllers.SetDB(db)                // Add this line
+	db := initializers.ConnectDatabase() // return *gorm.DB
+	controllers.SetDB(db)                // set controller use that db *gorm.DB
 	// initializers.SeedDatabase()
 	fmt.Println("")
 

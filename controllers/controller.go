@@ -8,12 +8,12 @@ import (
 )
 
 var (
-	db *gorm.DB
+	DB *gorm.DB
 )
 
 // SetDB sets the db object
 func SetDB(database *gorm.DB) {
-	db = database
+	DB = database
 }
 
 func MainController(c *gin.Context) {

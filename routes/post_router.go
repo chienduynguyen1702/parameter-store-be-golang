@@ -3,7 +3,7 @@
 package routes
 
 import (
-	"vcs_backend/gorm/controllers"
+	pc "vcs_backend/gorm/controllers/post"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +12,7 @@ import (
 func SetupPostRouter(r *gin.RouterGroup) {
 	postGroup := r.Group("/posts")
 	{
-		postGroup.GET("/", controllers.PostController)
+		postGroup.GET("/", pc.PostController)
 		// Add more author routes here if needed
 	}
 }
