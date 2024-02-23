@@ -1,13 +1,11 @@
+// models/author_post.go
+
 package models
 
-import (
-	"gorm.io/gorm"
-)
+// "gorm.io/gorm"
 
-type Author_Post struct {
-	gorm.Model
+type AuthorPost struct {
+	// gorm.Model
 	AuthorID uint
 	PostID   uint
 }
-
-// Path:

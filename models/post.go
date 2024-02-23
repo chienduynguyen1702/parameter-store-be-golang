@@ -1,3 +1,5 @@
+// models/post.go
+
 package models
 
 import (

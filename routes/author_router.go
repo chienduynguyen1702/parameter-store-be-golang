@@ -14,10 +14,11 @@ func SetupAuthorRouter(r *gin.RouterGroup) {
 	{
 		// CREATE
 		authorGroup.POST("/register", ac.RegisterAuthor)
+		authorGroup.POST("/:id/publish", ac.CreateNewPost)
 		// READ
 		authorGroup.GET("/by-id", ac.GetAuthorById)
 		authorGroup.GET("/by-name", ac.GetAuthorsByName)
-		authorGroup.GET("/", ac.GetAuthors)
+		authorGroup.GET("/", ac.GetAllAuthors)
 		// UPDATE
 		authorGroup.PUT("/:id", ac.UpdateAuthorInfo)
 

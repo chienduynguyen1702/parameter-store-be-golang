@@ -18,7 +18,7 @@ func RegisterAuthor(c *gin.Context) {
 	registingAuthor.LastName = c.Query("last-name")
 	registingAuthor.Email = c.Query("email")
 	registingAuthor.Phone = c.Query("phone")
-	registingAuthor.Address = c.Query("adress")
+	registingAuthor.Address = c.Query("address")
 	registingAuthor.Password = c.Query("password")
 
 	// Bind the JSON body to the registingAuthor struct
@@ -37,8 +37,44 @@ func RegisterAuthor(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Author registered successfully", "author": registingAuthor})
 }
 
+// CREATE new post
+func CreateNewPost(c *gin.Context) {
+	authorID := c.Param("id") // Get author ID from the URL parameter
+	var author models.Author
+
+	// Check if the author exists
+	if err := main.DB.First(&author, authorID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Author not found"})
+		return
+	}
+
+	var newPost models.Post
+	if err := c.ShouldBindJSON(&newPost); err != nil {
+		c.JSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Create the post
+	if err := main.DB.Create(&newPost).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Associate the post with the author
+	author.Posts = append(author.Posts, newPost)
+	if err := main.DB.Save(&author).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "success",
+		"data":    newPost,
+	})
+}
+
 // READ authors
-func GetAuthors(c *gin.Context) {
+func GetAllAuthors(c *gin.Context) {
 	var authors []models.Author
 	main.DB.Find(&authors)
 	// fmt.Println(authors)
@@ -130,9 +166,10 @@ func DeleteAuthor(c *gin.Context) {
 	var author models.Author
 	if err := main.DB.First(&author, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Author not found"})
-	}
-	if err := main.DB.Delete(&author).Error; err != nil {
+		return
+	} else if err := main.DB.Delete(&author).Error; err != nil {
 		// Display JSON error
 		c.JSON(404, gin.H{"error": "User not found"})
+		return
 	}
 }

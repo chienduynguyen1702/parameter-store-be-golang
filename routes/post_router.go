@@ -12,7 +12,8 @@ import (
 func SetupPostRouter(r *gin.RouterGroup) {
 	postGroup := r.Group("/posts")
 	{
-		postGroup.GET("/", pc.PostController)
-		// Add more author routes here if needed
+		postGroup.GET("/", pc.GetPosts)
+		// postGroup.GET("/", pc.GetPostsByAuthorID)
+		// postGroup.POST("/", pc.CreateNewPost)
 	}
 }
