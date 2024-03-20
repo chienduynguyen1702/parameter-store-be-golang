@@ -3,9 +3,13 @@
 package routes
 
 import (
-	"vcs_backend/gorm/controllers"
+	"parameter-store-be/controllers"
+	docs "parameter-store-be/docs"
+	"parameter-store-be/initializers"
 
 	"github.com/gin-gonic/gin"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // SetupRouter sets up the routes for the application
@@ -21,5 +25,7 @@ func SetupRouter() *gin.Engine {
 		// Add other route setups here if needed
 	}
 
+	docs.SwaggerInfo = initializers.SwaggerInfo
+	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	return r
 }

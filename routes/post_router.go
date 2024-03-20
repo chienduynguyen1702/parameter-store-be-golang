@@ -3,7 +3,7 @@
 package routes
 
 import (
-	pc "vcs_backend/gorm/controllers/post"
+	"parameter-store-be/controllers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,10 +12,10 @@ import (
 func SetupPostRouter(r *gin.RouterGroup) {
 	postGroup := r.Group("/posts")
 	{
-		postGroup.GET("/", pc.GetPosts)
-		postGroup.GET("/by-author-id/:author-id", pc.GetPostsByAuthorID)
-		postGroup.GET("/:id", pc.GetPostByID)
-		// postGroup.GET("/", pc.GetPostsByAuthorID)
-		// postGroup.POST("/", pc.CreateNewPost)
+		postGroup.GET("/", controllers.GetPosts)
+		postGroup.GET("/by-author-id/:author-id", controllers.GetPostsByAuthorID)
+		postGroup.GET("/:id", controllers.GetPostByID)
+		// postGroup.GET("/", controllers.GetPostsByAuthorID)
+		// postGroup.POST("/", controllers.CreateNewPost)
 	}
 }

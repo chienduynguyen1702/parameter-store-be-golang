@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"vcs_backend/gorm/controllers"
-	"vcs_backend/gorm/initializers"
-	"vcs_backend/gorm/routes"
+	"parameter-store-be/controllers"
+	"parameter-store-be/initializers"
+	"parameter-store-be/routes"
 )
 
 func init() {
@@ -20,8 +20,6 @@ func init() {
 	// if err := initializers.SeedDatabase(db); err != nil {
 	// 	log.Fatal("Failed to seed database")
 	// }
-	fmt.Println("")
-
 }
 func main() {
 	r := routes.SetupRouter()

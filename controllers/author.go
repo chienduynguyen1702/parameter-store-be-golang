@@ -1,12 +1,9 @@
-// controllers/author/author_controller.go
-
-package author
+package controllers
 
 import (
 	"net/http"
+	"parameter-store-be/models"
 	"strconv"
-	main "vcs_backend/gorm/controllers"
-	"vcs_backend/gorm/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +25,7 @@ func RegisterAuthor(c *gin.Context) {
 	// }
 
 	// Create the registingAuthor in the database
-	if err := main.DB.Create(&registingAuthor).Error; err != nil {
+	if err := DB.Create(&registingAuthor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error Create": "Failed to register author"})
 		return
 	}
@@ -43,7 +40,7 @@ func CreateNewPost(c *gin.Context) {
 	var author models.Author
 
 	// Check if the author exists
-	if err := main.DB.First(&author, authorID).Error; err != nil {
+	if err := DB.First(&author, authorID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Author not found"})
 		return
 	}
@@ -55,14 +52,14 @@ func CreateNewPost(c *gin.Context) {
 	}
 
 	// Create the post
-	if err := main.DB.Create(&newPost).Error; err != nil {
+	if err := DB.Create(&newPost).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	// Associate the post with the author
 	author.Posts = append(author.Posts, newPost)
-	if err := main.DB.Save(&author).Error; err != nil {
+	if err := DB.Save(&author).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -76,7 +73,7 @@ func CreateNewPost(c *gin.Context) {
 // READ authors
 func GetAllAuthors(c *gin.Context) {
 	var authors []models.Author
-	main.DB.Find(&authors)
+	DB.Find(&authors)
 	// fmt.Println(authors)
 	c.JSON(http.StatusOK, gin.H{
 		"authors": authors,
@@ -91,7 +88,7 @@ func GetAuthorById(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid author ID"})
 		return
 	}
-	main.DB.Find(&author, id)
+	DB.Find(&author, id)
 
 	c.JSON(http.StatusOK, gin.H{
 		"authors": author,
@@ -118,7 +115,7 @@ func GetAuthorsByName(c *gin.Context) {
 	}
 
 	// Execute the query with the constructed conditional string and conditions
-	if err := main.DB.Where(conditionalString, conditions...).Find(&authors).Error; err != nil {
+	if err := DB.Where(conditionalString, conditions...).Find(&authors).Error; err != nil {
 		panic("Error when GetAuthorsByName")
 	}
 
@@ -137,7 +134,7 @@ func UpdateAuthorInfo(c *gin.Context) {
 	}
 
 	// Find the author by ID
-	if err := main.DB.First(&author, id).Error; err != nil {
+	if err := DB.First(&author, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Author not found"})
 		return
 	}
@@ -149,7 +146,7 @@ func UpdateAuthorInfo(c *gin.Context) {
 	}
 
 	// Save the updated author back to the database
-	if err := main.DB.Save(&author).Error; err != nil {
+	if err := DB.Save(&author).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update author"})
 		return
 	}
@@ -166,10 +163,10 @@ func DeleteAuthor(c *gin.Context) {
 		return
 	}
 	var author models.Author
-	if err := main.DB.First(&author, id).Error; err != nil {
+	if err := DB.First(&author, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Author not found"})
 		return
-	} else if err := main.DB.Delete(&author).Error; err != nil {
+	} else if err := DB.Delete(&author).Error; err != nil {
 		// Display JSON error
 		c.JSON(404, gin.H{"error": "User not found"})
 		return
@@ -188,7 +185,7 @@ func DeletePostOfAuthor(c *gin.Context) {
 
 	// Retrieve author based on author ID
 	var author models.Author
-	if err := main.DB.First(&author, authorID).Error; err != nil {
+	if err := DB.First(&author, authorID).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Author not found",
 		})
@@ -206,21 +203,21 @@ func DeletePostOfAuthor(c *gin.Context) {
 
 	// Check if the post exists
 	var post models.Post
-	if err := main.DB.First(&post, postID).Error; err != nil {
+	if err := DB.First(&post, postID).Error; err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Post not found",
 		})
 		return
 	}
 	// Remove the association between the author and the post
-	if err := main.DB.Table("author_posts").Where("author_id = ? AND post_id = ?", authorID, postID).Delete(nil).Error; err != nil {
+	if err := DB.Table("author_posts").Where("author_id = ? AND post_id = ?", authorID, postID).Delete(nil).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to delete association",
 		})
 		return
 	}
 	// Delete post
-	if err = main.DB.Delete(&post).Error; err != nil {
+	if err = DB.Delete(&post).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to delete post",
 		})

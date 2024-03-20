@@ -3,7 +3,7 @@ package initializers
 import (
 	"fmt"
 	"log"
-	"vcs_backend/gorm/models"
+	"parameter-store-be/models"
 
 	"gorm.io/gorm"
 )
