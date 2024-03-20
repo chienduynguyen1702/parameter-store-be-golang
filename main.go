@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"vcs_backend/gorm/controllers"
 	"vcs_backend/gorm/initializers"
@@ -10,8 +11,12 @@ import (
 
 func init() {
 	initializers.LoadEnvVariables()
-	db := initializers.ConnectDatabase() // return *gorm.DB
-	controllers.SetDB(db)                // set controller use that db *gorm.DB
+	db, err := initializers.ConnectDatabase() // return *gorm.DB
+	if err != nil {
+		log.Fatal("Failed to connect to database")
+	}
+	initializers.Migration(db) // migration db
+	controllers.SetDB(db)      // set controller use that db *gorm.DB
 	// initializers.SeedDatabase()
 	fmt.Println("")
 

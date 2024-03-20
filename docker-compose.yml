@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: $DB_PASSWORD
       POSTGRES_DB: $DB_DATABASE
     volumes:
-      - learning_gorm_volume:/var/lib/postgresql/data
+      - gorm_volume:/var/lib/postgresql/data
 
 volumes:
-  learning_gorm_volume:
+  gorm_volume:
