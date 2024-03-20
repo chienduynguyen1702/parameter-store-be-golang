@@ -16,6 +16,7 @@ func SetDB(database *gorm.DB) {
 	DB = database
 }
 
+// BasePath /api/v1
 // MainController godoc
 // @Summary ping example
 // @Schemes
@@ -24,9 +25,9 @@ func SetDB(database *gorm.DB) {
 // @Accept json
 // @Produce json
 // @Success 200 {string} Helloworld
-// @Router /example/helloworld [get]
+// @Router /api/v1/helloworld [get]
 func MainController(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"message": "this is first index api ",
+		"response": "Hello world!",
 	})
 }
