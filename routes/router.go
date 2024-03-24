@@ -3,7 +3,6 @@
 package routes
 
 import (
-	"os"
 	"parameter-store-be/controllers"
 	docs "parameter-store-be/docs"
 	"parameter-store-be/initializers"
@@ -13,22 +12,17 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+// @BasePath  /api/v1
 // SetupRouter sets up the routes for the application
-func SetupRouter() *gin.Engine {
-	if os.Getenv("GIN_MODE") == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	}
+func SetupV1Router() *gin.Engine {
 	r := gin.Default()
-
+	docs.SwaggerInfo = initializers.SwaggerInfo
 	v1 := r.Group("/api/v1")
 	{
-		SetupAuthorRouter(v1)
-		SetupPostRouter(v1)
-
-		// Add other route setups here if needed
+		SetupAuthRouter(v1)
+		SetupOrganizationRouter(v1)
 	}
 
-	docs.SwaggerInfo = initializers.SwaggerInfo
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	v1.GET("/helloworld", controllers.MainController)
 	return r

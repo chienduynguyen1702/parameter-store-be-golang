@@ -1,6 +1,6 @@
-// models/post.go
+// model/post.go
 
-package models
+package model
 
 import (
 	"gorm.io/gorm"

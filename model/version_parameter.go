@@ -1,4 +1,4 @@
-package models
+package model
 
 type VersionParameter struct {
 	ID          uint `gorm:"type:serial;primaryKey"`

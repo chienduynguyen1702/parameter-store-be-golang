@@ -7,6 +7,8 @@ import (
 	"parameter-store-be/controllers"
 	"parameter-store-be/initializers"
 	"parameter-store-be/routes"
+
+	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -22,7 +24,12 @@ func init() {
 	// }
 }
 func main() {
-	r := routes.SetupRouter()
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	r := routes.SetupV1Router()
+
 	fmt.Println("Server is running on port", os.Getenv("PORT"))
 	r.Run(":" + os.Getenv("PORT"))
 }

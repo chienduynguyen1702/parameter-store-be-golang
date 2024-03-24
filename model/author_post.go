@@ -1,6 +1,6 @@
-// models/author_post.go
+// model/author_post.go
 
-package models
+package model
 
 // "gorm.io/gorm"
 
