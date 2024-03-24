@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"os"
-	"parameter-store-be/model"
+	"parameter-store-be/models"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -41,7 +41,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	newOrganization := model.Organization{
+	newOrganization := models.Organization{
 		Name: r.OrganizationName,
 	}
 	if err := DB.Create(&newOrganization).Error; err != nil {
@@ -50,7 +50,7 @@ func Register(c *gin.Context) {
 	}
 	organizationID := newOrganization.ID
 
-	newUser := model.User{
+	newUser := models.User{
 		Email:               r.Email,
 		Password:            string(hash),
 		OrganizationID:      organizationID,
@@ -94,7 +94,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	organization := model.Organization{
+	organization := models.Organization{
 		Name: l.OrganizationName,
 	}
 
@@ -104,7 +104,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var user model.User
+	var user models.User
 	// Check if the user exists in the database by email and organization_name
 	if err := DB.Where("email = ? AND organization_id = ?", l.Email, organization.ID).First(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
@@ -135,7 +135,7 @@ func Login(c *gin.Context) {
 
 }
 
-func generateJWTToken(user model.User) (string, error) {
+func generateJWTToken(user models.User) (string, error) {
 	// Generate a JWT token
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,

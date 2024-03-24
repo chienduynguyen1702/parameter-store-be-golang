@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"net/http"
-	"parameter-store-be/model"
+	"parameter-store-be/models"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,7 +20,7 @@ import (
 // @Router /api/v1/organization/{organization_id} [get]
 func GetOrganization(c *gin.Context) {
 	ordID := c.Param("organization_id")
-	var organizations []model.Organization
+	var organizations []models.Organization
 	DB.First(&organizations, ordID)
 	c.JSON(http.StatusOK, gin.H{"organizations": organizations})
 }
