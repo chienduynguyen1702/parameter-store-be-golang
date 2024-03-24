@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 	"parameter-store-be/controllers"
-	"parameter-store-be/model"
+	"parameter-store-be/models"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -39,7 +39,7 @@ func RequiredAuth(c *gin.Context) {
 		}
 
 		// Find the user in the database
-		var user model.User
+		var user models.User
 		controllers.DB.First(&user, claims["user_id"])
 
 		if user.ID == 0 {

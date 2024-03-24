@@ -4,5 +4,6 @@ import "gorm.io/gorm"
 
 type Permission struct {
 	gorm.Model
-	Name string `gorm:"type:varchar(100);not null"`
+	Name        string `gorm:"type:varchar(100);not null"`
+	Description string `gorm:"type:text"`
 }
