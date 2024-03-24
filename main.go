@@ -30,6 +30,12 @@ func main() {
 
 	r := routes.SetupV1Router()
 
-	fmt.Println("Server is running on port", os.Getenv("PORT"))
-	r.Run(":" + os.Getenv("PORT"))
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		log.Fatal("$PORT must be set")
+	}
+
+	fmt.Println("Server is running on port", port)
+	r.Run(":" + port)
 }
