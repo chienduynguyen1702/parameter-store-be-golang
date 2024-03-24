@@ -3,72 +3,72 @@ package initializers
 import (
 	"fmt"
 	"log"
-	"parameter-store-be/model"
+	"parameter-store-be/models"
 
 	"gorm.io/gorm"
 )
 
 func Migration(db *gorm.DB) error {
 
-	err := db.AutoMigrate(&model.Organization{})
+	err := db.AutoMigrate(&models.Organization{})
 	if err != nil {
-		log.Println("Failed to migrate Organization model")
+		log.Println("Failed to migrate Organization models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Project{})
+	err = db.AutoMigrate(&models.Project{})
 	if err != nil {
-		log.Println("Failed to migrate Project model")
+		log.Println("Failed to migrate Project models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Version{})
+	err = db.AutoMigrate(&models.Version{})
 	if err != nil {
-		log.Println("Failed to migrate Version model")
+		log.Println("Failed to migrate Version models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Stage{})
+	err = db.AutoMigrate(&models.Stage{})
 	if err != nil {
-		log.Println("Failed to migrate Stage model")
+		log.Println("Failed to migrate Stage models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Environment{})
+	err = db.AutoMigrate(&models.Environment{})
 	if err != nil {
-		log.Println("Failed to migrate Environment model")
+		log.Println("Failed to migrate Environment models")
 		return err
 	}
 
-	err = db.AutoMigrate(&model.User{})
+	err = db.AutoMigrate(&models.User{})
 	if err != nil {
-		log.Println("Failed to migrate User model")
+		log.Println("Failed to migrate User models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Token{})
+	err = db.AutoMigrate(&models.Token{})
 	if err != nil {
-		log.Println("Failed to migrate Token model")
+		log.Println("Failed to migrate Token models")
 		return err
 	}
-	err = db.AutoMigrate(&model.UserProjectRole{})
+	err = db.AutoMigrate(&models.UserProjectRole{})
 	if err != nil {
-		log.Println("Failed to migrate UserProjectRole model")
+		log.Println("Failed to migrate UserProjectRole models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Role{})
+	err = db.AutoMigrate(&models.Role{})
 	if err != nil {
-		log.Println("Failed to migrate Role model")
+		log.Println("Failed to migrate Role models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Permission{})
+	err = db.AutoMigrate(&models.Permission{})
 	if err != nil {
-		log.Println("Failed to migrate Permission model")
+		log.Println("Failed to migrate Permission models")
 		return err
 	}
-	err = db.AutoMigrate(&model.Agent{})
+	err = db.AutoMigrate(&models.Agent{})
 	if err != nil {
-		log.Println("Failed to migrate Agent model")
+		log.Println("Failed to migrate Agent models")
 		return err
 	}
-	err = db.AutoMigrate(&model.AgentLog{})
+	err = db.AutoMigrate(&models.AgentLog{})
 	if err != nil {
-		log.Println("Failed to migrate AgentLog model")
+		log.Println("Failed to migrate AgentLog models")
 	}
 	fmt.Printf("\nDatabase migrated\n")
 	return nil
