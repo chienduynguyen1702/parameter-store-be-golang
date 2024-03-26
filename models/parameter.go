@@ -12,4 +12,5 @@ type Parameter struct {
 	Environment   Environment
 	Name          string `gorm:"type:varchar(100);not null"`
 	Value         string `gorm:"type:varchar(255)"`
+	Description   string `gorm:"type:varchar(255)"`
 }

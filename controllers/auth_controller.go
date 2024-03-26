@@ -52,6 +52,7 @@ func Register(c *gin.Context) {
 
 	newUser := models.User{
 		Email:               r.Email,
+		Username:            r.Email,
 		Password:            string(hash),
 		OrganizationID:      organizationID,
 		IsOrganizationAdmin: true,
@@ -114,7 +115,10 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
 		return
 	}
-
+	var responseLogedInUser struct {
+		Email          string `json:"email"`
+		OrganizationID string `json:"organization_id"`
+	}
 	// Generate a JWT token
 	jwtToken, err := generateJWTToken(user)
 	if err != nil {
@@ -131,7 +135,7 @@ func Login(c *gin.Context) {
 		true,
 		true,
 	)
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "email:": l.Email, "organization_name:": l.OrganizationName, "token": jwtToken})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "status:": "success", "data:": responseLogedInUser, "token": jwtToken})
 
 }
 

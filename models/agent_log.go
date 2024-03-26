@@ -1,13 +1,14 @@
 package models
 
-import "time"
+import (
+	"gorm.io/gorm"
+)
 
 type AgentLog struct {
-	ID      uint `gorm:"primaryKey"`
+	gorm.Model
 	AgentID uint
 	Agent   Agent
 	Path    string `gorm:"type:varchar(100);not null"`
-	Time    *time.Time
-	Status  int `gorm:"not null"`
+	Status  int    `gorm:"not null"`
 	Latency int
 }

@@ -118,10 +118,12 @@ func SeedDatabase(db *gorm.DB) error {
 		{
 			Name:        "Project Admin",
 			Description: "Admin of the project",
+			Permissions: allPermissions,
 		},
 		{
 			Name:        "Developer",
 			Description: "Normal user",
+			Permissions: allPermissions,
 		},
 	}
 
