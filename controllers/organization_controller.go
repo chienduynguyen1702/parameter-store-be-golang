@@ -20,10 +20,25 @@ import (
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organization/ [get]
 func GetOrganizationInformation(c *gin.Context) {
-	ordID := c.Param("organization_id")
-	var organizations []models.Organization
-	DB.First(&organizations, ordID)
-	c.JSON(http.StatusOK, gin.H{"organizations": organizations})
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	userOrganizationID := user.(models.User).OrganizationID
+	if userOrganizationID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+		return
+	}
+
+	var organization models.Organization
+	result := DB.First(&organization, userOrganizationID)
+	if result.Error != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve organization"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"organization": organization})
 }
 
 type organizationBody struct {

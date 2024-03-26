@@ -158,8 +158,6 @@ func generateJWTToken(user models.User) (string, error) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @securitydefinitions.oauth2.application OAuth2Application
-// @tokenUrl https://example.com/oauth/token
 // @Success 200 string {string} json "{"message": "User logged in successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to validate user"}"
