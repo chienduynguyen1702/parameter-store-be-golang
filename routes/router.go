@@ -3,7 +3,6 @@
 package routes
 
 import (
-	"parameter-store-be/controllers"
 	docs "parameter-store-be/docs"
 	"parameter-store-be/initializers"
 
@@ -21,9 +20,9 @@ func SetupV1Router() *gin.Engine {
 	{
 		SetupAuthRouter(v1)
 		SetupOrganizationRouter(v1)
+		SetupProjectRouter(v1)
 	}
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
-	v1.GET("/helloworld", controllers.MainController)
 	return r
 }

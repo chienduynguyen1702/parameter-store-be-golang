@@ -19,11 +19,11 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed to connect to database")
 	}
-	initializers.Migration(db) // migration db
-	controllers.SetDB(db)      // set controller use that db *gorm.DB
-	if err := initializers.SeedDatabase(db); err != nil {
-		log.Fatal("Failed to seed database")
-	}
+	// initializers.Migration(db) // migration db
+	controllers.SetDB(db) // set controller use that db *gorm.DB
+	// if err := initializers.SeedDatabase(db); err != nil {
+	// 	log.Fatal("Failed to seed database")
+	// }
 }
 func main() {
 	if os.Getenv("GIN_MODE") == "release" {

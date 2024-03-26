@@ -19,12 +19,6 @@
                 "summary": "Login a user",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "token",
-                        "name": "Cookie",
-                        "in": "header"
-                    },
-                    {
                         "description": "User login request",
                         "name": "request",
                         "in": "body",
@@ -143,32 +137,9 @@
                 }
             }
         },
-        "/api/v1/helloworld": {
+        "/api/v1/organization/": {
             "get": {
-                "description": "do ping",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "example"
-                ],
-                "summary": "ping example",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/organization/{organization_id}": {
-            "get": {
-                "description": "Get organization",
+                "description": "Get organization information",
                 "consumes": [
                     "application/json"
                 ],
@@ -178,14 +149,57 @@
                 "tags": [
                     "Organization"
                 ],
-                "summary": "Get organization",
+                "summary": "Get organization information",
+                "responses": {
+                    "200": {
+                        "description": "{\"organizations\": \"organizations\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get organization\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update organization information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Update organization information",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Organization ID",
-                        "name": "organization_id",
-                        "in": "path",
-                        "required": true
+                        "description": "Organization",
+                        "name": "Organization",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.organizationBody"
+                        }
+                    },
+                    {
+                        "description": "{",
+                        "name": "organization",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.organizationBody"
+                        }
                     }
                 ],
                 "responses": {
@@ -203,6 +217,180 @@
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to get organization\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/": {
+            "get": {
+                "description": "List projects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "List projects",
+                "responses": {
+                    "200": {
+                        "description": "{\"projects\": \"projects\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list projects\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new project for organization",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Create new project",
+                "parameters": [
+                    {
+                        "description": "Project",
+                        "name": "Project",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.projectBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"project\": \"project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to create project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}": {
+            "put": {
+                "description": "Update project information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Update project information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Project",
+                        "name": "Project",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.projectBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"project\": \"project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Projects"
+                ],
+                "summary": "Delete project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Project deleted\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to delete project\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -246,6 +434,43 @@
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.organizationBody": {
+            "type": "object",
+            "properties": {
+                "aliasName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "establishmentDate": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.projectBody": {
+            "type": "object",
+            "properties": {
+                "currentSprint": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "repoURL": {
+                    "type": "string"
+                },
+                "startAt": {
                     "type": "string"
                 }
             }

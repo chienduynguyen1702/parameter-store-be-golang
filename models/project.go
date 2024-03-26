@@ -9,9 +9,8 @@ import (
 // Project represents the projects table
 type Project struct {
 	gorm.Model
-	OrganizationID uint
-	Organization   Organization `gorm:"foreignKey:OrganizationID"`
-	Name           string       `gorm:"type:varchar(100);not null"`
+	OrganizationID uint   `gorm:"foreignKey:OrganizationID"`
+	Name           string `gorm:"type:varchar(100);not null"`
 	StartAt        time.Time
 	Description    string `gorm:"type:text"`
 	CurrentSprint  int

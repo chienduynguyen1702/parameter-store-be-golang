@@ -76,8 +76,6 @@ func Register(c *gin.Context) {
 // @Tags Auth
 // @Accept json
 // @Produce json
-// @Param Cookie header string  false "token"
-// @in header
 // @Param request body controllers.Login.loginRequestBody true "User login request"
 // @Success 200 string {string} json "{"message": "User logged in successfully", "user": {email: "email", organization_id: "organization_id"}}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
@@ -143,6 +141,7 @@ func generateJWTToken(user models.User) (string, error) {
 	// Generate a JWT token
 	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"user_id": user.ID,
+		"org_id":  user.OrganizationID,
 		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 	tokenstring, err := jwtToken.SignedString([]byte(os.Getenv("SECRET_KEY")))
@@ -167,5 +166,5 @@ func generateJWTToken(user models.User) (string, error) {
 // @Router /api/v1/auth/validate [get]
 func Validate(c *gin.Context) {
 	user, _ := c.Get("user")
-	c.JSON(http.StatusOK, gin.H{"message": user})
+	c.JSON(http.StatusOK, gin.H{"Validated user": user})
 }
