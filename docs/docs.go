@@ -201,15 +201,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.organizationBody"
-                        }
-                    },
-                    {
-                        "description": "{",
-                        "name": "organization",
-                        "in": "body",
-                        "schema": {
-                            "$ref": "#/definitions/controllers.organizationBody"
+                            "$ref": "#/definitions/controllers.OrganizationBody"
                         }
                     }
                 ],
@@ -430,6 +422,23 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.OrganizationBody": {
+            "type": "object",
+            "properties": {
+                "aliasName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "establishmentDate": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.Register.registerRequestBody": {
             "type": "object",
             "required": [
@@ -445,23 +454,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
-                    "type": "string"
-                }
-            }
-        },
-        "controllers.organizationBody": {
-            "type": "object",
-            "properties": {
-                "aliasName": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "establishmentDate": {
-                    "type": "string"
-                },
-                "name": {
                     "type": "string"
                 }
             }

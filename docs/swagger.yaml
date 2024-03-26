@@ -12,6 +12,17 @@ definitions:
     - organization_name
     - password
     type: object
+  controllers.OrganizationBody:
+    properties:
+      aliasName:
+        type: string
+      description:
+        type: string
+      establishmentDate:
+        type: string
+      name:
+        type: string
+    type: object
   controllers.Register.registerRequestBody:
     properties:
       email:
@@ -24,17 +35,6 @@ definitions:
     - email
     - organization_name
     - password
-    type: object
-  controllers.organizationBody:
-    properties:
-      aliasName:
-        type: string
-      description:
-        type: string
-      establishmentDate:
-        type: string
-      name:
-        type: string
     type: object
   controllers.projectBody:
     properties:
@@ -174,12 +174,7 @@ paths:
         name: Organization
         required: true
         schema:
-          $ref: '#/definitions/controllers.organizationBody'
-      - description: '{'
-        in: body
-        name: organization
-        schema:
-          $ref: '#/definitions/controllers.organizationBody'
+          $ref: '#/definitions/controllers.OrganizationBody'
       produces:
       - application/json
       responses:

@@ -59,7 +59,6 @@ type organizationBody struct {
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organization/ [put]
-// @Param organization body organizationBody json "{"Name":"Example Organization","AliasName":"Org","EstablishmentDate":"2022-01-01T00:00:00Z","Description":"This is an example organization"}" true "Example of organization body"
 func UpdateOrganizationInformation(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")

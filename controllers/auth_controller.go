@@ -115,8 +115,10 @@ func Login(c *gin.Context) {
 	}
 	var responseLogedInUser struct {
 		Email          string `json:"email"`
-		OrganizationID string `json:"organization_id"`
+		OrganizationID uint   `json:"organization_id"`
 	}
+	responseLogedInUser.Email = user.Email
+	responseLogedInUser.OrganizationID = user.OrganizationID
 	// Generate a JWT token
 	jwtToken, err := generateJWTToken(user)
 	if err != nil {
@@ -133,7 +135,7 @@ func Login(c *gin.Context) {
 		true,
 		true,
 	)
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "status:": "success", "data:": responseLogedInUser, "token": jwtToken})
+	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "status:": "success", "user:": responseLogedInUser})
 
 }
 
