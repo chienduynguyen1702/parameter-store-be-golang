@@ -7,12 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// SetupOrganizationRouter sets up the routes related to authors
-func SetupOrganizationRouter(r *gin.RouterGroup) {
+func setupGroupOrganization(r *gin.RouterGroup) {
 	organizationGroup := r.Group("/organization", middleware.RequiredAuth)
 	{
 		organizationGroup.GET("/", controllers.GetOrganizationInformation)
 		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation)
-
+		organizationGroup.GET("/list-project", controllers.ListProjects)
+		organizationGroup.POST("/new-project", controllers.CreateNewProject)
+		organizationGroup.DELETE("/:project_id", controllers.DeleteProject)
 	}
 }

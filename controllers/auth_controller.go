@@ -168,3 +168,19 @@ func Validate(c *gin.Context) {
 	user, _ := c.Get("user")
 	c.JSON(http.StatusOK, gin.H{"Validated user": user})
 }
+
+// Logout logs out a user, if successful, delete cookie header
+// Logout godoc
+// @Summary Logout a user
+// @Description Logout a user
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Success 200 string {string} json "{"message": "User logged out successfully"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to logout user"}"
+// @Router /api/v1/auth/logout [post]
+func Logout(c *gin.Context) {
+	c.SetCookie("Authorization", "", -1, "", "", true, true)
+	c.JSON(http.StatusOK, gin.H{"message": "User logged out successfully"})
+}

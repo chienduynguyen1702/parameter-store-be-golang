@@ -12,17 +12,6 @@ definitions:
     - organization_name
     - password
     type: object
-  controllers.OrganizationBody:
-    properties:
-      aliasName:
-        type: string
-      description:
-        type: string
-      establishmentDate:
-        type: string
-      name:
-        type: string
-    type: object
   controllers.Register.registerRequestBody:
     properties:
       email:
@@ -35,6 +24,17 @@ definitions:
     - email
     - organization_name
     - password
+    type: object
+  controllers.organizationBody:
+    properties:
+      aliasName:
+        type: string
+      description:
+        type: string
+      establishmentDate:
+        type: string
+      name:
+        type: string
     type: object
   controllers.projectBody:
     properties:
@@ -85,6 +85,29 @@ paths:
           schema:
             type: string
       summary: Login a user
+      tags:
+      - Auth
+  /api/v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout a user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User logged out successfully"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to logout user"}'
+          schema:
+            type: string
+      summary: Logout a user
       tags:
       - Auth
   /api/v1/auth/register:
@@ -174,7 +197,7 @@ paths:
         name: Organization
         required: true
         schema:
-          $ref: '#/definitions/controllers.OrganizationBody'
+          $ref: '#/definitions/controllers.organizationBody'
       produces:
       - application/json
       responses:
@@ -193,7 +216,36 @@ paths:
       summary: Update organization information
       tags:
       - Organization
-  /api/v1/projects/:
+  /api/v1/organization/{project_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Project deleted"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to delete project"}'
+          schema:
+            type: string
+      summary: Delete project
+      tags:
+      - Organization
+  /api/v1/organization/list-project:
     get:
       consumes:
       - application/json
@@ -215,7 +267,8 @@ paths:
             type: string
       summary: List projects
       tags:
-      - Projects
+      - Organization
+  /api/v1/organization/new-project:
     post:
       consumes:
       - application/json
@@ -244,15 +297,15 @@ paths:
             type: string
       summary: Create new project
       tags:
-      - Projects
-  /api/v1/projects/{project_id}:
-    delete:
+      - Organization
+  /api/v1/project_detail/{project_id}:
+    get:
       consumes:
       - application/json
-      description: Delete project
+      description: Get project overview
       parameters:
       - description: Project ID
-        in: path
+        in: query
         name: project_id
         required: true
         type: string
@@ -260,7 +313,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: '{"message": "Project deleted"}'
+          description: '{"project": "project"}'
           schema:
             type: string
         "400":
@@ -268,12 +321,13 @@ paths:
           schema:
             type: string
         "500":
-          description: '{"error": "Failed to delete project"}'
+          description: '{"error": "Failed to get project detail"}'
           schema:
             type: string
-      summary: Delete project
+      summary: Get project overview
       tags:
-      - Projects
+      - Project Detail / Overview
+  /api/v1/projects/{project_id}:
     put:
       consumes:
       - application/json
@@ -307,5 +361,5 @@ paths:
             type: string
       summary: Update project information
       tags:
-      - Projects
+      - Project Detail / Overview
 swagger: "2.0"
