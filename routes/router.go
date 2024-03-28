@@ -21,6 +21,7 @@ func SetupV1Router() *gin.Engine {
 		SetupAuthRouter(v1)
 		SetupOrganizationRouter(v1)
 		SetupProjectRouter(v1)
+		SetupProjectDetailRouter(v1)
 	}
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))

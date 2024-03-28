@@ -9,10 +9,10 @@ import (
 
 // SetupOrganizationRouter sets up the routes related to authors
 func SetupOrganizationRouter(r *gin.RouterGroup) {
-	organizationGroup := r.Group("/organization")
+	organizationGroup := r.Group("/organization", middleware.RequiredAuth)
 	{
-		organizationGroup.GET("/", middleware.RequiredAuth, controllers.GetOrganizationInformation)
-		organizationGroup.PUT("/", middleware.RequiredAuth, controllers.UpdateOrganizationInformation)
-		
+		organizationGroup.GET("/", controllers.GetOrganizationInformation)
+		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation)
+
 	}
 }

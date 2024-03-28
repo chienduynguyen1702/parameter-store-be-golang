@@ -9,13 +9,13 @@ import (
 
 // SetupProjectRouter sets up the routes related to authors
 func SetupProjectRouter(r *gin.RouterGroup) {
-	projectGroup := r.Group("/projects")
+	projectGroup := r.Group("/projects", middleware.RequiredAuth)
 	{
-		projectGroup.GET("/", middleware.RequiredAuth, controllers.ListProjects)
-		projectGroup.POST("/", middleware.RequiredAuth, controllers.CreateNewProject)
+		projectGroup.GET("/", controllers.ListProjects)
+		projectGroup.POST("/", controllers.CreateNewProject)
 
-		// projectGroup.GET("/:project_id", middleware.RequiredAuth, controllers.GetProjectInformation)
-		projectGroup.PUT("/:project_id", middleware.RequiredAuth, controllers.UpdateProjectInformation)
-		projectGroup.DELETE("/:project_id", middleware.RequiredAuth, controllers.DeleteProject)
+		// projectGroup.GET("/:project_id", controllers.GetProjectInformation)
+		projectGroup.PUT("/:project_id", controllers.UpdateProjectInformation)
+		projectGroup.DELETE("/:project_id", controllers.DeleteProject)
 	}
 }
