@@ -1,7 +1,7 @@
 package initializers
 
 import (
-	"fmt"
+	"log"
 	"parameter-store-be/models"
 
 	"gorm.io/gorm"
@@ -133,6 +133,6 @@ func SeedDatabase(db *gorm.DB) error {
 		}
 	}
 
-	fmt.Printf("\nDatabase seeded\n")
+	log.Printf("\nDefault roles and permission data are seeded.\n")
 	return nil
 }
