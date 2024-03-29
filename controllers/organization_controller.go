@@ -109,7 +109,7 @@ func UpdateOrganizationInformation(c *gin.Context) {
 // @Success 200 string {string} json "{"projects": "projects"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list projects"}"
-// @Router /api/v1/organization/list-project [get]
+// @Router /api/v1/organization/projects [get]
 func ListProjects(c *gin.Context) {
 	userInContext, exists := c.Get("user")
 	if !exists {
@@ -124,7 +124,7 @@ func ListProjects(c *gin.Context) {
 	var projects []models.Project
 
 	if user.IsOrganizationAdmin {
-		DB.Where("organization_id = ?", user.IsOrganizationAdmin).Find(&projects)
+		DB.Where("organization_id = ?", user.OrganizationID).Find(&projects)
 		c.JSON(http.StatusOK, gin.H{"projects": projects})
 	} else {
 		DB.Joins("JOIN user_project_roles ON projects.id = user_project_roles.project_id").Where("user_project_roles.user_id = ?", user.ID).Find(&projects)
@@ -142,7 +142,7 @@ func ListProjects(c *gin.Context) {
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create project"}"
-// @Router /api/v1/organization/new-project [post]
+// @Router /api/v1/organization/projects [post]
 func CreateNewProject(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")
@@ -190,7 +190,7 @@ func CreateNewProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Project deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete project"}"
-// @Router /api/v1/organization/{project_id} [delete]
+// @Router /api/v1/organization/projects/{project_id} [delete]
 func DeleteProject(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")

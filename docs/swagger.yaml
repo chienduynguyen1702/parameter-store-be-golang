@@ -49,6 +49,158 @@ definitions:
       startAt:
         type: string
     type: object
+  gorm.DeletedAt:
+    properties:
+      time:
+        type: string
+      valid:
+        description: Valid is true if Time is not NULL
+        type: boolean
+    type: object
+  models.Agent:
+    properties:
+      apitoken:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      environment:
+        $ref: '#/definitions/models.Environment'
+      environmentID:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      projectID:
+        type: integer
+      stage:
+        $ref: '#/definitions/models.Stage'
+      stageID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.Environment:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      name:
+        type: string
+      project:
+        $ref: '#/definitions/models.Project'
+      projectID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.Parameter:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      environment:
+        $ref: '#/definitions/models.Environment'
+      environmentID:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      stage:
+        $ref: '#/definitions/models.Stage'
+      stageID:
+        type: integer
+      updatedAt:
+        type: string
+      value:
+        type: string
+    type: object
+  models.Project:
+    properties:
+      agent:
+        items:
+          $ref: '#/definitions/models.Agent'
+        type: array
+      createdAt:
+        type: string
+      currentSprint:
+        type: integer
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      environments:
+        items:
+          $ref: '#/definitions/models.Environment'
+        type: array
+      id:
+        type: integer
+      name:
+        type: string
+      organizationID:
+        type: integer
+      repoURL:
+        type: string
+      stages:
+        items:
+          $ref: '#/definitions/models.Stage'
+        type: array
+      startAt:
+        type: string
+      updatedAt:
+        type: string
+      versions:
+        items:
+          $ref: '#/definitions/models.Version'
+        type: array
+    type: object
+  models.Stage:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      name:
+        type: string
+      project:
+        $ref: '#/definitions/models.Project'
+      projectID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.Version:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      number:
+        type: string
+      parameters:
+        items:
+          $ref: '#/definitions/models.Parameter'
+        type: array
+      projectID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
 info:
   contact: {}
 paths:
@@ -216,36 +368,7 @@ paths:
       summary: Update organization information
       tags:
       - Organization
-  /api/v1/organization/{project_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete project
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"message": "Project deleted"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to delete project"}'
-          schema:
-            type: string
-      summary: Delete project
-      tags:
-      - Organization
-  /api/v1/organization/list-project:
+  /api/v1/organization/projects:
     get:
       consumes:
       - application/json
@@ -268,7 +391,6 @@ paths:
       summary: List projects
       tags:
       - Organization
-  /api/v1/organization/new-project:
     post:
       consumes:
       - application/json
@@ -298,14 +420,108 @@ paths:
       summary: Create new project
       tags:
       - Organization
-  /api/v1/project_detail/{project_id}:
+  /api/v1/organization/projects/{project_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Project deleted"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to delete project"}'
+          schema:
+            type: string
+      summary: Delete project
+      tags:
+      - Organization
+  /api/v1/project/{project_id}/agent:
+    get:
+      consumes:
+      - application/json
+      description: Get agents of project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Agent'
+            type: array
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get agents"}'
+          schema:
+            type: string
+      summary: Get agents of project
+      tags:
+      - Project Detail / Agent
+    post:
+      consumes:
+      - application/json
+      description: Create new agent
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      - description: Agent
+        in: body
+        name: Agent
+        required: true
+        schema:
+          $ref: '#/definitions/models.Agent'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Agent created"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to create agent"}'
+          schema:
+            type: string
+      summary: Create new agent
+      tags:
+      - Project Detail / Agent
+  /api/v1/project/{project_id}/overview:
     get:
       consumes:
       - application/json
       description: Get project overview
       parameters:
       - description: Project ID
-        in: query
+        in: path
         name: project_id
         required: true
         type: string
@@ -327,7 +543,6 @@ paths:
       summary: Get project overview
       tags:
       - Project Detail / Overview
-  /api/v1/projects/{project_id}:
     put:
       consumes:
       - application/json

@@ -12,8 +12,8 @@ func setupGroupOrganization(r *gin.RouterGroup) {
 	{
 		organizationGroup.GET("/", controllers.GetOrganizationInformation)
 		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation)
-		organizationGroup.GET("/list-project", controllers.ListProjects)
-		organizationGroup.POST("/new-project", controllers.CreateNewProject)
-		organizationGroup.DELETE("/:project_id", controllers.DeleteProject)
+		organizationGroup.GET("/projects", controllers.ListProjects)
+		organizationGroup.POST("/projects", controllers.CreateNewProject)
+		organizationGroup.DELETE("/projects/:project_id", controllers.DeleteProject)
 	}
 }
