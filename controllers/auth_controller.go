@@ -2,20 +2,17 @@ package controllers
 
 import (
 	"net/http"
-	"os"
 	"parameter-store-be/models"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Register creates a new user in the database
 
 // Register godoc
-// @Summary Register a new user
-// @Description Register a new user
+// @Summary Register a new user and organization
+// @Description Register a new user and organization
 // @Tags Auth
 // @Accept json
 // @Produce json
@@ -36,7 +33,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	hash, err := bcrypt.GenerateFromPassword([]byte(r.Password), 10)
+	hash, err := generateBcryptPassword(r.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -137,20 +134,6 @@ func Login(c *gin.Context) {
 	)
 	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "status:": "success", "user:": responseLogedInUser})
 
-}
-
-func generateJWTToken(user models.User) (string, error) {
-	// Generate a JWT token
-	jwtToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id": user.ID,
-		"org_id":  user.OrganizationID,
-		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(),
-	})
-	tokenstring, err := jwtToken.SignedString([]byte(os.Getenv("SECRET_KEY")))
-	if err != nil {
-		return "", err
-	}
-	return tokenstring, nil
 }
 
 // Validate validates a user by cookie

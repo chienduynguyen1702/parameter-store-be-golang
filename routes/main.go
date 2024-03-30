@@ -17,7 +17,7 @@ func SetupV1Router() *gin.Engine {
 		setupGroupAuth(v1)
 		setupGroupOrganization(v1)
 		setupGroupProject(v1)
-		// setupGroupUserSetting(v1)
+		setupGroupSetting(v1)
 	}
 	// Swagger setup
 	if gin.Mode() == gin.DebugMode {
@@ -26,7 +26,7 @@ func SetupV1Router() *gin.Engine {
 		docs.SwaggerInfo.Version = "1.0"
 		docs.SwaggerInfo.Host = "localhost:8080"
 		// docs.SwaggerInfo.BasePath = "/api/v1"
-		docs.SwaggerInfo.Schemes = []string{"https"}
+		docs.SwaggerInfo.Schemes = []string{"http"}
 	} else if gin.Mode() == gin.ReleaseMode {
 		docs.SwaggerInfo.Title = "Parameter Store Backend API"
 		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."

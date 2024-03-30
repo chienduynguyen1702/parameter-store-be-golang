@@ -1,4 +1,19 @@
 definitions:
+  controllers.CreateUser.createUserRequestBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
   controllers.Login.loginRequestBody:
     properties:
       email:
@@ -24,6 +39,17 @@ definitions:
     - email
     - organization_name
     - password
+    type: object
+  controllers.UpdateUserInformation.updateUserRequestBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
     type: object
   controllers.organizationBody:
     properties:
@@ -577,4 +603,143 @@ paths:
       summary: Update project information
       tags:
       - Project Detail / Overview
+  /api/v1/setting/role:
+    get:
+      consumes:
+      - application/json
+      description: List roles and its permissions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"roles": "roles"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list roles"}'
+          schema:
+            type: string
+      summary: List roles
+      tags:
+      - Setting / Role
+  /api/v1/setting/user:
+    get:
+      consumes:
+      - application/json
+      description: List users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"users": "users"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list users"}'
+          schema:
+            type: string
+      summary: List users
+      tags:
+      - Setting / User
+    post:
+      consumes:
+      - application/json
+      description: Create user
+      parameters:
+      - description: User
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.CreateUser.createUserRequestBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: '{"message": "User created successfully", "user": "user"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to create user"}'
+          schema:
+            type: string
+      summary: Create user
+      tags:
+      - Setting / User
+  /api/v1/setting/user/{user_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete user including all its data in user_project_role table
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User deleted"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to delete user"}'
+          schema:
+            type: string
+      summary: Delete user
+      tags:
+      - Setting / User
+    put:
+      consumes:
+      - application/json
+      description: Update user information
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      - description: User
+        in: body
+        name: User
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.UpdateUserInformation.updateUserRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User information updated successfully", "user":
+            "user"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to update user information"}'
+          schema:
+            type: string
+      summary: Update user information
+      tags:
+      - Setting / User
 swagger: "2.0"
