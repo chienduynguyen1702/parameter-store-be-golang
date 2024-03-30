@@ -8,5 +8,4 @@ type Stage struct {
 	gorm.Model
 	Name      string `gorm:"type:varchar(100);not null"`
 	ProjectID uint
-	Project   Project
 }
