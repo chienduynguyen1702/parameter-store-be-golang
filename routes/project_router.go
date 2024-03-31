@@ -15,28 +15,28 @@ func setupGroupProject(r *gin.RouterGroup) {
 			overviewGroup.GET("/", controllers.GetProjectOverView)
 			overviewGroup.PUT("/", controllers.UpdateProjectInformation)
 		}
-		agentGroup := projectGroup.Group("/agent")
+		agentGroup := projectGroup.Group("/agents")
 		{
 			agentGroup.GET("/", controllers.GetProjectAgents)
 			agentGroup.POST("/", controllers.CreateNewAgent)
 			// agentGroup.PUT("/:agent_id", controllers.UpdateProjectInformation)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}
-		stageGroup := projectGroup.Group("/stage")
+		stageGroup := projectGroup.Group("/stages")
 		{
 			stageGroup.GET("/", controllers.GetStages)
 			stageGroup.POST("/", controllers.CreateStage)
 			stageGroup.PUT("/:stage_id", controllers.UpdateStage)
 			stageGroup.DELETE("/:stage_id", controllers.DeleteStage)
 		}
-		environmentGroup := projectGroup.Group("/environment")
+		environmentGroup := projectGroup.Group("/environments")
 		{
 			environmentGroup.GET("/", controllers.GetEnvironments)
 			environmentGroup.POST("/", controllers.CreateEnvironment)
 			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironment)
 			environmentGroup.DELETE("/:environment_id", controllers.DeleteEnvironment)
 		}
-		// parameterGroup := projectGroup.Group("/parameter")
+		// parameterGroup := projectGroup.Group("/parameters")
 		// {
 		// parameterGroup.GET("/", controllers.GetProjectParameters)
 		// parameterGroup.POST("/", controllers.CreateNewParameter)

@@ -10,14 +10,14 @@ import (
 // Get all environments
 // @Summary Get all environments
 // @Description Get all environments
-// @Tags Project Detail / Environment
+// @Tags Project Detail / Parameters / Environments
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
 // @Success 200 string {string} json "{"environments": "environments"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list environments"}"
-// @Router /api/v1/project/{project_id}/environment [get]
+// @Router /api/v1/project/{project_id}/environments [get]
 func GetEnvironments(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -37,7 +37,7 @@ func GetEnvironments(c *gin.Context) {
 // Create new environment
 // @Summary Create new environment
 // @Description Create new environment
-// @Tags Project Detail / Environment
+// @Tags Project Detail / Parameters / Environments
 // @Accept json
 // @Produce json
 // @Param Environment body controllers.CreateEnvironment.createEnvironmentRequestBody true "Environment"
@@ -45,7 +45,7 @@ func GetEnvironments(c *gin.Context) {
 // @Success 200 string {string} json "{"environment": "environment"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create environment"}"
-// @Router /api/v1/project/{project_id}/environment [post]
+// @Router /api/v1/project/{project_id}/environments [post]
 func CreateEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -78,7 +78,7 @@ func CreateEnvironment(c *gin.Context) {
 // Delete environment
 // @Summary Delete environment
 // @Description Delete environment
-// @Tags Project Detail / Environment
+// @Tags Project Detail / Parameters / Environments
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
@@ -86,7 +86,7 @@ func CreateEnvironment(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Environment deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete environment"}"
-// @Router /api/v1/project/{project_id}/environment/{environment_id} [delete]
+// @Router /api/v1/project/{project_id}/environments/{environment_id} [delete]
 func DeleteEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -113,7 +113,7 @@ func DeleteEnvironment(c *gin.Context) {
 // Update environment
 // @Summary Update environment
 // @Description Update environment
-// @Tags Project Detail / Environment
+// @Tags Project Detail / Parameters / Environments
 // @Accept json
 // @Produce json
 // @Param Environment body controllers.UpdateEnvironment.updateEnvironmentRequestBody true "Environment"
@@ -122,7 +122,7 @@ func DeleteEnvironment(c *gin.Context) {
 // @Success 200 string {string} json "{"environment": "environment"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update environment"}"
-// @Router /api/v1/project/{project_id}/environment/{environment_id} [put]
+// @Router /api/v1/project/{project_id}/environments/{environment_id} [put]
 func UpdateEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {

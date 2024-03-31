@@ -5,6 +5,7 @@ package routes
 import (
 	docs "parameter-store-be/docs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -12,6 +13,7 @@ import (
 
 func SetupV1Router() *gin.Engine {
 	r := gin.Default()
+	r.Use(cors.Default())
 	v1 := r.Group("/api/v1")
 	{
 		setupGroupAuth(v1)

@@ -18,7 +18,7 @@ import (
 // @Success 200 {array}	 models.Agent
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
-// @Router /api/v1/project/{project_id}/agent [get]
+// @Router /api/v1/project/{project_id}/agents [get]
 func GetProjectAgents(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {
@@ -41,7 +41,7 @@ func GetProjectAgents(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Agent created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create agent"}"
-// @Router /api/v1/project/{project_id}/agent [post]
+// @Router /api/v1/project/{project_id}/agents [post]
 func CreateNewAgent(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {

@@ -385,7 +385,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/agent": {
+        "/api/v1/project/{project_id}/agents": {
             "get": {
                 "description": "Get agents of project",
                 "consumes": [
@@ -483,7 +483,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/environment": {
+        "/api/v1/project/{project_id}/environments": {
             "get": {
                 "description": "Get all environments",
                 "consumes": [
@@ -493,7 +493,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Environment"
+                    "Project Detail / Parameters / Environments"
                 ],
                 "summary": "Get all environments",
                 "parameters": [
@@ -535,7 +535,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Environment"
+                    "Project Detail / Parameters / Environments"
                 ],
                 "summary": "Create new environment",
                 "parameters": [
@@ -578,7 +578,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/environment/{environment_id}": {
+        "/api/v1/project/{project_id}/environments/{environment_id}": {
             "put": {
                 "description": "Update environment",
                 "consumes": [
@@ -588,7 +588,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Environment"
+                    "Project Detail / Parameters / Environments"
                 ],
                 "summary": "Update environment",
                 "parameters": [
@@ -646,7 +646,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Environment"
+                    "Project Detail / Parameters / Environments"
                 ],
                 "summary": "Delete environment",
                 "parameters": [
@@ -782,7 +782,105 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/stage": {
+        "/api/v1/project/{project_id}/parameters": {
+            "get": {
+                "description": "Get project parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Get project parameters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Parameter"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get project parameters\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Create new parameter",
+                "parameters": [
+                    {
+                        "description": "Parameter",
+                        "name": "Parameter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.CreateParameter.createParameterRequestBody"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameter created\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to create parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/project/{project_id}/stages": {
             "get": {
                 "description": "Get all stages",
                 "consumes": [
@@ -792,7 +890,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Stage"
+                    "Project Detail / Parameters / Stages"
                 ],
                 "summary": "Get all stages",
                 "parameters": [
@@ -834,7 +932,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Stage"
+                    "Project Detail / Parameters / Stages"
                 ],
                 "summary": "Create new stage",
                 "parameters": [
@@ -870,7 +968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/stage/{stage_id}": {
+        "/api/v1/project/{project_id}/stages/{stage_id}": {
             "put": {
                 "description": "Update stage",
                 "consumes": [
@@ -880,7 +978,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Stage"
+                    "Project Detail / Parameters / Stages"
                 ],
                 "summary": "Update stage",
                 "parameters": [
@@ -938,7 +1036,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Stage"
+                    "Project Detail / Parameters / Stages"
                 ],
                 "summary": "Delete stage",
                 "parameters": [
@@ -979,7 +1077,105 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/role": {
+        "/api/v1/project/{project_id}/versions": {
+            "get": {
+                "description": "Get versions of project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Versions"
+                ],
+                "summary": "Get versions of project",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Version"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get versions\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create new version",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Versions"
+                ],
+                "summary": "Create new version",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Version",
+                        "name": "Version",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.Version"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Version created\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to create version\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/setting/roles": {
             "get": {
                 "description": "List roles and its permissions",
                 "consumes": [
@@ -1014,7 +1210,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/user": {
+        "/api/v1/setting/users": {
             "get": {
                 "description": "List users",
                 "consumes": [
@@ -1093,7 +1289,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/user/{user_id}": {
+        "/api/v1/setting/users/{user_id}": {
             "put": {
                 "description": "Update user information",
                 "consumes": [
@@ -1197,6 +1393,21 @@ const docTemplate = `{
             ],
             "properties": {
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.CreateParameter.createParameterRequestBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "value"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }
@@ -1421,6 +1632,44 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Parameter": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "environment": {
+                    "$ref": "#/definitions/models.Environment"
+                },
+                "environmentID": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stage": {
+                    "$ref": "#/definitions/models.Stage"
+                },
+                "stageID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Stage": {
             "type": "object",
             "properties": {
@@ -1435,6 +1684,38 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "projectID": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Version": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Parameter"
+                    }
                 },
                 "projectID": {
                     "type": "integer"

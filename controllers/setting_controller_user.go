@@ -17,7 +17,7 @@ import (
 // @Success 200 string {string} json "{"users": "users"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list users"}"
-// @Router /api/v1/setting/user [get]
+// @Router /api/v1/setting/users [get]
 func ListUser(c *gin.Context) {
 	claims, err := parseJWTTokenFromCookie(c)
 	if err != nil {
@@ -41,7 +41,7 @@ func ListUser(c *gin.Context) {
 // @Success 201 string {string} json "{"message": "User created successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create user"}"
-// @Router /api/v1/setting/user [post]
+// @Router /api/v1/setting/users [post]
 func CreateUser(c *gin.Context) {
 	type createUserRequestBody struct {
 		Email    string `json:"email" binding:"required"`
@@ -91,7 +91,7 @@ func CreateUser(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User information updated successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update user information"}"
-// @Router /api/v1/setting/user/{user_id} [put]
+// @Router /api/v1/setting/users/{user_id} [put]
 func UpdateUserInformation(c *gin.Context) {
 	type updateUserRequestBody struct {
 		Email    string `json:"email"`
@@ -136,7 +136,7 @@ func UpdateUserInformation(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete user"}"
-// @Router /api/v1/setting/user/{user_id} [delete]
+// @Router /api/v1/setting/users/{user_id} [delete]
 func DeleteUser(c *gin.Context) {
 	user_id := c.Param("user_id")
 	var user models.User
