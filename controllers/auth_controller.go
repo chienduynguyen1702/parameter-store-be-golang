@@ -164,6 +164,6 @@ func Validate(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to logout user"}"
 // @Router /api/v1/auth/logout [post]
 func Logout(c *gin.Context) {
-	c.SetCookie("Authorization", "", -1, "", "", true, true)
+	c.SetCookie("Authorization", "", -1, "/", "", false, true)
 	c.JSON(http.StatusOK, gin.H{"message": "User logged out successfully"})
 }
