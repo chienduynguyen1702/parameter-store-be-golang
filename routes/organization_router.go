@@ -8,7 +8,7 @@ import (
 )
 
 func setupGroupOrganization(r *gin.RouterGroup) {
-	organizationGroup := r.Group("/organization", middleware.RequiredAuth)
+	organizationGroup := r.Group("/organizations", middleware.RequiredAuth)
 	{
 		organizationGroup.GET("/", controllers.GetOrganizationInformation)
 		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation)

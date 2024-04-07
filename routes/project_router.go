@@ -8,7 +8,7 @@ import (
 )
 
 func setupGroupProject(r *gin.RouterGroup) {
-	projectGroup := r.Group("/project/:project_id", middleware.RequiredAuth)
+	projectGroup := r.Group("/projects/:project_id", middleware.RequiredAuth)
 	{
 		overviewGroup := projectGroup.Group("/overview")
 		{

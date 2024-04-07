@@ -8,7 +8,7 @@ import (
 )
 
 func setupGroupSetting(r *gin.RouterGroup) {
-	userSettingGroup := r.Group("/setting", middleware.RequiredAuth)
+	userSettingGroup := r.Group("/settings", middleware.RequiredAuth)
 	{
 		userGroup := userSettingGroup.Group("/users")
 		{
