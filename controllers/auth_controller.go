@@ -111,9 +111,11 @@ func Login(c *gin.Context) {
 		return
 	}
 	var responseLogedInUser struct {
+		Username       string `json:"username"`
 		Email          string `json:"email"`
 		OrganizationID uint   `json:"organization_id"`
 	}
+	responseLogedInUser.Username = user.Username
 	responseLogedInUser.Email = user.Email
 	responseLogedInUser.OrganizationID = user.OrganizationID
 	// Generate a JWT token
@@ -122,6 +124,10 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token for user"})
 		return
 	}
+	// set login time
+	// user.LastLogIn = time.Now()
+	DB.Save(&user)
+	// Set the JWT token in a cookie
 	c.SetSameSite(http.SameSiteNoneMode)
 	c.SetCookie(
 		"Authorization",
@@ -149,7 +155,31 @@ func Login(c *gin.Context) {
 // @Router /api/v1/auth/validate [get]
 func Validate(c *gin.Context) {
 	user, _ := c.Get("user")
-	c.JSON(http.StatusOK, gin.H{"Validated user": user})
+	if user == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate user"})
+		return
+	}
+	// set login time
+	validatedUser := user.(models.User)
+
+	var responseLogedInUser struct {
+		Username       string `json:"username"`
+		Email          string `json:"email"`
+		OrganizationID uint   `json:"organization_id"`
+	}
+	responseLogedInUser.Username = validatedUser.Username
+	responseLogedInUser.Email = validatedUser.Email
+	responseLogedInUser.OrganizationID = validatedUser.OrganizationID
+
+	// log.Println("user: %v", validatedUser)
+	// if err := DB.First(&validatedUser, validatedUser.ID).Error; err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate user"})
+	// 	return
+	// }
+	// validatedUser.LastLogIn = time.Now()
+	// DB.Save(&validatedUser)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User is validated", "status:": "success", "user": responseLogedInUser})
 }
 
 // Logout logs out a user, if successful, delete cookie header

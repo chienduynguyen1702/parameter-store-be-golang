@@ -28,7 +28,28 @@ func ListUser(c *gin.Context) {
 	fmt.Println("ListUser debug")
 	var users []models.User
 	DB.Find(&users).Where("organization_id = ?", org_id)
-	c.JSON(http.StatusOK, gin.H{"users": users})
+
+	type userResponse struct {
+		ID                  uint   `json:"id"`
+		Email               string `json:"email"`
+		Username            string `json:"username"`
+		Phone               string `json:"phone"`
+		IsOrganizationAdmin bool   `json:"is_organization_admin"`
+	}
+	var usersResponse []userResponse
+	for _, user := range users {
+		usersResponse = append(usersResponse, userResponse{
+			ID:                  user.ID,
+			Email:               user.Email,
+			Username:            user.Username,
+			Phone:               user.Phone,
+			IsOrganizationAdmin: user.IsOrganizationAdmin,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{
+		"users": usersResponse,
+	}})
 }
 
 // CreateUser godoc
@@ -66,11 +87,11 @@ func CreateUser(c *gin.Context) {
 	}
 
 	newUser := models.User{
-		Email:          r.Email,
-		Username:       r.Username,
-		OrganizationID: org_id.(uint),
-		Password:       string(hash),
-		Phone:          r.Phone,
+		Email:               r.Email,
+		Username:            r.Username,
+		OrganizationID:      org_id.(uint),
+		Password:            string(hash),
+		Phone:               r.Phone,
 		IsOrganizationAdmin: false,
 	}
 	if err := DB.Create(&newUser).Error; err != nil {

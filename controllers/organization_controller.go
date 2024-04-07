@@ -47,15 +47,15 @@ func GetOrganizationInformation(c *gin.Context) {
 
 	organizationResponseBody := gin.H{
 		"organization": gin.H{
-			"ID":                organization.ID,
-			"CreatedAt":         organization.CreatedAt,
-			"Name":              organization.Name,
-			"AliasName":         organization.AliasName,
-			"EstablishmentDate": organization.EstablishmentDate,
-			"Description":       organization.Description,
-			"UserCount":         usersCount,
-			"ProjectCount":      projectsCount,
-			"Address":           organization.Address,
+			"id":                 organization.ID,
+			"create_at":          organization.CreatedAt,
+			"name":               organization.Name,
+			"alias_name":         organization.AliasName,
+			"establishment_date": organization.EstablishmentDate,
+			"description":        organization.Description,
+			"user_count":         usersCount,
+			"project_count":      projectsCount,
+			"address":            organization.Address,
 		},
 	}
 
@@ -146,11 +146,29 @@ func ListProjects(c *gin.Context) {
 
 	if user.IsOrganizationAdmin {
 		DB.Where("organization_id = ?", user.OrganizationID).Find(&projects)
-		c.JSON(http.StatusOK, gin.H{"projects": projects})
 	} else {
 		DB.Joins("JOIN user_project_roles ON projects.id = user_project_roles.project_id").Where("user_project_roles.user_id = ?", user.ID).Find(&projects)
-		c.JSON(http.StatusOK, gin.H{"projects": projects})
 	}
+
+	type projectListResponse struct {
+		ID        uint   `json:"id"`
+		Name      string `json:"name"`
+		UserCount int64  `json:"users_count"`
+	}
+	var projectListResponses []projectListResponse
+
+	//count user in project
+	for i := 0; i < len(projects); i++ {
+		var userCount int64
+		DB.Model(&models.UserProjectRole{}).Where("project_id = ?", projects[i].ID).Count(&userCount)
+		projectListResponses = append(projectListResponses, projectListResponse{
+			ID:        projects[i].ID,
+			Name:      projects[i].Name,
+			UserCount: userCount,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"projects": projectListResponses})
 }
 
 // CreateNewProject godoc

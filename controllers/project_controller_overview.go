@@ -18,7 +18,7 @@ import (
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project detail"}"
-// @Router /api/v1/project/{project_id}/overview [get]
+// @Router /api/v1/projects/{project_id}/overview [get]
 func GetProjectOverView(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")
@@ -43,15 +43,54 @@ func GetProjectOverView(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
 		return
 	}
+	// Retrieve users and their roles in the given project
+	var upr []models.UserProjectRole
+	DB.Preload("User").Preload("Role").Where("project_id = ?", projectID).Find(&upr)
 
-	c.JSON(http.StatusOK, gin.H{"project": project})
+	// // user current in project, by UserProjectRole table
+	// var stagesInProject []models.Stage
+	// DB.Model(&project).Association("Stages").Find(&stagesInProject)
+	// project.Stages = stagesInProject
+	// // user current in project, by UserProjectRole table
+	// var environmentsInProject []models.Environment
+	// DB.Model(&project).Association("Environments").Find(&environmentsInProject)
+	// project.Environments = environmentsInProject
+	// // user current in project, by UserProjectRole table
+	// var agentsInProject []models.Agent
+	// DB.Model(&project).Association("Agents").Find(&agentsInProject)
+	// project.Agents = agentsInProject
+	// help me this
+	type UserRoleInProject struct {
+		UserID   uint   `json:"id"`
+		UserName string `json:"name"`
+		RoleName string `json:"role"`
+		Email    string `json:"email"`
+		Phone    string `json:"phone"`
+		// LastLogIn time.Time `json:"last_login"`
+	}
+	var userRoleInProject []UserRoleInProject
+	for _, upr := range upr {
+		userRoleInProject = append(userRoleInProject, UserRoleInProject{
+			UserID:   upr.User.ID,
+			UserName: upr.User.Username,
+			RoleName: upr.Role.Name,
+			Email:    upr.User.Email,
+			Phone:    upr.User.Phone,
+			// LastLogIn: upr.User.LastLogIn,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"overview": project,
+		"users":    userRoleInProject,
+	})
 }
 
 type projectBody struct {
 	Name          string `gorm:"type:varchar(100);not null"`
 	StartAt       time.Time
 	Description   string `gorm:"type:text"`
-	CurrentSprint int
+	CurrentSprint string
 	RepoURL       string `gorm:"type:varchar(100);not null"`
 }
 
@@ -66,7 +105,7 @@ type projectBody struct {
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update project"}"
-// @Router /api/v1/project/{project_id}/overview [put]
+// @Router /api/v1/projects/{project_id}/overview [put]
 func UpdateProjectInformation(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")

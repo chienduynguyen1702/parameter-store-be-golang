@@ -3,6 +3,7 @@ package initializers
 import (
 	"log"
 	"parameter-store-be/models"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -127,12 +128,147 @@ func SeedDatabase(db *gorm.DB) error {
 		},
 	}
 
-	for _, role := range defaultRoles {
+	for i, role := range defaultRoles {
 		if err := db.Create(&role).Error; err != nil {
+			return err
+		}
+		defaultRoles[i] = role
+	}
+
+	log.Printf("\nDefault roles and permission data are seeded.\n")
+
+	organization := models.Organization{
+		Name:              "HUST",
+		AliasName:         "Hanoi University of Science and Technology",
+		Address:           "1 Dai Co Viet, Hanoi",
+		EstablishmentDate: time.Date(1956, time.Month(10), 10, 0, 0, 0, 0, time.UTC),
+		Description:       "Hanoi University of Science and Technology (HUST) is a multidisciplinary technical university located in Hanoi, Vietnam. It was founded on October 10, 1956, and is one of the two largest technical universities in Vietnam.",
+	}
+
+	if err := db.Create(&organization).Error; err != nil {
+		return err
+	}
+
+	log.Printf("\nDefault organization data is seeded.\n")
+
+	admin := models.User{
+		Username:            "admin",
+		Email:               "admin@gmail.com",
+		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		OrganizationID:      organization.ID,
+		IsOrganizationAdmin: true,
+		Phone:               "0123456789",
+		// LastLogIn:           time.Now(),
+	}
+	user1 := models.User{
+		Username:            "user1",
+		Email:               "user1@gmail.com",
+		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		OrganizationID:      organization.ID,
+		IsOrganizationAdmin: false,
+		Phone:               "0123451231",
+		// LastLogIn:           time.Now(),
+	}
+	user2 := models.User{
+		Username:            "user2",
+		Email:               "user2@gmail.com",
+		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		OrganizationID:      organization.ID,
+		IsOrganizationAdmin: false,
+		Phone:               "0123451232",
+		// LastLogIn:           time.Now(),
+	}
+	if err := db.Create(&admin).Error; err != nil {
+		return err
+	}
+	if err := db.Create(&user1).Error; err != nil {
+		return err
+	}
+	if err := db.Create(&user2).Error; err != nil {
+		return err
+	}
+	log.Printf("\nDefault user data is seeded.\n")
+
+	projects := []models.Project{
+		{
+			Name:           "Parameter Store",
+			StartAt:        time.Now(),
+			Description:    "Parameter Store is a project to store parameters",
+			CurrentSprint:  "1",
+			Status:         "In Progress",
+			RepoURL:        "github.com/parameter-store",
+			OrganizationID: organization.ID,
+			Address:        "SoICT, HUST",
+		},
+		{
+			Name:           "Parameter Store 2",
+			StartAt:        time.Now(),
+			Description:    "Parameter Store is a project to store parameters",
+			CurrentSprint:  "1",
+			Status:         "In Progress",
+			RepoURL:        "github.com/parameter-store",
+			OrganizationID: organization.ID,
+			Address:        "SoICT, HUST",
+		},
+		{
+			Name:           "Parameter Store 3",
+			StartAt:        time.Now(),
+			Description:    "Parameter Store is a project to store parameters",
+			CurrentSprint:  "1",
+			Status:         "In Progress",
+			RepoURL:        "github.com/parameter-store",
+			OrganizationID: organization.ID,
+			Address:        "SoICT, HUST",
+		},
+	}
+
+	for i, project := range projects {
+		if err := db.Create(&project).Error; err != nil {
+			return err
+		}
+		projects[i] = project
+	}
+	log.Printf("\nDefault project data is seeded.\n")
+
+	upr := []models.UserProjectRole{
+		{
+			UserID:    admin.ID,
+			ProjectID: projects[0].ID,
+			RoleID:    defaultRoles[1].ID,
+		},
+		{
+			UserID:    admin.ID,
+			ProjectID: projects[1].ID,
+			RoleID:    defaultRoles[1].ID,
+		},
+		{
+			UserID:    admin.ID,
+			ProjectID: projects[2].ID,
+			RoleID:    defaultRoles[1].ID,
+		},
+		{
+			UserID:    user1.ID,
+			ProjectID: projects[0].ID,
+			RoleID:    defaultRoles[2].ID,
+		},
+		{
+			UserID:    user1.ID,
+			ProjectID: projects[1].ID,
+			RoleID:    defaultRoles[2].ID,
+		},
+		{
+			UserID:    user2.ID,
+			ProjectID: projects[2].ID,
+			RoleID:    defaultRoles[2].ID,
+		},
+	}
+
+	for _, upr := range upr {
+		if err := db.Create(&upr).Error; err != nil {
 			return err
 		}
 	}
 
-	log.Printf("\nDefault roles and permission data are seeded.\n")
+	log.Printf("\nDefault relation user project role is seed\n")
 	return nil
 }

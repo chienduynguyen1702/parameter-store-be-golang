@@ -103,7 +103,7 @@ definitions:
   controllers.projectBody:
     properties:
       currentSprint:
-        type: integer
+        type: string
       description:
         type: string
       name:
@@ -671,69 +671,6 @@ paths:
       summary: Update environment
       tags:
       - Project Detail / Parameters / Environments
-  /api/v1/project/{project_id}/overview:
-    get:
-      consumes:
-      - application/json
-      description: Get project overview
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"project": "project"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to get project detail"}'
-          schema:
-            type: string
-      summary: Get project overview
-      tags:
-      - Project Detail / Overview
-    put:
-      consumes:
-      - application/json
-      description: Update project information
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Project
-        in: body
-        name: Project
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.projectBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"project": "project"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to update project"}'
-          schema:
-            type: string
-      summary: Update project information
-      tags:
-      - Project Detail / Overview
   /api/v1/project/{project_id}/parameters:
     get:
       consumes:
@@ -995,6 +932,69 @@ paths:
       summary: Create new version
       tags:
       - Project Detail / Versions
+  /api/v1/projects/{project_id}/overview:
+    get:
+      consumes:
+      - application/json
+      description: Get project overview
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"project": "project"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get project detail"}'
+          schema:
+            type: string
+      summary: Get project overview
+      tags:
+      - Project Detail / Overview
+    put:
+      consumes:
+      - application/json
+      description: Update project information
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Project
+        in: body
+        name: Project
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.projectBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"project": "project"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to update project"}'
+          schema:
+            type: string
+      summary: Update project information
+      tags:
+      - Project Detail / Overview
   /api/v1/setting/roles:
     get:
       consumes:
