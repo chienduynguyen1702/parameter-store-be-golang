@@ -18,7 +18,7 @@ import (
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
-// @Router /api/v1/organization/ [get]
+// @Router /api/v1/organizations/ [get]
 func GetOrganizationInformation(c *gin.Context) {
 	user, exists := c.Get("user")
 	if !exists {
@@ -58,7 +58,7 @@ type organizationBody struct {
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
-// @Router /api/v1/organization/ [put]
+// @Router /api/v1/organizations/ [put]
 func UpdateOrganizationInformation(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")
@@ -109,7 +109,7 @@ func UpdateOrganizationInformation(c *gin.Context) {
 // @Success 200 string {string} json "{"projects": "projects"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list projects"}"
-// @Router /api/v1/organization/projects [get]
+// @Router /api/v1/organizations/projects [get]
 func ListProjects(c *gin.Context) {
 	userInContext, exists := c.Get("user")
 	if !exists {
@@ -142,7 +142,7 @@ func ListProjects(c *gin.Context) {
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create project"}"
-// @Router /api/v1/organization/projects [post]
+// @Router /api/v1/organizations/projects [post]
 func CreateNewProject(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")
@@ -190,7 +190,7 @@ func CreateNewProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Project deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete project"}"
-// @Router /api/v1/organization/projects/{project_id} [delete]
+// @Router /api/v1/organizations/projects/{project_id} [delete]
 func DeleteProject(c *gin.Context) {
 	// Retrieve user from context
 	user, exists := c.Get("user")
