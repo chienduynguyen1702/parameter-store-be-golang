@@ -183,7 +183,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/": {
+        "/api/v1/organizations/": {
             "get": {
                 "description": "Get organization information",
                 "consumes": [
@@ -262,7 +262,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/projects": {
+        "/api/v1/organizations/projects": {
             "get": {
                 "description": "List projects",
                 "consumes": [
@@ -341,7 +341,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organization/projects/{project_id}": {
+        "/api/v1/organizations/projects/{project_id}": {
             "delete": {
                 "description": "Delete project",
                 "consumes": [

@@ -337,7 +337,7 @@ paths:
       summary: Validate a user
       tags:
       - Auth
-  /api/v1/organization/:
+  /api/v1/organizations/:
     get:
       consumes:
       - application/json
@@ -389,7 +389,7 @@ paths:
       summary: Update organization information
       tags:
       - Organization
-  /api/v1/organization/projects:
+  /api/v1/organizations/projects:
     get:
       consumes:
       - application/json
@@ -441,7 +441,7 @@ paths:
       summary: Create new project
       tags:
       - Organization
-  /api/v1/organization/projects/{project_id}:
+  /api/v1/organizations/projects/{project_id}:
     delete:
       consumes:
       - application/json
