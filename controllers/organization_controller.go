@@ -25,6 +25,7 @@ func GetOrganizationInformation(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
 		return
 	}
+
 	userOrganizationID := user.(models.User).OrganizationID
 	if userOrganizationID == 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
@@ -38,7 +39,27 @@ func GetOrganizationInformation(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"organization": organization})
+	var usersCount int64
+	var projectsCount int64
+
+	DB.Model(&models.User{}).Where("organization_id = ?", userOrganizationID).Count(&usersCount)
+	DB.Model(&models.Project{}).Where("organization_id = ?", userOrganizationID).Count(&projectsCount)
+
+	organizationResponseBody := gin.H{
+		"organization": gin.H{
+			"ID":                organization.ID,
+			"CreatedAt":         organization.CreatedAt,
+			"Name":              organization.Name,
+			"AliasName":         organization.AliasName,
+			"EstablishmentDate": organization.EstablishmentDate,
+			"Description":       organization.Description,
+			"UserCount":         usersCount,
+			"ProjectCount":      projectsCount,
+			"Address":           organization.Address,
+		},
+	}
+
+	c.JSON(http.StatusOK, organizationResponseBody)
 }
 
 type organizationBody struct {

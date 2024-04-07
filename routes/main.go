@@ -3,6 +3,7 @@
 package routes
 
 import (
+	"os"
 	docs "parameter-store-be/docs"
 	"time"
 
@@ -16,7 +17,7 @@ func SetupV1Router() *gin.Engine {
 	r := gin.Default()
 	// CORS setup
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", "http://localhost:8080"},
+		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", "http://localhost:" + os.Getenv("PORT")},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -37,7 +38,7 @@ func SetupV1Router() *gin.Engine {
 		docs.SwaggerInfo.Title = "Parameter Store Backend API"
 		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
 		docs.SwaggerInfo.Version = "1.0"
-		docs.SwaggerInfo.Host = "localhost:8080"
+		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
 		// docs.SwaggerInfo.BasePath = "/api/v1"
 		docs.SwaggerInfo.Schemes = []string{"http"}
 	} else if gin.Mode() == gin.ReleaseMode {

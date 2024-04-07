@@ -14,4 +14,5 @@ type Organization struct {
 	EstablishmentDate time.Time
 	Description       string    `gorm:"type:text"`
 	Projects          []Project `gorm:"one2many:organization_prs;"`
+	Address           string    `gorm:"type:text"`
 }

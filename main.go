@@ -19,8 +19,8 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed to connect to database")
 	}
-	// initializers.Migration(db) // migration db
-	controllers.SetDB(db) // set controller use that db *gorm.DB
+	initializers.Migration(db) // migration db
+	controllers.SetDB(db)      // set controller use that db *gorm.DB
 	// if err := initializers.SeedDatabase(db); err != nil {
 	// 	log.Fatal("Failed to seed database")
 	// }
