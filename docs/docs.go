@@ -174,8 +174,14 @@ const docTemplate = `{
                             "type": "string"
                         }
                     },
-                    "500": {
+                    "401": {
                         "description": "{\"error\": \"Failed to validate user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Internal server error\"}",
                         "schema": {
                             "type": "string"
                         }

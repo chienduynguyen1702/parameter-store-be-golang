@@ -106,6 +106,15 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
 		return
 	}
+
+	// Check if the user is archived
+	if user.IsArchived {
+		c.SetCookie("Authorization", "", -1, "/", "", false, true)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Check if the password is correct
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(l.Password)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
 		return
@@ -151,12 +160,13 @@ func Login(c *gin.Context) {
 // @Produce json
 // @Success 200 string {string} json "{"message": "User logged in successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
-// @Failure 500 string {string} json "{"error": "Failed to validate user"}"
+// @Failure 401 string {string} json "{"error": "Failed to validate user"}"
+// @Failure 500 string {string} json "{"error": "Internal server error"}"
 // @Router /api/v1/auth/validate [get]
 func Validate(c *gin.Context) {
 	user, _ := c.Get("user")
 	if user == nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate user"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to validate user"})
 		return
 	}
 	// set login time
