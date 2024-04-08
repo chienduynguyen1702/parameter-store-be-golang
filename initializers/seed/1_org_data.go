@@ -1,4 +1,4 @@
-package initializers
+package seed
 
 import (
 	"log"
@@ -231,30 +231,35 @@ func SeedDatabase(db *gorm.DB) error {
 	log.Printf("\nDefault project data is seeded.\n")
 
 	upr := []models.UserProjectRole{
+		// project 1
 		{
 			UserID:    admin.ID,
 			ProjectID: projects[0].ID,
 			RoleID:    defaultRoles[1].ID,
 		},
 		{
+			UserID:    user1.ID,
+			ProjectID: projects[0].ID,
+			RoleID:    defaultRoles[2].ID,
+		},
+
+		// project 2
+		{
 			UserID:    admin.ID,
 			ProjectID: projects[1].ID,
 			RoleID:    defaultRoles[1].ID,
 		},
+		{
+			UserID:    user1.ID,
+			ProjectID: projects[1].ID,
+			RoleID:    defaultRoles[2].ID,
+		},
+
+		// project 3
 		{
 			UserID:    admin.ID,
 			ProjectID: projects[2].ID,
 			RoleID:    defaultRoles[1].ID,
-		},
-		{
-			UserID:    user1.ID,
-			ProjectID: projects[0].ID,
-			RoleID:    defaultRoles[2].ID,
-		},
-		{
-			UserID:    user1.ID,
-			ProjectID: projects[1].ID,
-			RoleID:    defaultRoles[2].ID,
 		},
 		{
 			UserID:    user2.ID,
@@ -270,5 +275,115 @@ func SeedDatabase(db *gorm.DB) error {
 	}
 
 	log.Printf("\nDefault relation user project role is seed\n")
+
+	stages := []models.Stage{
+		{
+			Name:        "Build",
+			Description: "Build stage",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "Build",
+			Description: "Build stage",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "Build",
+			Description: "Build stage",
+			ProjectID:   projects[2].ID,
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+			ProjectID:   projects[2].ID,
+		},
+	}
+	if err := db.Create(&stages).Error; err != nil {
+		return err
+	}
+	log.Printf("\nTest project stages data is seeded.\n")
+
+	envs := []models.Environment{
+		{
+			Name:        "Development",
+			Description: "Development environment",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "Development",
+			Description: "Development environment",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "Development",
+			Description: "Development environment",
+			ProjectID:   projects[2].ID,
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+			ProjectID:   projects[2].ID,
+		},
+	}
+	if err := db.Create(&envs).Error; err != nil {
+		return err
+	}
+	log.Printf("\nTest project environments data is seeded.\n")
+
+	vers := []models.Version{
+		{
+			Name:        "v1.0",
+			Description: "Version 1.0",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "v1.5",
+			Description: "Version 1.5",
+			ProjectID:   projects[0].ID,
+		},
+		{
+			Name:        "v1.0",
+			Description: "Version 1.0",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "v1.5",
+			Description: "Version 1.5",
+			ProjectID:   projects[1].ID,
+		},
+		{
+			Name:        "v1.0",
+			Description: "Version 1.0",
+			ProjectID:   projects[2].ID,
+		},
+		{
+			Name:        "v1.5",
+			Description: "Version 1.5",
+			ProjectID:   projects[2].ID,
+		},
+	}
+	if err := db.Create(&vers).Error; err != nil {
+		return err
+	}
 	return nil
 }

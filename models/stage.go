@@ -6,6 +6,8 @@ import (
 
 type Stage struct {
 	gorm.Model
-	Name      string `gorm:"type:varchar(100);not null"`
-	ProjectID uint
+	Name        string `gorm:"type:varchar(100);not null"`
+	Description string `gorm:"type:text"`
+	Color       string `gorm:"type:varchar(100)"`
+	ProjectID   uint
 }
