@@ -17,7 +17,7 @@ import (
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project parameters"}"
-// @Router /api/v1/project/{project_id}/parameters [get]
+// @Router /api/v1/projects/{project_id}/parameters [get]
 func GetProjectParameters(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -41,7 +41,7 @@ func GetProjectParameters(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Parameter created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create parameter"}"
-// @Router /api/v1/project/{project_id}/parameters [post]
+// @Router /api/v1/projects/{project_id}/parameters [post]
 func CreateParameter(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {

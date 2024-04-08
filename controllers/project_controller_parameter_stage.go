@@ -17,7 +17,7 @@ import (
 // @Success 201 string {string} json "{"message": "Stage created successfully", "stage": "stage"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create stage"}"
-// @Router /api/v1/project/{project_id}/stages [post]
+// @Router /api/v1/projects/{project_id}/stages [post]
 func CreateStage(c *gin.Context) {
 	type createStageRequestBody struct {
 		Name string `json:"name" binding:"required"`
@@ -55,7 +55,7 @@ func CreateStage(c *gin.Context) {
 // @Success 200 string {string} json "{"stages": "stages"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list stages"}"
-// @Router /api/v1/project/{project_id}/stages [get]
+// @Router /api/v1/projects/{project_id}/stages [get]
 func GetStages(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -83,7 +83,7 @@ func GetStages(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Stage updated successfully", "stage": "stage"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update stage"}"
-// @Router /api/v1/project/{project_id}/stages/{stage_id} [put]
+// @Router /api/v1/projects/{project_id}/stages/{stage_id} [put]
 func UpdateStage(c *gin.Context) {
 	type updateStageRequestBody struct {
 		Name string `json:"name" binding:"required"`
@@ -130,7 +130,7 @@ func UpdateStage(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Stage deleted successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete stage"}"
-// @Router /api/v1/project/{project_id}/stages/{stage_id} [delete]
+// @Router /api/v1/projects/{project_id}/stages/{stage_id} [delete]
 func DeleteStage(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {

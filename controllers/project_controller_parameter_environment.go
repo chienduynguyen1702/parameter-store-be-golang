@@ -17,7 +17,7 @@ import (
 // @Success 200 string {string} json "{"environments": "environments"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list environments"}"
-// @Router /api/v1/project/{project_id}/environments [get]
+// @Router /api/v1/projects/{project_id}/environments [get]
 func GetEnvironments(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -45,7 +45,7 @@ func GetEnvironments(c *gin.Context) {
 // @Success 200 string {string} json "{"environment": "environment"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create environment"}"
-// @Router /api/v1/project/{project_id}/environments [post]
+// @Router /api/v1/projects/{project_id}/environments [post]
 func CreateEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -86,7 +86,7 @@ func CreateEnvironment(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Environment deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete environment"}"
-// @Router /api/v1/project/{project_id}/environments/{environment_id} [delete]
+// @Router /api/v1/projects/{project_id}/environments/{environment_id} [delete]
 func DeleteEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {
@@ -122,7 +122,7 @@ func DeleteEnvironment(c *gin.Context) {
 // @Success 200 string {string} json "{"environment": "environment"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update environment"}"
-// @Router /api/v1/project/{project_id}/environments/{environment_id} [put]
+// @Router /api/v1/projects/{project_id}/environments/{environment_id} [put]
 func UpdateEnvironment(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {

@@ -483,7 +483,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/environments": {
+        "/api/v1/projects/{project_id}/environments": {
             "get": {
                 "description": "Get all environments",
                 "consumes": [
@@ -578,7 +578,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/environments/{environment_id}": {
+        "/api/v1/projects/{project_id}/environments/{environment_id}": {
             "put": {
                 "description": "Update environment",
                 "consumes": [
@@ -687,7 +687,102 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/parameters": {
+        "/api/v1/projects/{project_id}/overview": {
+            "get": {
+                "description": "Get project overview",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Get project overview",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"project\": \"project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get project detail\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update project information",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Update project information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Project",
+                        "name": "Project",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.projectBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"project\": \"project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters": {
             "get": {
                 "description": "Get project parameters",
                 "consumes": [
@@ -785,7 +880,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/stages": {
+        "/api/v1/projects/{project_id}/stages": {
             "get": {
                 "description": "Get all stages",
                 "consumes": [
@@ -873,7 +968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/stages/{stage_id}": {
+        "/api/v1/projects/{project_id}/stages/{stage_id}": {
             "put": {
                 "description": "Update stage",
                 "consumes": [
@@ -982,7 +1077,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/versions": {
+        "/api/v1/projects/{project_id}/versions": {
             "get": {
                 "description": "Get versions of project",
                 "consumes": [
@@ -1073,101 +1168,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to create version\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/projects/{project_id}/overview": {
-            "get": {
-                "description": "Get project overview",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Project Detail / Overview"
-                ],
-                "summary": "Get project overview",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"project\": \"project\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "{\"error\": \"Bad request\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "{\"error\": \"Failed to get project detail\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update project information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Project Detail / Overview"
-                ],
-                "summary": "Update project information",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Project ID",
-                        "name": "project_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Project",
-                        "name": "Project",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/controllers.projectBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "{\"project\": \"project\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "{\"error\": \"Bad request\"}",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "{\"error\": \"Failed to update project\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1612,11 +1612,17 @@ const docTemplate = `{
         "models.Environment": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -1673,11 +1679,17 @@ const docTemplate = `{
         "models.Stage": {
             "type": "object",
             "properties": {
+                "color": {
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -1707,6 +1719,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "number": {
                     "type": "string"

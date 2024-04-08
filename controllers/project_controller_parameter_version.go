@@ -18,7 +18,7 @@ import (
 // @Success 200 {array} models.Version
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get versions"}"
-// @Router /api/v1/project/{project_id}/versions [get]
+// @Router /api/v1/projects/{project_id}/versions [get]
 func GetProjectVersions(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {
@@ -41,7 +41,7 @@ func GetProjectVersions(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Version created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create version"}"
-// @Router /api/v1/project/{project_id}/versions [post]
+// @Router /api/v1/projects/{project_id}/versions [post]
 func CreateNewVersion(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {
