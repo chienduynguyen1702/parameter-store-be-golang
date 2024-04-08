@@ -3,15 +3,15 @@ version: '3'
 services:
   postgres:
     image: postgres:12-alpine
-    container_name: $DB_DATABASE
+    container_name: param-be-db
     ports:
-      - "$DB_PORT:5432"
+      - "5435:5432"
     environment:
-      POSTGRES_USER: $DB_USERNAME
-      POSTGRES_PASSWORD: $DB_PASSWORD
-      POSTGRES_DB: $DB_DATABASE
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: param
     volumes:
-      - gorm_volume:/var/lib/postgresql/data
+      - param_db_volume:/var/lib/postgresql/data
 
 volumes:
-  gorm_volume:
+  param_db_volume:

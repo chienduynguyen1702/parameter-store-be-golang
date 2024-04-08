@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"parameter-store-be/models"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -57,9 +58,14 @@ func CreateStage(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to list stages"}"
 // @Router /api/v1/projects/{project_id}/stages [get]
 func GetStages(c *gin.Context) {
-	projectID, exist := c.Get("project_id")
-	if !exist {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project ID from user"})
+	// projectID, exist := c.Get("project_id")
+	// if !exist {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project ID from user"})
+	// 	return
+	// }
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
 

@@ -1289,6 +1289,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/setting/users/archived": {
+            "get": {
+                "description": "List archived users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting / User"
+                ],
+                "summary": "List archived users",
+                "responses": {
+                    "200": {
+                        "description": "{\"users\": \"users\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list archived users\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/setting/users/{user_id}": {
             "put": {
                 "description": "Update user information",
@@ -1377,6 +1412,94 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to delete user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/setting/users/{user_id}/archive": {
+            "put": {
+                "description": "Archive user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting / User"
+                ],
+                "summary": "Archive user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User archived\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to archive user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/setting/users/{user_id}/restore": {
+            "put": {
+                "description": "Restore archived user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting / User"
+                ],
+                "summary": "Restore archived user",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User restored\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to unarchive user\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1630,7 +1753,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "projectID": {
+                "project_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -1653,7 +1776,7 @@ const docTemplate = `{
                 "environment": {
                     "$ref": "#/definitions/models.Environment"
                 },
-                "environmentID": {
+                "environment_id": {
                     "type": "integer"
                 },
                 "id": {
@@ -1665,7 +1788,7 @@ const docTemplate = `{
                 "stage": {
                     "$ref": "#/definitions/models.Stage"
                 },
-                "stageID": {
+                "stage_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -1697,7 +1820,7 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "projectID": {
+                "project_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
@@ -1732,7 +1855,7 @@ const docTemplate = `{
                         "$ref": "#/definitions/models.Parameter"
                     }
                 },
-                "projectID": {
+                "project_id": {
                     "type": "integer"
                 },
                 "updatedAt": {

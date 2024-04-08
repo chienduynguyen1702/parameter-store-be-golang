@@ -160,7 +160,7 @@ definitions:
         type: integer
       name:
         type: string
-      projectID:
+      project_id:
         type: integer
       updatedAt:
         type: string
@@ -175,7 +175,7 @@ definitions:
         type: string
       environment:
         $ref: '#/definitions/models.Environment'
-      environmentID:
+      environment_id:
         type: integer
       id:
         type: integer
@@ -183,7 +183,7 @@ definitions:
         type: string
       stage:
         $ref: '#/definitions/models.Stage'
-      stageID:
+      stage_id:
         type: integer
       updatedAt:
         type: string
@@ -204,7 +204,7 @@ definitions:
         type: integer
       name:
         type: string
-      projectID:
+      project_id:
         type: integer
       updatedAt:
         type: string
@@ -227,7 +227,7 @@ definitions:
         items:
           $ref: '#/definitions/models.Parameter'
         type: array
-      projectID:
+      project_id:
         type: integer
       updatedAt:
         type: string
@@ -1142,6 +1142,87 @@ paths:
           schema:
             type: string
       summary: Update user information
+      tags:
+      - Setting / User
+  /api/v1/setting/users/{user_id}/archive:
+    put:
+      consumes:
+      - application/json
+      description: Archive user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User archived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to archive user"}'
+          schema:
+            type: string
+      summary: Archive user
+      tags:
+      - Setting / User
+  /api/v1/setting/users/{user_id}/restore:
+    put:
+      consumes:
+      - application/json
+      description: Restore archived user
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User restored"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to unarchive user"}'
+          schema:
+            type: string
+      summary: Restore archived user
+      tags:
+      - Setting / User
+  /api/v1/setting/users/archived:
+    get:
+      consumes:
+      - application/json
+      description: List archived users
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"users": "users"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list archived users"}'
+          schema:
+            type: string
+      summary: List archived users
       tags:
       - Setting / User
 swagger: "2.0"

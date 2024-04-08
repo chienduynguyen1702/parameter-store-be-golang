@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"parameter-store-be/models"
 
@@ -25,9 +24,8 @@ func ListUser(c *gin.Context) {
 		return
 	}
 	org_id := claims["org_id"]
-	fmt.Println("ListUser debug")
 	var users []models.User
-	DB.Find(&users).Where("organization_id = ?", org_id)
+	DB.Where("organization_id = ? AND is_archived != ?", org_id, true).Find(&users)
 
 	type userResponse struct {
 		ID                  uint   `json:"id"`
@@ -179,4 +177,101 @@ func DeleteUser(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "User deleted"})
+}
+
+// ListArchivedUser godoc
+// @Summary List archived users
+// @Description List archived users
+// @Tags Setting / User
+// @Accept json
+// @Produce json
+// @Success 200 string {string} json "{"users": "users"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to list archived users"}"
+// @Router /api/v1/setting/users/archived [get]
+func ListArchivedUser(c *gin.Context) {
+	claims, err := parseJWTTokenFromCookie(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	org_id := claims["org_id"]
+	var users []models.User
+	DB.Where("organization_id = ? AND is_archived = ?", org_id, true).Find(&users)
+
+	type userResponse struct {
+		ID                  uint   `json:"id"`
+		Email               string `json:"email"`
+		Username            string `json:"username"`
+		Phone               string `json:"phone"`
+		IsOrganizationAdmin bool   `json:"is_organization_admin"`
+	}
+	var usersResponse []userResponse
+	for _, user := range users {
+		usersResponse = append(usersResponse, userResponse{
+			ID:                  user.ID,
+			Email:               user.Email,
+			Username:            user.Username,
+			Phone:               user.Phone,
+			IsOrganizationAdmin: user.IsOrganizationAdmin,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{
+		"users": usersResponse,
+	}})
+}
+
+// ArchiveUser godoc
+// @Summary Archive user
+// @Description Archive user
+// @Tags Setting / User
+// @Accept json
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Success 200 string {string} json "{"message": "User archived"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to archive user"}"
+// @Router /api/v1/setting/users/{user_id}/archive [put]
+func ArchiveUser(c *gin.Context) {
+	user_id := c.Param("user_id")
+	var user models.User
+	// check if user exists
+	if err := DB.First(&user, user_id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+		return
+	}
+	user.IsArchived = true
+	if err := DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User archived"})
+}
+
+// RestoreUser godoc
+// @Summary  Restore archived user
+// @Description Restore archived user
+// @Tags Setting / User
+// @Accept json
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Success 200 string {string} json "{"message": "User restored"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to unarchive user"}"
+// @Router /api/v1/setting/users/{user_id}/restore [put]
+func RestoreUser(c *gin.Context) {
+	user_id := c.Param("user_id")
+	var user models.User
+	// check if user exists
+	if err := DB.First(&user, user_id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+		return
+	}
+	user.IsArchived = false
+	if err := DB.Save(&user).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "User restored"})
 }

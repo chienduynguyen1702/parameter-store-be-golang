@@ -6,9 +6,9 @@ import (
 
 type AgentLog struct {
 	gorm.Model
-	AgentID uint
-	Agent   Agent
-	Path    string `gorm:"type:varchar(100);not null"`
-	Status  int    `gorm:"not null"`
-	Latency int
+	AgentID uint   `gorm:"foreignKey:AgentID" json:"agent_id"`
+	Agent   Agent  `json:"agent"`
+	Path    string `gorm:"type:varchar(100);not null" json:"path"`
+	Status  int    `gorm:"not null" json:"status"`
+	Latency int    `gorm:"not null" json:"latency"`
 }

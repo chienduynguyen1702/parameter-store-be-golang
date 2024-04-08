@@ -36,6 +36,13 @@ func setupGroupProject(r *gin.RouterGroup) {
 			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironment)
 			environmentGroup.DELETE("/:environment_id", controllers.DeleteEnvironment)
 		}
+		versionGroup := projectGroup.Group("/versions")
+		{
+			versionGroup.GET("/", controllers.GetProjectVersions)
+			versionGroup.POST("/", controllers.CreateNewVersion)
+			// versionGroup.PUT("/:version_id", controllers.UpdateVersion)
+			// versionGroup.DELETE("/:version_id", controllers.DeleteVersion)
+		}
 		// parameterGroup := projectGroup.Group("/parameters")
 		// {
 		// parameterGroup.GET("/", controllers.GetProjectParameters)
