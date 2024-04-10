@@ -16,7 +16,7 @@ import (
 // @Success 200 string {string} json "{"roles": "roles"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list roles"}"
-// @Router /api/v1/setting/roles [get]
+// @Router /api/v1/settings/roles [get]
 func ListRole(c *gin.Context) {
 	var roles []models.Role
 	if err := DB.Preload("Permissions").Find(&roles).Error; err != nil {

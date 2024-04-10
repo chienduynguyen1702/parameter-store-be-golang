@@ -1181,7 +1181,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/roles": {
+        "/api/v1/settings/roles": {
             "get": {
                 "description": "List roles and its permissions",
                 "consumes": [
@@ -1216,7 +1216,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/users": {
+        "/api/v1/settings/users": {
             "get": {
                 "description": "List users",
                 "consumes": [
@@ -1295,7 +1295,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/users/archived": {
+        "/api/v1/settings/users/archived": {
             "get": {
                 "description": "List archived users",
                 "consumes": [
@@ -1330,7 +1330,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/users/{user_id}": {
+        "/api/v1/settings/users/{user_id}": {
             "put": {
                 "description": "Update user information",
                 "consumes": [
@@ -1425,7 +1425,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/users/{user_id}/archive": {
+        "/api/v1/settings/users/{user_id}/archive": {
             "put": {
                 "description": "Archive user",
                 "consumes": [
@@ -1469,7 +1469,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/setting/users/{user_id}/restore": {
+        "/api/v1/settings/users/{user_id}/restore": {
             "put": {
                 "description": "Restore archived user",
                 "consumes": [
