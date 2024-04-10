@@ -47,8 +47,9 @@ func RequiredAuth(c *gin.Context) {
 			return
 		}
 
-		// Set the user in the context
+		// Set the user and their organization_id in the context
 		c.Set("user", user)
+		c.Set("org_id", claims["org_id"])
 	}
 	c.Next()
 }

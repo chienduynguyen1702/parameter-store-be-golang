@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"parameter-store-be/models"
 	"time"
@@ -19,20 +20,20 @@ import (
 // @Failure 500 string {string} json "{"error": "Failed to list users"}"
 // @Router /api/v1/settings/users [get]
 func ListUser(c *gin.Context) {
-	claims, err := parseJWTTokenFromCookie(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	org_id, exist := c.Get("org_id")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-	org_id := claims["org_id"]
 	var users []models.User
-	DB.Where("organization_id = ? AND is_archived != ?", org_id, true).Find(&users)
+	DB.Where("organization_id = ? AND is_archived != ? ", org_id, true).Find(&users)
 
 	type userResponse struct {
 		ID                  uint   `json:"id"`
 		Email               string `json:"email"`
 		Username            string `json:"username"`
 		Phone               string `json:"phone"`
+		AvatarURL           string `json:"avatar_url"`
 		IsOrganizationAdmin bool   `json:"is_organization_admin"`
 	}
 	var usersResponse []userResponse
@@ -42,13 +43,16 @@ func ListUser(c *gin.Context) {
 			Email:               user.Email,
 			Username:            user.Username,
 			Phone:               user.Phone,
+			AvatarURL:           user.AvatarURL,
 			IsOrganizationAdmin: user.IsOrganizationAdmin,
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": gin.H{
-		"users": usersResponse,
-	}})
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"users": usersResponse,
+		},
+	})
 }
 
 // CreateUser godoc
@@ -97,7 +101,11 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully", "user": newUser})
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "User created successfully",
+		"user":    newUser,
+	},
+	)
 }
 
 // UpdateUserInformation godoc
@@ -191,36 +199,36 @@ func DeleteUser(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to list archived users"}"
 // @Router /api/v1/settings/users/archived [get]
 func ListArchivedUser(c *gin.Context) {
-	claims, err := parseJWTTokenFromCookie(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	org_id, exist := c.Get("org_id")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-	org_id := claims["org_id"]
-	var users []models.User
-	DB.Where("organization_id = ? AND is_archived = ?", org_id, true).Find(&users)
+	log.Println(org_id)
+	var archivedUserList []models.User
+	DB.Where("organization_id = ? AND is_archived = ?", org_id, true).Find(&archivedUserList)
 
 	type userResponse struct {
-		ID         uint   `json:"id"`
-		Email      string `json:"email"`
-		Username   string `json:"username"`
-		Phone      string `json:"phone"`
-		AvatarURL  string `json:"avatar_url"`
-		ArchivedAt string `json:"archived_at"`
-		ArchivedBy string `json:"archived_by"`
-		// IsOrganizationAdmin bool   `json:"is_organization_admin"`
+		ID                  uint      `json:"id"`
+		Email               string    `json:"email"`
+		Username            string    `json:"username"`
+		Phone               string    `json:"phone"`
+		AvatarURL           string    `json:"avatar_url"`
+		ArchivedAt          time.Time `json:"archived_at"`
+		ArchivedBy          string    `json:"archived_by"`
+		IsOrganizationAdmin bool      `json:"is_organization_admin"`
 	}
 	var usersResponse []userResponse
-	for _, user := range users {
+	for _, archivedUser := range archivedUserList {
 		usersResponse = append(usersResponse, userResponse{
-			ID:         user.ID,
-			Email:      user.Email,
-			Username:   user.Username,
-			AvatarURL:  user.AvatarURL,
-			Phone:      user.Phone,
-			ArchivedBy: user.ArchivedBy,
-			ArchivedAt: user.ArchivedAt.String(),
-			// IsOrganizationAdmin: user.IsOrganizationAdmin,
+			ID:                  archivedUser.ID,
+			Email:               archivedUser.Email,
+			Username:            archivedUser.Username,
+			AvatarURL:           archivedUser.AvatarURL,
+			Phone:               archivedUser.Phone,
+			ArchivedBy:          archivedUser.ArchivedBy,
+			ArchivedAt:          archivedUser.ArchivedAt,
+			IsOrganizationAdmin: archivedUser.IsOrganizationAdmin,
 		})
 	}
 
@@ -243,15 +251,21 @@ func ListArchivedUser(c *gin.Context) {
 // @Router /api/v1/settings/users/{user_id}/archive [put]
 func ArchiveUser(c *gin.Context) {
 	user_id := c.Param("user_id")
-	var user models.User
+	var archivedUser models.User
 	// check if user exists
-	if err := DB.First(&user, user_id).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+	if err := DB.First(&archivedUser, user_id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "User not found"})
 		return
 	}
-	user.ArchivedAt = time.Now()
-	user.IsArchived = true
-	if err := DB.Save(&user).Error; err != nil {
+	archiver, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get archiver"})
+		return
+	}
+	archivedUser.ArchivedBy = archiver.(models.User).Username
+	archivedUser.ArchivedAt = time.Now()
+	archivedUser.IsArchived = true
+	if err := DB.Save(&archivedUser).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive user"})
 		return
 	}
@@ -271,15 +285,16 @@ func ArchiveUser(c *gin.Context) {
 // @Router /api/v1/settings/users/{user_id}/restore [put]
 func RestoreUser(c *gin.Context) {
 	user_id := c.Param("user_id")
-	var user models.User
+	var restoredUser models.User
 	// check if user exists
-	if err := DB.First(&user, user_id).Error; err != nil {
+	if err := DB.First(&restoredUser, user_id).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
 		return
 	}
-	user.IsArchived = false
-	user.ArchivedAt = time.Time{}
-	if err := DB.Save(&user).Error; err != nil {
+	restoredUser.IsArchived = false
+	restoredUser.ArchivedAt = time.Time{}
+	restoredUser.ArchivedBy = ""
+	if err := DB.Save(&restoredUser).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive user"})
 		return
 	}
