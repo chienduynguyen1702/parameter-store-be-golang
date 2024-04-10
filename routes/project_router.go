@@ -8,38 +8,38 @@ import (
 )
 
 func setupGroupProject(r *gin.RouterGroup) {
-	projectGroup := r.Group("/projects/:project_id", middleware.RequiredAuth)
+	projectGroup := r.Group("/projects/:project_id", middleware.RequiredAuth, middleware.RequiredBelongToProject)
 	{
 		overviewGroup := projectGroup.Group("/overview")
 		{
 			overviewGroup.GET("/", controllers.GetProjectOverView)
-			overviewGroup.PUT("/", controllers.UpdateProjectInformation)
+			overviewGroup.PUT("/", controllers.UpdateProjectInformation, middleware.RequiredIsAdmin)
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{
 			agentGroup.GET("/", controllers.GetProjectAgents)
-			agentGroup.POST("/", controllers.CreateNewAgent)
+			agentGroup.POST("/", controllers.CreateNewAgent, middleware.RequiredIsAdmin)
 			// agentGroup.PUT("/:agent_id", controllers.UpdateProjectInformation)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}
 		stageGroup := projectGroup.Group("/stages")
 		{
 			stageGroup.GET("/", controllers.GetStages)
-			stageGroup.POST("/", controllers.CreateStage)
-			stageGroup.PUT("/:stage_id", controllers.UpdateStage)
-			stageGroup.DELETE("/:stage_id", controllers.DeleteStage)
+			stageGroup.POST("/", controllers.CreateStage, middleware.RequiredIsAdmin)
+			stageGroup.PUT("/:stage_id", controllers.UpdateStage, middleware.RequiredIsAdmin)
+			stageGroup.DELETE("/:stage_id", controllers.DeleteStage, middleware.RequiredIsAdmin)
 		}
 		environmentGroup := projectGroup.Group("/environments")
 		{
 			environmentGroup.GET("/", controllers.GetEnvironments)
-			environmentGroup.POST("/", controllers.CreateEnvironment)
-			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironment)
-			environmentGroup.DELETE("/:environment_id", controllers.DeleteEnvironment)
+			environmentGroup.POST("/", controllers.CreateEnvironment, middleware.RequiredIsAdmin)
+			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironment, middleware.RequiredIsAdmin)
+			environmentGroup.DELETE("/:environment_id", controllers.DeleteEnvironment, middleware.RequiredIsAdmin)
 		}
 		versionGroup := projectGroup.Group("/versions")
 		{
 			versionGroup.GET("/", controllers.GetProjectVersions)
-			versionGroup.POST("/", controllers.CreateNewVersion)
+			versionGroup.POST("/", controllers.CreateNewVersion, middleware.RequiredIsAdmin)
 			// versionGroup.PUT("/:version_id", controllers.UpdateVersion)
 			// versionGroup.DELETE("/:version_id", controllers.DeleteVersion)
 		}

@@ -11,9 +11,9 @@ func setupGroupOrganization(r *gin.RouterGroup) {
 	organizationGroup := r.Group("/organizations", middleware.RequiredAuth)
 	{
 		organizationGroup.GET("/", controllers.GetOrganizationInformation)
-		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation)
+		organizationGroup.PUT("/", controllers.UpdateOrganizationInformation, middleware.RequiredIsOrgAdmin)
 		organizationGroup.GET("/projects", controllers.ListProjects)
-		organizationGroup.POST("/projects", controllers.CreateNewProject)
-		organizationGroup.DELETE("/projects/:project_id", controllers.DeleteProject)
+		organizationGroup.POST("/projects", controllers.CreateNewProject, middleware.RequiredIsOrgAdmin)
+		organizationGroup.DELETE("/projects/:project_id", controllers.DeleteProject, middleware.RequiredIsOrgAdmin)
 	}
 }
