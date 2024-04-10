@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"parameter-store-be/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -248,6 +249,7 @@ func ArchiveUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
 		return
 	}
+	user.ArchivedAt = time.Now()
 	user.IsArchived = true
 	if err := DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive user"})
@@ -276,6 +278,7 @@ func RestoreUser(c *gin.Context) {
 		return
 	}
 	user.IsArchived = false
+	user.ArchivedAt = time.Time{}
 	if err := DB.Save(&user).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive user"})
 		return
