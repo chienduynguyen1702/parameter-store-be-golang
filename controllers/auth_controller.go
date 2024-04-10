@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"parameter-store-be/models"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -134,7 +135,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	// set login time
-	// user.LastLogIn = time.Now()
+	user.LastLogin = time.Now()
 	DB.Save(&user)
 	// Set the JWT token in a cookie
 	c.SetSameSite(http.SameSiteNoneMode)
@@ -186,8 +187,8 @@ func Validate(c *gin.Context) {
 	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate user"})
 	// 	return
 	// }
-	// validatedUser.LastLogIn = time.Now()
-	// DB.Save(&validatedUser)
+	validatedUser.LastLogin = time.Now()
+	DB.Save(&validatedUser)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User is validated", "status:": "success", "user": responseLogedInUser})
 }

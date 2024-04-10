@@ -20,5 +20,5 @@ type User struct {
 	ArchivedBy          string    `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
 	ArchivedAt          time.Time `gorm:"type:timestamp;" json:"archived_at"`
 	AvatarURL           string    `gorm:"type:varchar(255);" json:"avatar_url"`
-	LastLogin           time.Time `gorm:"type:varchar(255);" json:"last_login"`
+	LastLogin           time.Time `gorm:"type:timestamp;" json:"last_login"`
 }
