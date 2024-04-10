@@ -200,26 +200,33 @@ func ListArchivedUser(c *gin.Context) {
 	DB.Where("organization_id = ? AND is_archived = ?", org_id, true).Find(&users)
 
 	type userResponse struct {
-		ID                  uint   `json:"id"`
-		Email               string `json:"email"`
-		Username            string `json:"username"`
-		Phone               string `json:"phone"`
-		IsOrganizationAdmin bool   `json:"is_organization_admin"`
+		ID         uint   `json:"id"`
+		Email      string `json:"email"`
+		Username   string `json:"username"`
+		Phone      string `json:"phone"`
+		AvatarURL  string `json:"avatar_url"`
+		ArchivedAt string `json:"archived_at"`
+		ArchivedBy string `json:"archived_by"`
+		// IsOrganizationAdmin bool   `json:"is_organization_admin"`
 	}
 	var usersResponse []userResponse
 	for _, user := range users {
 		usersResponse = append(usersResponse, userResponse{
-			ID:                  user.ID,
-			Email:               user.Email,
-			Username:            user.Username,
-			Phone:               user.Phone,
-			IsOrganizationAdmin: user.IsOrganizationAdmin,
+			ID:         user.ID,
+			Email:      user.Email,
+			Username:   user.Username,
+			AvatarURL:  user.AvatarURL,
+			Phone:      user.Phone,
+			ArchivedBy: user.ArchivedBy,
+			ArchivedAt: user.ArchivedAt.String(),
+			// IsOrganizationAdmin: user.IsOrganizationAdmin,
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": gin.H{
-		"users": usersResponse,
-	}})
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"users": usersResponse,
+		}})
 }
 
 // ArchiveUser godoc

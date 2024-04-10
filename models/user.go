@@ -17,7 +17,7 @@ type User struct {
 	IsOrganizationAdmin bool      `gorm:"default:false" json:"is_organization_admin"`                // Assuming this field represents the ID of the organization the user is an admin of
 	OrganizationID      uint      `gorm:"not null;foreignKey:OrganizationID" json:"organization_id"` // foreign key to organization model
 	IsArchived          bool      `gorm:"default:false" json:"is_archived"`
-	ArchivedBy          uint      `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
+	ArchivedBy          string    `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
 	ArchivedAt          time.Time `gorm:"type:timestamp;" json:"archived_at"`
 	AvatarURL           string    `gorm:"type:varchar(255);" json:"avatar_url"`
 	LastLogin           time.Time `gorm:"type:varchar(255);" json:"last_login"`
