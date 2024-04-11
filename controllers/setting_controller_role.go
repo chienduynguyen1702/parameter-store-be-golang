@@ -58,7 +58,11 @@ func ListRole(c *gin.Context) {
 
 		// count Project Admin and Developer
 		var userCount int64
-		if err := DB.Model(&models.UserProjectRole{}).Joins("left join projects on user_project_roles.project_id = projects.id").Where("user_project_roles.role_id = ? AND projects.organization_id = ? ", role.ID, org_id).Count(&userCount).Error; err != nil {
+		if err := DB.Model(&models.UserProjectRole{}).
+			Joins("left join projects on user_project_roles.project_id = projects.id").
+			Where("user_project_roles.role_id = ? AND projects.organization_id = ? ", role.ID, org_id).
+			Distinct("user_id").
+			Count(&userCount).Error; err != nil {
 			log.Printf("failed to count users with %v role", role.Name)
 		}
 		rolesResponse = append(rolesResponse, roleResponse{
@@ -70,5 +74,9 @@ func ListRole(c *gin.Context) {
 		})
 	}
 
-	c.JSON(http.StatusOK, gin.H{"roles": rolesResponse})
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"roles": rolesResponse},
+	})
+
 }

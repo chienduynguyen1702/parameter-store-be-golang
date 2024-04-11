@@ -14,6 +14,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 		{
 			overviewGroup.GET("/", controllers.GetProjectOverView)
 			overviewGroup.PUT("/", controllers.UpdateProjectInformation, middleware.RequiredIsAdmin)
+			overviewGroup.POST("/add-user", controllers.AddUserToProject, middleware.RequiredIsAdmin)
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{

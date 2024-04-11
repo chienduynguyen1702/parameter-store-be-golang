@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"parameter-store-be/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -62,7 +63,7 @@ func GetProjectOverView(c *gin.Context) {
 	// help me this
 	type UserRoleInProject struct {
 		UserID   uint   `json:"id"`
-		UserName string `json:"name"`
+		UserName string `json:"username"`
 		RoleName string `json:"role"`
 		Email    string `json:"email"`
 		Phone    string `json:"phone"`
@@ -149,4 +150,39 @@ func UpdateProjectInformation(c *gin.Context) {
 	DB.Save(&project)
 
 	c.JSON(http.StatusOK, gin.H{"project": project})
+}
+
+// AddUserToProject godoc
+// @Summary Add user to project include role
+// @Description Add user to project include role
+// @Tags Project Detail / Overview
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param UserProjectRole body UserProjectRole true "UserProjectRole"
+// @Success 200 string {string} json "{"message": "User added to project"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
+// @Router /api/v1/projects/{project_id}/overview/add-user [post]
+func AddUserToProject(c *gin.Context) {
+	// Bind JSON data to UserProjectRole struct
+	var upr models.UserProjectRole
+	if err := c.ShouldBindJSON(&upr); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Retrieve project ID from the URL
+	projectID := c.Param("project_id")
+	parsedProjectID, err := strconv.ParseUint(projectID, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	upr.ProjectID = uint(parsedProjectID)
+
+	// Save the new user to project relationship to the database
+	DB.Create(&upr)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User added to project"})
 }

@@ -41,15 +41,24 @@ func RequiredAuth(c *gin.Context) {
 		// Find the user in the database
 		var user models.User
 		controllers.DB.First(&user, claims["user_id"])
+		log.Printf("User found in the database %v with ID %v", user, claims["user_id"])
 
 		if user.ID == 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find user"})
 			return
 		}
-
 		// Set the user and their organization_id in the context
 		c.Set("user", user)
-		c.Set("org_id", claims["org_id"])
+		orgID, ok := claims["org_id"].(float64)
+		if !ok {
+			log.Fatal("Failed to parse org_id as float64")
+		}
+
+		// Convert float64 to uint
+		orgIDUint := uint(orgID)
+
+		// Set org_id in the context
+		c.Set("org_id", orgIDUint)
 	}
 	c.Next()
 }

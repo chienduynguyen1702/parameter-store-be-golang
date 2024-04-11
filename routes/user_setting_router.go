@@ -12,8 +12,8 @@ func setupGroupSetting(r *gin.RouterGroup) {
 	{
 		userGroup := userSettingGroup.Group("/users")
 		{
-			userGroup.GET("/", controllers.ListUser)
-			userGroup.POST("/", controllers.CreateUser)
+			userGroup.GET("", controllers.ListUser)
+			userGroup.POST("", controllers.CreateUser)
 			userGroup.PUT("/:user_id", controllers.UpdateUserInformation)
 			userGroup.DELETE("/:user_id", controllers.DeleteUser)
 

@@ -68,42 +68,56 @@ func ListUser(c *gin.Context) {
 // @Router /api/v1/settings/users [post]
 func CreateUser(c *gin.Context) {
 	type createUserRequestBody struct {
-		Email    string `json:"email" binding:"required"`
-		Username string `json:"username" binding:"required"`
-		Password string `json:"password" binding:"required"`
-		Phone    string `json:"phone"`
+		Email             string `json:"email" binding:"required"`
+		Username          string `json:"username" binding:"required"`
+		Password          string `json:"newPassword" binding:"required"`
+		ConfirmedPassword string `json:"confirmNewPassword" binding:"required"`
+		Phone             string `json:"phone"`
 	}
 	r := createUserRequestBody{}
 	if err := c.ShouldBindJSON(&r); err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	org_id, exist := c.Get("org_id")
 	if !exist {
+		log.Println("Failed to get organization ID from user")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-	hash, err := generateBcryptPassword(r.Password)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	// log.Println("debug", reflect.TypeOf(org_id), org_id)
+	orgID, ok := org_id.(uint)
+	if !ok {
+		log.Println("Failed to parse organization ID as uint")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse organization ID"})
 		return
 	}
 
+	hash, err := generateBcryptPassword(r.Password)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 	newUser := models.User{
 		Email:               r.Email,
 		Username:            r.Username,
-		OrganizationID:      org_id.(uint),
+		OrganizationID:      orgID,
 		Password:            string(hash),
 		Phone:               r.Phone,
 		IsOrganizationAdmin: false,
 	}
 	if err := DB.Create(&newUser).Error; err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create user"})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "User created successfully",
-		"user":    newUser,
+		"data": gin.H{
+			"new-user": newUser,
+		},
 	},
 	)
 }
@@ -204,7 +218,7 @@ func ListArchivedUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-	log.Println(org_id)
+	// log.Println(org_id)
 	var archivedUserList []models.User
 	DB.Where("organization_id = ? AND is_archived = ?", org_id, true).Find(&archivedUserList)
 

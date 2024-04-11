@@ -154,7 +154,7 @@ func SeedDatabase(db *gorm.DB) error {
 	admin := models.User{
 		Username:            "admin",
 		Email:               "admin@gmail.com",
-		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
 		OrganizationID:      organization.ID,
 		IsOrganizationAdmin: true,
 		Phone:               "0123456789",
@@ -163,7 +163,7 @@ func SeedDatabase(db *gorm.DB) error {
 	user1 := models.User{
 		Username:            "user1",
 		Email:               "user1@gmail.com",
-		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
 		OrganizationID:      organization.ID,
 		IsOrganizationAdmin: false,
 		Phone:               "0123451231",
@@ -172,7 +172,7 @@ func SeedDatabase(db *gorm.DB) error {
 	user2 := models.User{
 		Username:            "user2",
 		Email:               "user2@gmail.com",
-		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
+		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
 		OrganizationID:      organization.ID,
 		IsOrganizationAdmin: false,
 		Phone:               "0123451232",
