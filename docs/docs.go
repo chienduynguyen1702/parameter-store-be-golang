@@ -15,6 +15,50 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/agents/{agent_id}/rerun-workflow": {
+            "post": {
+                "description": "Rerun workflow by agent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Agents"
+                ],
+                "summary": "Rerun workflow by agent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent ID",
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"rerun workflow by agent\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to rerun workflow by agent\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/login": {
             "post": {
                 "description": "Login a user",
@@ -391,7 +435,51 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/project/{project_id}/agents": {
+        "/api/v1/projects/{project_id}": {
+            "get": {
+                "description": "Get all project info",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project"
+                ],
+                "summary": "Get all project info",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"projects\": \"projects\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get project info\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/agents": {
             "get": {
                 "description": "Get agents of project",
                 "consumes": [
@@ -401,7 +489,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Agent"
+                    "Project Detail / Agents"
                 ],
                 "summary": "Get agents of project",
                 "parameters": [
@@ -446,7 +534,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Agent"
+                    "Project Detail / Agents"
                 ],
                 "summary": "Create new agent",
                 "parameters": [
@@ -788,6 +876,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/overview/add-user": {
+            "post": {
+                "description": "Add user to project include role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Add user to project include role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UserRoleProject",
+                        "name": "UserRoleProject",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserRoleProject"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User added to project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to add user to project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/parameters": {
             "get": {
                 "description": "Get project parameters",
@@ -879,6 +1020,53 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to create parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters/latest": {
+            "get": {
+                "description": "Get latest parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Get latest parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Parameter"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get latest parameter\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1555,15 +1743,19 @@ const docTemplate = `{
         "controllers.CreateUser.createUserRequestBody": {
             "type": "object",
             "required": [
+                "confirmNewPassword",
                 "email",
-                "password",
+                "newPassword",
                 "username"
             ],
             "properties": {
+                "confirmNewPassword": {
+                    "type": "string"
+                },
                 "email": {
                     "type": "string"
                 },
-                "password": {
+                "newPassword": {
                     "type": "string"
                 },
                 "phone": {
@@ -1703,7 +1895,7 @@ const docTemplate = `{
         "models.Agent": {
             "type": "object",
             "properties": {
-                "apitoken": {
+                "api_token": {
                     "type": "string"
                 },
                 "createdAt": {
@@ -1715,7 +1907,7 @@ const docTemplate = `{
                 "environment": {
                     "$ref": "#/definitions/models.Environment"
                 },
-                "environmentID": {
+                "environment_id": {
                     "type": "integer"
                 },
                 "id": {
@@ -1730,10 +1922,13 @@ const docTemplate = `{
                 "stage": {
                     "$ref": "#/definitions/models.Stage"
                 },
-                "stageID": {
+                "stage_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
+                    "type": "string"
+                },
+                "workflow_name": {
                     "type": "string"
                 }
             }
@@ -1779,9 +1974,6 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "environment": {
-                    "$ref": "#/definitions/models.Environment"
-                },
                 "environment_id": {
                     "type": "integer"
                 },
@@ -1791,8 +1983,8 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "stage": {
-                    "$ref": "#/definitions/models.Stage"
+                "project_id": {
+                    "type": "integer"
                 },
                 "stage_id": {
                     "type": "integer"
@@ -1801,6 +1993,63 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Permission": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Role": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "permissions"
+            ],
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Permission"
+                    }
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -1831,6 +2080,94 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "description": "foreign key to user model",
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_archived": {
+                    "type": "boolean"
+                },
+                "is_organization_admin": {
+                    "description": "Assuming this field represents the ID of the organization the user is an admin of",
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "foreign key to organization model",
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserRoleProject": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "$ref": "#/definitions/models.Role"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },

@@ -11,14 +11,14 @@ import (
 // GetProjectAgents godoc
 // @Summary Get agents of project
 // @Description Get agents of project
-// @Tags Project Detail / Agent
+// @Tags Project Detail / Agents
 // @Accept json
 // @Produce json
 // @Param project_id path int true "Project ID"
 // @Success 200 {array}	 models.Agent
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
-// @Router /api/v1/project/{project_id}/agents [get]
+// @Router /api/v1/projects/{project_id}/agents [get]
 func GetProjectAgents(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {
@@ -33,7 +33,7 @@ func GetProjectAgents(c *gin.Context) {
 // CreateNewAgent godoc
 // @Summary Create new agent
 // @Description Create new agent
-// @Tags Project Detail / Agent
+// @Tags Project Detail / Agents
 // @Accept json
 // @Produce json
 // @Param project_id path int true "Project ID"
@@ -41,7 +41,7 @@ func GetProjectAgents(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Agent created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create agent"}"
-// @Router /api/v1/project/{project_id}/agents [post]
+// @Router /api/v1/projects/{project_id}/agents [post]
 func CreateNewAgent(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {

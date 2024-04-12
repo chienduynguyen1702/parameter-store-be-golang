@@ -230,7 +230,7 @@ func SeedDatabase(db *gorm.DB) error {
 	}
 	log.Printf("\nDefault project data is seeded.\n")
 
-	upr := []models.UserProjectRole{
+	upr := []models.UserRoleProject{
 		// project 1
 		{
 			UserID:    admin.ID,

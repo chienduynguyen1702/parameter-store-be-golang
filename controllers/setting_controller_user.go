@@ -189,7 +189,7 @@ func DeleteUser(c *gin.Context) {
 	}
 
 	// Delete user from user_project_role table
-	if err := DB.Where("user_id = ?", user_id).Delete(&models.UserProjectRole{}).Error; err != nil {
+	if err := DB.Where("user_id = ?", user_id).Delete(&models.UserRoleProject{}).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user from user_project_role table"})
 		return
 	}

@@ -10,6 +10,7 @@ import (
 func setupGroupProject(r *gin.RouterGroup) {
 	projectGroup := r.Group("/projects/:project_id", middleware.RequiredAuth, middleware.RequiredBelongToProject)
 	{
+		projectGroup.GET("/", controllers.GetProjectAllInfo)
 		overviewGroup := projectGroup.Group("/overview")
 		{
 			overviewGroup.GET("/", controllers.GetProjectOverView)
@@ -44,13 +45,13 @@ func setupGroupProject(r *gin.RouterGroup) {
 			// versionGroup.PUT("/:version_id", controllers.UpdateVersion)
 			// versionGroup.DELETE("/:version_id", controllers.DeleteVersion)
 		}
-		// parameterGroup := projectGroup.Group("/parameters")
-		// {
-		// parameterGroup.GET("/", controllers.GetProjectParameters)
-		// parameterGroup.POST("/", controllers.CreateNewParameter)
-		// parameterGroup.PUT("/:parameter_id", controllers.UpdateParameter)
-		// parameterGroup.DELETE("/:parameter_id", controllers.DeleteParameter)
-		// }
+		parameterGroup := projectGroup.Group("/parameters")
+		{
+			parameterGroup.GET("/", controllers.GetProjectParameters)
+			// parameterGroup.POST("/", controllers.CreateNewParameter)
+			// parameterGroup.PUT("/:parameter_id", controllers.UpdateParameter)
+			// parameterGroup.DELETE("/:parameter_id", controllers.DeleteParameter)
+		}
 		// trackingGroup := projectGroup.Group("/tracking")
 		// {
 		// trackingGroup.GET("/", controllers.GetProjectTracking)

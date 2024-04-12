@@ -41,7 +41,6 @@ func RequiredAuth(c *gin.Context) {
 		// Find the user in the database
 		var user models.User
 		controllers.DB.First(&user, claims["user_id"])
-		log.Printf("User found in the database %v with ID %v", user, claims["user_id"])
 
 		if user.ID == 0 {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find user"})

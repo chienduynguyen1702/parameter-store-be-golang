@@ -32,6 +32,7 @@ func SetupV1Router() *gin.Engine {
 		setupGroupOrganization(v1)
 		setupGroupProject(v1)
 		setupGroupSetting(v1)
+		setupGroupAgent(v1)
 	}
 	// Swagger setup
 	if gin.Mode() == gin.DebugMode {

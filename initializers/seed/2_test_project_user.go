@@ -30,15 +30,16 @@ func SeedDataTestProjectUser(db *gorm.DB) error {
 		Description:    "Test project description",
 		CurrentSprint:  "1",
 		Status:         "In Progress",
-		RepoURL:        "github.com/test-project",
+		RepoURL:        "github.com/chienduynguyen1702/golang-swagger",
 		OrganizationID: 1,
 		Address:        "SoICT, HUST",
+		RepoApiToken:   "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",
 	}
 
 	if err := db.Create(&testProject).Error; err != nil {
 		return err
 	}
-	upr := []models.UserProjectRole{
+	upr := []models.UserRoleProject{
 		// admin user as project admin
 		{
 			UserID:    1,

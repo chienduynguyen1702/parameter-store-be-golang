@@ -45,18 +45,18 @@ func GetProjectOverView(c *gin.Context) {
 		return
 	}
 	// Retrieve users and their roles in the given project
-	var upr []models.UserProjectRole
-	DB.Preload("User").Preload("Role").Where("project_id = ?", projectID).Find(&upr)
+	var urp []models.UserRoleProject
+	DB.Preload("User").Preload("Role").Where("project_id = ?", projectID).Find(&urp)
 
-	// // user current in project, by UserProjectRole table
+	// // user current in project, by UserRoleProject table
 	// var stagesInProject []models.Stage
 	// DB.Model(&project).Association("Stages").Find(&stagesInProject)
 	// project.Stages = stagesInProject
-	// // user current in project, by UserProjectRole table
+	// // user current in project, by UserRoleProject table
 	// var environmentsInProject []models.Environment
 	// DB.Model(&project).Association("Environments").Find(&environmentsInProject)
 	// project.Environments = environmentsInProject
-	// // user current in project, by UserProjectRole table
+	// // user current in project, by UserRoleProject table
 	// var agentsInProject []models.Agent
 	// DB.Model(&project).Association("Agents").Find(&agentsInProject)
 	// project.Agents = agentsInProject
@@ -70,14 +70,14 @@ func GetProjectOverView(c *gin.Context) {
 		// LastLogIn time.Time `json:"last_login"`
 	}
 	var userRoleInProject []UserRoleInProject
-	for _, upr := range upr {
+	for _, urp := range urp {
 		userRoleInProject = append(userRoleInProject, UserRoleInProject{
-			UserID:   upr.User.ID,
-			UserName: upr.User.Username,
-			RoleName: upr.Role.Name,
-			Email:    upr.User.Email,
-			Phone:    upr.User.Phone,
-			// LastLogIn: upr.User.LastLogIn,
+			UserID:   urp.User.ID,
+			UserName: urp.User.Username,
+			RoleName: urp.Role.Name,
+			Email:    urp.User.Email,
+			Phone:    urp.User.Phone,
+			// LastLogIn: urp.User.LastLogIn,
 		})
 	}
 
@@ -159,15 +159,15 @@ func UpdateProjectInformation(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param UserProjectRole body UserProjectRole true "UserProjectRole"
+// @Param UserRoleProject body models.UserRoleProject true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User added to project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
 // @Router /api/v1/projects/{project_id}/overview/add-user [post]
 func AddUserToProject(c *gin.Context) {
-	// Bind JSON data to UserProjectRole struct
-	var upr models.UserProjectRole
-	if err := c.ShouldBindJSON(&upr); err != nil {
+	// Bind JSON data to UserRoleProject struct
+	var urp models.UserRoleProject
+	if err := c.ShouldBindJSON(&urp); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -179,10 +179,10 @@ func AddUserToProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
-	upr.ProjectID = uint(parsedProjectID)
+	urp.ProjectID = uint(parsedProjectID)
 
 	// Save the new user to project relationship to the database
-	DB.Create(&upr)
+	DB.Create(&urp)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User added to project"})
 }

@@ -160,7 +160,7 @@ func ListProjects(c *gin.Context) {
 	//count user in project
 	for i := 0; i < len(projects); i++ {
 		var userCount int64
-		DB.Model(&models.UserProjectRole{}).Where("project_id = ?", projects[i].ID).Count(&userCount)
+		DB.Model(&models.UserRoleProject{}).Where("project_id = ?", projects[i].ID).Count(&userCount)
 		projectListResponses = append(projectListResponses, projectListResponse{
 			ID:        projects[i].ID,
 			Name:      projects[i].Name,

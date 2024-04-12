@@ -19,8 +19,8 @@ import (
 // @Failure 500 string {string} json "{"error": "Failed to list environments"}"
 // @Router /api/v1/projects/{project_id}/environments [get]
 func GetEnvironments(c *gin.Context) {
-	projectID, exist := c.Get("project_id")
-	if !exist {
+	projectID := c.Param("project_id")
+	if projectID == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project ID from user"})
 		return
 	}

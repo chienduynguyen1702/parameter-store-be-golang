@@ -46,9 +46,9 @@ func Migration(db *gorm.DB) error {
 		log.Println("Failed to migrate Token models")
 		return err
 	}
-	err = db.AutoMigrate(&models.UserProjectRole{})
+	err = db.AutoMigrate(&models.UserRoleProject{})
 	if err != nil {
-		log.Println("Failed to migrate UserProjectRole models")
+		log.Println("Failed to migrate UserRoleProject models")
 		return err
 	}
 	err = db.AutoMigrate(&models.Role{})

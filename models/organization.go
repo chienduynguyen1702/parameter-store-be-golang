@@ -13,6 +13,8 @@ type Organization struct {
 	AliasName         string    `gorm:"type:varchar(100)" json:"alias_name"`
 	EstablishmentDate time.Time `json:"establishment_date"`
 	Description       string    `gorm:"type:text" json:"description"`
-	Projects          []Project `gorm:"one2many:organization_prs;" json:"projects"`
 	Address           string    `gorm:"type:text" json:"address"`
+
+	Projects []Project `gorm:"one2many:organization_prs;" json:"projects"`
+	Users    []User    `gorm:"one2many:organization_usr;" json:"users"`
 }

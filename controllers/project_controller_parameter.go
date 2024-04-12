@@ -30,6 +30,34 @@ func GetProjectParameters(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"parameters": parameters})
 }
 
+// GetLatestParameters godoc
+// @Summary Get latest parameter
+// @Description Get latest parameter
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 {array} models.Parameter
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get latest parameter"}"
+// @Router /api/v1/projects/{project_id}/parameters/latest [get]
+func GetLatestParameters(c *gin.Context) {
+	projectID, exist := c.Get("project_id")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project ID from user"})
+		return
+	}
+
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	latestVersion := project.Versions[len(project.Versions)-1]
+
+	c.JSON(http.StatusOK, gin.H{"parameters": latestVersion.Parameters})
+}
+
 // CreateParameter godoc
 // @Summary Create new parameter
 // @Description Create new parameter

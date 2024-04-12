@@ -29,7 +29,7 @@ func RequiredIsAdmin(c *gin.Context) {
 		return
 	}
 	// check if user belongs to the project
-	var upr models.UserProjectRole
+	var upr models.UserRoleProject
 	if err := controllers.DB.Where("user_id = ? AND project_id = ?", user.ID, project_id).First(&upr).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User does not belong to the project"})
 		return

@@ -6,12 +6,12 @@ import (
 
 type Agent struct {
 	gorm.Model
-	ProjectID       uint
-	Name            string `gorm:"type:varchar(100);not null"`
-	APIToken        string `gorm:"type:varchar(100)"`
-	StageID         uint   `gorm:"foreignKey:StageID;not null"`
-	Stage           Stage
-	EnvironmentID   uint `gorm:"foreignKey:EnvironmentID;not null"`
-	Environment     Environment
-	CICDWorflowName string `gorm:"type:varchar(100);not null"`
+	ProjectID     uint
+	Name          string `gorm:"type:varchar(100);not null" json:"name"`
+	APIToken      string `gorm:"type:varchar(100)" json:"api_token"`
+	StageID       uint   `gorm:"foreignKey:StageID;not null" json:"stage_id"`
+	Stage         Stage
+	EnvironmentID uint `gorm:"foreignKey:EnvironmentID;not null" json:"environment_id"`
+	Environment   Environment
+	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
 }
