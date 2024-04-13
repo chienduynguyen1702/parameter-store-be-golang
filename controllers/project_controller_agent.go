@@ -11,6 +11,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type agentResponse struct {
+	ID            uint `json:"id"`
+	ProjectID     uint
+	Name          string `gorm:"type:varchar(100);not null" json:"name"`
+	StageID       uint   `gorm:"foreignKey:StageID;not null" json:"stage_id"`
+	Stage         models.Stage
+	EnvironmentID uint `gorm:"foreignKey:EnvironmentID;not null" json:"environment_id"`
+	Environment   models.Environment
+	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
+}
+
 // GetProjectAgents godoc
 // @Summary Get agents of project
 // @Description Get agents of project
@@ -29,8 +40,24 @@ func GetProjectAgents(c *gin.Context) {
 		return
 	}
 	var agents []models.Agent
-	DB.Where("project_id = ?", projectID).Find(&agents)
-	c.JSON(http.StatusOK, gin.H{"agents": agents})
+	DB.Preload("Stage").Preload("Environment").
+		Where("project_id = ?", projectID).Find(&agents)
+
+	// Convert to response
+	var agentsResponse []agentResponse
+	for _, agent := range agents {
+		agentsResponse = append(agentsResponse, agentResponse{
+			ID:            agent.ID,
+			ProjectID:     agent.ProjectID,
+			Name:          agent.Name,
+			StageID:       agent.StageID,
+			Stage:         agent.Stage,
+			EnvironmentID: agent.EnvironmentID,
+			Environment:   agent.Environment,
+			WorkflowName:  agent.WorkflowName,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
 }
 
 // CreateNewAgent godoc

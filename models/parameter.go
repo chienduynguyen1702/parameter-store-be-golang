@@ -12,4 +12,7 @@ type Parameter struct {
 	Value         string `gorm:"type:varchar(255)" json:"value"`
 	Description   string `gorm:"type:varchar(255)" json:"description"`
 	ProjectID     uint   `gorm:"foreignKey:ProjectID" json:"project_id"`
+
+	Stage       Stage       `gorm:"foreignKey:StageID" json:"stage"`
+	Environment Environment `gorm:"foreignKey:EnvironmentID" json:"environment"`
 }

@@ -7,6 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// type parameterResponse struct {
+// 	ID        uint   `json:"id"`
+// 	ProjectID uint   `json:"project_id"`
+// 	Name      string `json:"name"`
+// 	Value     string `json:"value"`
+// }
+
 // GetProjectParameters godoc
 // @Summary Get project parameters
 // @Description Get project parameters
@@ -19,14 +26,11 @@ import (
 // @Failure 500 string {string} json "{"error": "Failed to get project parameters"}"
 // @Router /api/v1/projects/{project_id}/parameters [get]
 func GetProjectParameters(c *gin.Context) {
-	projectID, exist := c.Get("project_id")
-	if !exist {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project ID from user"})
-		return
-	}
+	projectID := c.Param("project_id")
 
 	var parameters []models.Parameter
-	DB.Where("project_id = ?", projectID).Find(&parameters)
+	DB.Preload("Stage").Preload("Environment").
+		Where("project_id = ?", projectID).Find(&parameters)
 	c.JSON(http.StatusOK, gin.H{"parameters": parameters})
 }
 
@@ -40,7 +44,7 @@ func GetProjectParameters(c *gin.Context) {
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get latest parameter"}"
-// @Router /api/v1/projects/{project_id}/parameters/latest [get]
+// @Router /api/v1/projects/{project_id}/parameters/ [get]
 func GetLatestParameters(c *gin.Context) {
 	projectID, exist := c.Get("project_id")
 	if !exist {

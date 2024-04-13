@@ -858,7 +858,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/{project_id}/parameters/latest": {
+        "/api/v1/projects/{project_id}/parameters/": {
             "get": {
                 "description": "Get latest parameter",
                 "consumes": [
@@ -1632,6 +1632,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "environment": {
+                    "$ref": "#/definitions/models.Environment"
+                },
                 "environment_id": {
                     "type": "integer"
                 },
@@ -1643,6 +1646,9 @@ const docTemplate = `{
                 },
                 "project_id": {
                     "type": "integer"
+                },
+                "stage": {
+                    "$ref": "#/definitions/models.Stage"
                 },
                 "stage_id": {
                     "type": "integer"

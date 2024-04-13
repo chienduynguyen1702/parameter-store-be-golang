@@ -144,6 +144,8 @@ definitions:
         $ref: '#/definitions/gorm.DeletedAt'
       description:
         type: string
+      environment:
+        $ref: '#/definitions/models.Environment'
       environment_id:
         type: integer
       id:
@@ -152,6 +154,8 @@ definitions:
         type: string
       project_id:
         type: integer
+      stage:
+        $ref: '#/definitions/models.Stage'
       stage_id:
         type: integer
       updatedAt:
@@ -760,7 +764,7 @@ paths:
       summary: Create new parameter
       tags:
       - Project Detail / Parameters
-  /api/v1/projects/{project_id}/parameters/latest:
+  /api/v1/projects/{project_id}/parameters/:
     get:
       consumes:
       - application/json
