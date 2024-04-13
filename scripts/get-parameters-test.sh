@@ -14,6 +14,7 @@ show_help() {
 }
 
 output_file="parameters.txt"
+log_file="get-parameters.log"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
