@@ -35,6 +35,8 @@ func SeedDataTestProjectUser(db *gorm.DB) error {
 		OrganizationID: sampleOrganizations.ID,
 		Address:        "SoICT, HUST",
 		RepoApiToken:   "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",
+		Stages:         defaultStages,
+		Environments:   defaultEnvironments,
 	}
 
 	if err := db.Create(&golang_swagger).Error; err != nil {
