@@ -207,10 +207,7 @@ func CreateNewProject(c *gin.Context) {
 	project := models.Project{
 		OrganizationID: userOrganizationID,
 		Name:           requestBody.Name,
-		StartAt:        requestBody.StartAt,
 		Description:    requestBody.Description,
-		CurrentSprint:  requestBody.CurrentSprint,
-		RepoURL:        requestBody.RepoURL,
 	}
 
 	// Save the new project to the database

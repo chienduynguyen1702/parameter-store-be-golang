@@ -16,24 +16,6 @@ definitions:
     - name
     - value
     type: object
-  controllers.CreateUser.createUserRequestBody:
-    properties:
-      confirmNewPassword:
-        type: string
-      email:
-        type: string
-      newPassword:
-        type: string
-      phone:
-        type: string
-      username:
-        type: string
-    required:
-    - confirmNewPassword
-    - email
-    - newPassword
-    - username
-    type: object
   controllers.Login.loginRequestBody:
     properties:
       email:
@@ -60,17 +42,6 @@ definitions:
     - organization_name
     - password
     type: object
-  controllers.UpdateUserInformation.updateUserRequestBody:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-      phone:
-        type: string
-      username:
-        type: string
-    type: object
   controllers.organizationBody:
     properties:
       aliasName:
@@ -84,16 +55,34 @@ definitions:
     type: object
   controllers.projectBody:
     properties:
-      currentSprint:
+      current_sprint:
         type: string
       description:
         type: string
       name:
         type: string
-      repoURL:
+      repo_url:
         type: string
-      startAt:
+      start_at:
         type: string
+    type: object
+  controllers.userRequestBody:
+    properties:
+      confirm_password:
+        type: string
+      email:
+        type: string
+      new_password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    required:
+    - confirm_password
+    - email
+    - new_password
+    - username
     type: object
   gorm.DeletedAt:
     properties:
@@ -923,7 +912,7 @@ paths:
         name: User
         required: true
         schema:
-          $ref: '#/definitions/controllers.CreateUser.createUserRequestBody'
+          $ref: '#/definitions/controllers.userRequestBody'
       produces:
       - application/json
       responses:
@@ -971,6 +960,34 @@ paths:
       summary: Delete user
       tags:
       - Setting / User
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"user": "user"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get user"}'
+          schema:
+            type: string
+      summary: Get user by ID
+      tags:
+      - Setting / User
     put:
       consumes:
       - application/json
@@ -986,7 +1003,7 @@ paths:
         name: User
         required: true
         schema:
-          $ref: '#/definitions/controllers.UpdateUserInformation.updateUserRequestBody'
+          $ref: '#/definitions/controllers.userRequestBody'
       produces:
       - application/json
       responses:

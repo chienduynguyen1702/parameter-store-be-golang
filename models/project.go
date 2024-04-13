@@ -9,15 +9,15 @@ import (
 // Project represents the projects table
 type Project struct {
 	gorm.Model
-	OrganizationID  uint      `gorm:"foreignKey:OrganizationID" json:"organization_id"`
+	OrganizationID  uint      `gorm:"foreignKey:OrganizationID;not null" json:"organization_id"`
 	Name            string    `gorm:"type:varchar(100);not null" json:"name"`
 	StartAt         time.Time `json:"start_at"`
-	Address         string    `gorm:"type:varchar(100);not null" json:"address"`
-	Status          string    `gorm:"type:varchar(100);not null" json:"status"`
+	Address         string    `gorm:"type:varchar(100)" json:"address"`
+	Status          string    `gorm:"type:varchar(100)" json:"status"`
 	Description     string    `gorm:"type:text" json:"description"`
-	CurrentSprint   string    `gorm:"type:varchar(100);not null" json:"current_sprint"`
-	RepoURL         string    `gorm:"type:varchar(100);not null" json:"repo_url"`
-	RepoApiToken    string    `gorm:"type:varchar(100);not null" json:"repo_api_token"`
+	CurrentSprint   string    `gorm:"type:varchar(100)" json:"current_sprint"`
+	RepoURL         string    `gorm:"type:varchar(100)" json:"repo_url"`
+	RepoApiToken    string    `gorm:"type:varchar(100)" json:"repo_api_token"`
 	LatestVersionID uint      `gorm:"foreignKey:LatestVersionID" json:"latest_version"`
 	LatestVersion   Version
 

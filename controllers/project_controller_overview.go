@@ -88,11 +88,11 @@ func GetProjectOverView(c *gin.Context) {
 }
 
 type projectBody struct {
-	Name          string `gorm:"type:varchar(100);not null"`
-	StartAt       time.Time
-	Description   string `gorm:"type:text"`
-	CurrentSprint string
-	RepoURL       string `gorm:"type:varchar(100);not null"`
+	Name          string    `gorm:"type:varchar(100);not null" json:"name"`
+	StartAt       time.Time `json:"start_at"`
+	Description   string    `gorm:"type:text" json:"description"`
+	CurrentSprint string    `gorm:"type:varchar(100)" json:"current_sprint"`
+	RepoURL       string    `gorm:"type:varchar(100);not null" json:"repo_url"`
 }
 
 // UpdateProjectInformation godoc

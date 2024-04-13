@@ -28,14 +28,6 @@ func ListUser(c *gin.Context) {
 	var users []models.User
 	DB.Where("organization_id = ? AND is_archived != ? ", org_id, true).Find(&users)
 
-	type userResponse struct {
-		ID                  uint   `json:"id"`
-		Email               string `json:"email"`
-		Username            string `json:"username"`
-		Phone               string `json:"phone"`
-		AvatarURL           string `json:"avatar_url"`
-		IsOrganizationAdmin bool   `json:"is_organization_admin"`
-	}
 	var usersResponse []userResponse
 	for _, user := range users {
 		usersResponse = append(usersResponse, userResponse{
@@ -55,26 +47,71 @@ func ListUser(c *gin.Context) {
 	})
 }
 
+type userResponse struct {
+	ID                  uint   `json:"id"`
+	Email               string `json:"email"`
+	Username            string `json:"username"`
+	Phone               string `json:"phone"`
+	AvatarURL           string `json:"avatar_url"`
+	IsOrganizationAdmin bool   `json:"is_organization_admin"`
+}
+
+// GetUserById godoc
+// @Summary Get user by ID
+// @Description Get user by ID
+// @Tags Setting / User
+// @Accept json
+// @Produce json
+// @Param user_id path int true "User ID"
+// @Success 200 string {string} json "{"user": "user"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get user"}"
+// @Router /api/v1/settings/users/{user_id} [get]
+func GetUserById(c *gin.Context) {
+	user_id := c.Param("user_id")
+	var user models.User
+	if err := DB.First(&user, user_id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+		return
+	}
+
+	usersResponse := userResponse{
+		ID:                  user.ID,
+		Email:               user.Email,
+		Username:            user.Username,
+		Phone:               user.Phone,
+		AvatarURL:           user.AvatarURL,
+		IsOrganizationAdmin: user.IsOrganizationAdmin,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"users": usersResponse,
+		},
+	})
+}
+
+type userRequestBody struct {
+	Email           string `json:"email" binding:"required"`
+	Username        string `json:"username" binding:"required"`
+	Password        string `json:"new_password" binding:"required"`
+	ConfirmPassword string `json:"confirm_password" binding:"required"`
+	Phone           string `json:"phone"`
+}
+
 // CreateUser godoc
 // @Summary Create user
 // @Description Create user
 // @Tags Setting / User
 // @Accept json
 // @Produce json
-// @Param User body controllers.CreateUser.createUserRequestBody true "User"
+// @Param User body controllers.userRequestBody true "User"
 // @Success 201 string {string} json "{"message": "User created successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create user"}"
 // @Router /api/v1/settings/users [post]
 func CreateUser(c *gin.Context) {
-	type createUserRequestBody struct {
-		Email             string `json:"email" binding:"required"`
-		Username          string `json:"username" binding:"required"`
-		Password          string `json:"newPassword" binding:"required"`
-		ConfirmedPassword string `json:"confirmNewPassword" binding:"required"`
-		Phone             string `json:"phone"`
-	}
-	r := createUserRequestBody{}
+	r := userRequestBody{}
 	if err := c.ShouldBindJSON(&r); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -129,19 +166,13 @@ func CreateUser(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param user_id path int true "User ID"
-// @Param User body controllers.UpdateUserInformation.updateUserRequestBody true "User"
+// @Param User body controllers.userRequestBody true "User"
 // @Success 200 string {string} json "{"message": "User information updated successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update user information"}"
 // @Router /api/v1/settings/users/{user_id} [put]
 func UpdateUserInformation(c *gin.Context) {
-	type updateUserRequestBody struct {
-		Email    string `json:"email"`
-		Username string `json:"username"`
-		Phone    string `json:"phone"`
-		Passowrd string `json:"password"`
-	}
-	r := updateUserRequestBody{}
+	r := userRequestBody{}
 	if err := c.ShouldBindJSON(&r); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -152,7 +183,7 @@ func UpdateUserInformation(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
 		return
 	}
-	hashPassword, err := generateBcryptPassword(r.Passowrd)
+	hashPassword, err := generateBcryptPassword(r.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

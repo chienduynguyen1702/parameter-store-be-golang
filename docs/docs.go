@@ -1091,7 +1091,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.CreateUser.createUserRequestBody"
+                            "$ref": "#/definitions/controllers.userRequestBody"
                         }
                     }
                 ],
@@ -1153,6 +1153,48 @@ const docTemplate = `{
             }
         },
         "/api/v1/settings/users/{user_id}": {
+            "get": {
+                "description": "Get user by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Setting / User"
+                ],
+                "summary": "Get user by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"user\": \"user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Update user information",
                 "consumes": [
@@ -1179,7 +1221,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.UpdateUserInformation.updateUserRequestBody"
+                            "$ref": "#/definitions/controllers.userRequestBody"
                         }
                     }
                 ],
@@ -1398,32 +1440,6 @@ const docTemplate = `{
                 }
             }
         },
-        "controllers.CreateUser.createUserRequestBody": {
-            "type": "object",
-            "required": [
-                "confirmNewPassword",
-                "email",
-                "newPassword",
-                "username"
-            ],
-            "properties": {
-                "confirmNewPassword": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "newPassword": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "controllers.Login.loginRequestBody": {
             "type": "object",
             "required": [
@@ -1462,23 +1478,6 @@ const docTemplate = `{
                 }
             }
         },
-        "controllers.UpdateUserInformation.updateUserRequestBody": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string"
-                },
-                "phone": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "controllers.organizationBody": {
             "type": "object",
             "properties": {
@@ -1499,7 +1498,7 @@ const docTemplate = `{
         "controllers.projectBody": {
             "type": "object",
             "properties": {
-                "currentSprint": {
+                "current_sprint": {
                     "type": "string"
                 },
                 "description": {
@@ -1508,10 +1507,36 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
-                "repoURL": {
+                "repo_url": {
                     "type": "string"
                 },
-                "startAt": {
+                "start_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.userRequestBody": {
+            "type": "object",
+            "required": [
+                "confirm_password",
+                "email",
+                "new_password",
+                "username"
+            ],
+            "properties": {
+                "confirm_password": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "new_password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
