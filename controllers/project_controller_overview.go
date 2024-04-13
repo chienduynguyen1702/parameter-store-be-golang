@@ -159,15 +159,19 @@ func UpdateProjectInformation(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param UserRoleProject body models.UserRoleProject true "UserRoleProject"
+// @Param UserRoleProject body controllers.AddUserToProject.UserRoleProjectBody true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User added to project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
 // @Router /api/v1/projects/{project_id}/overview/add-user [post]
 func AddUserToProject(c *gin.Context) {
 	// Bind JSON data to UserRoleProject struct
-	var urp models.UserRoleProject
-	if err := c.ShouldBindJSON(&urp); err != nil {
+	type UserRoleProjectBody struct {
+		UserID uint ` json:"user_id"`
+		RoleID uint ` json:"role_id"`
+	}
+	var urpb UserRoleProjectBody
+	if err := c.ShouldBindJSON(&urpb); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -179,8 +183,21 @@ func AddUserToProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
-	urp.ProjectID = uint(parsedProjectID)
 
+	var urp models.UserRoleProject
+	// Check if the user is already in the project
+	result := DB.Where("user_id = ? AND project_id = ?", urpb.UserID, parsedProjectID).First(&urp)
+	if result.RowsAffected > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is already in the project"})
+		return
+	}
+
+	// Create a new user to project relationship
+	urp = models.UserRoleProject{
+		UserID:    urpb.UserID,
+		ProjectID: uint(parsedProjectID),
+		RoleID:    urpb.RoleID,
+	}
 	// Save the new user to project relationship to the database
 	DB.Create(&urp)
 

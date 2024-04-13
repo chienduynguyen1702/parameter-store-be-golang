@@ -1,4 +1,11 @@
 definitions:
+  controllers.AddUserToProject.UserRoleProjectBody:
+    properties:
+      role_id:
+        type: integer
+      user_id:
+        type: integer
+    type: object
   controllers.CreateParameter.createParameterRequestBody:
     properties:
       name:
@@ -163,44 +170,6 @@ definitions:
       value:
         type: string
     type: object
-  models.Permission:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  models.Role:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      description:
-        type: string
-      id:
-        type: integer
-      name:
-        type: string
-      permissions:
-        items:
-          $ref: '#/definitions/models.Permission'
-        type: array
-      updatedAt:
-        type: string
-    required:
-    - description
-    - name
-    - permissions
-    type: object
   models.Stage:
     properties:
       color:
@@ -217,66 +186,6 @@ definitions:
         type: string
       updatedAt:
         type: string
-    type: object
-  models.User:
-    properties:
-      archived_at:
-        type: string
-      archived_by:
-        description: foreign key to user model
-        type: string
-      avatar_url:
-        type: string
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      email:
-        type: string
-      id:
-        type: integer
-      is_archived:
-        type: boolean
-      is_organization_admin:
-        description: Assuming this field represents the ID of the organization the
-          user is an admin of
-        type: boolean
-      last_login:
-        type: string
-      name:
-        type: string
-      organization_id:
-        description: foreign key to organization model
-        type: integer
-      password:
-        type: string
-      phone:
-        type: string
-      updatedAt:
-        type: string
-      username:
-        type: string
-    type: object
-  models.UserRoleProject:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        $ref: '#/definitions/gorm.DeletedAt'
-      id:
-        type: integer
-      project_id:
-        type: integer
-      role:
-        $ref: '#/definitions/models.Role'
-      role_id:
-        type: integer
-      updatedAt:
-        type: string
-      user:
-        $ref: '#/definitions/models.User'
-      user_id:
-        type: integer
     type: object
   models.Version:
     properties:
@@ -778,7 +687,7 @@ paths:
         name: UserRoleProject
         required: true
         schema:
-          $ref: '#/definitions/models.UserRoleProject'
+          $ref: '#/definitions/controllers.AddUserToProject.UserRoleProjectBody'
       produces:
       - application/json
       responses:
