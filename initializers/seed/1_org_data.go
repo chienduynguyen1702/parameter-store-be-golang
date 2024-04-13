@@ -104,13 +104,14 @@ func SeedDatabase(db *gorm.DB) error {
 			Description: "Export users",
 		},
 	}
-
+	// defaultPermissions = allPermissions
 	for _, permission := range allPermissions {
 		if err := db.Create(&permission).Error; err != nil {
 			return err
 		}
+		// defaultPermissions = append(defaultPermissions, permission)
 	}
-	defaultRoles := []models.Role{
+	roles := []models.Role{
 		{
 			Name:        "Organization Admin",
 			Description: "Admin of the organization",
@@ -127,13 +128,10 @@ func SeedDatabase(db *gorm.DB) error {
 			Permissions: allPermissions,
 		},
 	}
-
-	for i, role := range defaultRoles {
-		if err := db.Create(&role).Error; err != nil {
-			return err
-		}
-		defaultRoles[i] = role
+	if err := db.Create(&roles).Error; err != nil {
+		return err
 	}
+	defaultRoles = roles
 
 	log.Printf("\nDefault roles and permission data are seeded.\n")
 
@@ -158,7 +156,8 @@ func SeedDatabase(db *gorm.DB) error {
 	if err := db.Create(&stages).Error; err != nil {
 		return err
 	}
-	log.Printf("\nTest project stages data is seeded.\n")
+	defaultStages = stages
+	log.Printf("\nnDefault stages data is seeded.\n")
 
 	envs := []models.Environment{
 		{
@@ -181,7 +180,8 @@ func SeedDatabase(db *gorm.DB) error {
 	if err := db.Create(&envs).Error; err != nil {
 		return err
 	}
-	log.Printf("\nTest project environments data is seeded.\n")
+	defaultEnvironments = envs
+	log.Printf("\nDefault evironments data is seeded.\n")
 
 	//////////////////////////////////////////// Sample Org Data ////////////////////////////////////////////
 
@@ -192,39 +192,39 @@ func SeedDatabase(db *gorm.DB) error {
 		EstablishmentDate: time.Date(1956, time.Month(10), 10, 0, 0, 0, 0, time.UTC),
 		Description:       "Hanoi University of Science and Technology (HUST) is a multidisciplinary technical university located in Hanoi, Vietnam. It was founded on October 10, 1956, and is one of the two largest technical universities in Vietnam.",
 	}
-
 	if err := db.Create(&organization).Error; err != nil {
 		return err
 	}
+	sampleOrganizations = organization
 
 	log.Printf("\nDefault organization data is seeded.\n")
-
+	//////////////////////////////////////////// Sample Users ////////////////////////////////////////////
 	admin := models.User{
 		Username:            "admin",
 		Email:               "admin@gmail.com",
 		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      organization.ID,
+		OrganizationID:      sampleOrganizations.ID,
 		IsOrganizationAdmin: true,
 		Phone:               "0123456789",
-		// LastLogIn:           time.Now(),
+		LastLogin:           time.Now(),
 	}
 	user1 := models.User{
 		Username:            "user1",
 		Email:               "user1@gmail.com",
 		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      organization.ID,
+		OrganizationID:      sampleOrganizations.ID,
 		IsOrganizationAdmin: false,
 		Phone:               "0123451231",
-		// LastLogIn:           time.Now(),
+		LastLogin:           time.Now(),
 	}
 	user2 := models.User{
 		Username:            "user2",
 		Email:               "user2@gmail.com",
 		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      organization.ID,
+		OrganizationID:      sampleOrganizations.ID,
 		IsOrganizationAdmin: false,
 		Phone:               "0123451232",
-		// LastLogIn:           time.Now(),
+		LastLogin:           time.Now(),
 	}
 	if err := db.Create(&admin).Error; err != nil {
 		return err
@@ -235,6 +235,9 @@ func SeedDatabase(db *gorm.DB) error {
 	if err := db.Create(&user2).Error; err != nil {
 		return err
 	}
+	sampleAdmin = admin
+	sampleUsers1 = user1
+	sampleUsers2 = user2
 	log.Printf("\nDefault user data is seeded.\n")
 
 	projects := []models.Project{
@@ -245,8 +248,10 @@ func SeedDatabase(db *gorm.DB) error {
 			CurrentSprint:  "1",
 			Status:         "In Progress",
 			RepoURL:        "github.com/parameter-store",
-			OrganizationID: organization.ID,
+			OrganizationID: sampleOrganizations.ID,
 			Address:        "SoICT, HUST",
+			Stages:         defaultStages,
+			Environments:   defaultEnvironments,
 		},
 		{
 			Name:           "Parameter Store 2",
@@ -255,8 +260,10 @@ func SeedDatabase(db *gorm.DB) error {
 			CurrentSprint:  "1",
 			Status:         "In Progress",
 			RepoURL:        "github.com/parameter-store",
-			OrganizationID: organization.ID,
+			OrganizationID: sampleOrganizations.ID,
 			Address:        "SoICT, HUST",
+			Stages:         defaultStages,
+			Environments:   defaultEnvironments,
 		},
 		{
 			Name:           "Parameter Store 3",
@@ -265,53 +272,52 @@ func SeedDatabase(db *gorm.DB) error {
 			CurrentSprint:  "1",
 			Status:         "In Progress",
 			RepoURL:        "github.com/parameter-store",
-			OrganizationID: organization.ID,
+			OrganizationID: sampleOrganizations.ID,
 			Address:        "SoICT, HUST",
+			Stages:         defaultStages,
+			Environments:   defaultEnvironments,
 		},
 	}
-
-	for i, project := range projects {
-		if err := db.Create(&project).Error; err != nil {
-			return err
-		}
-		projects[i] = project
+	if err := db.Create(&projects).Error; err != nil {
+		return err
 	}
+	sampleProjects = projects
 	log.Printf("\nDefault project data is seeded.\n")
 
 	upr := []models.UserRoleProject{
 		// project 1
 		{
-			UserID:    admin.ID,
-			ProjectID: projects[0].ID,
+			UserID:    sampleAdmin.ID,
+			ProjectID: sampleProjects[0].ID,
 			RoleID:    defaultRoles[1].ID,
 		},
 		{
-			UserID:    user1.ID,
-			ProjectID: projects[0].ID,
+			UserID:    sampleUsers1.ID,
+			ProjectID: sampleProjects[0].ID,
 			RoleID:    defaultRoles[2].ID,
 		},
 
 		// project 2
 		{
-			UserID:    admin.ID,
-			ProjectID: projects[1].ID,
+			UserID:    sampleAdmin.ID,
+			ProjectID: sampleProjects[1].ID,
 			RoleID:    defaultRoles[1].ID,
 		},
 		{
-			UserID:    user1.ID,
-			ProjectID: projects[1].ID,
+			UserID:    sampleUsers1.ID,
+			ProjectID: sampleProjects[1].ID,
 			RoleID:    defaultRoles[2].ID,
 		},
 
 		// project 3
 		{
-			UserID:    admin.ID,
-			ProjectID: projects[2].ID,
+			UserID:    sampleAdmin.ID,
+			ProjectID: sampleProjects[2].ID,
 			RoleID:    defaultRoles[1].ID,
 		},
 		{
-			UserID:    user2.ID,
-			ProjectID: projects[2].ID,
+			UserID:    sampleUsers2.ID,
+			ProjectID: sampleProjects[2].ID,
 			RoleID:    defaultRoles[2].ID,
 		},
 	}
@@ -328,32 +334,32 @@ func SeedDatabase(db *gorm.DB) error {
 		{
 			Name:        "v1.0",
 			Description: "Version 1.0",
-			ProjectID:   projects[0].ID,
+			ProjectID:   sampleProjects[0].ID,
 		},
 		{
 			Name:        "v1.5",
 			Description: "Version 1.5",
-			ProjectID:   projects[0].ID,
+			ProjectID:   sampleProjects[0].ID,
 		},
 		{
 			Name:        "v1.0",
 			Description: "Version 1.0",
-			ProjectID:   projects[1].ID,
+			ProjectID:   sampleProjects[1].ID,
 		},
 		{
 			Name:        "v1.5",
 			Description: "Version 1.5",
-			ProjectID:   projects[1].ID,
+			ProjectID:   sampleProjects[1].ID,
 		},
 		{
 			Name:        "v1.0",
 			Description: "Version 1.0",
-			ProjectID:   projects[2].ID,
+			ProjectID:   sampleProjects[2].ID,
 		},
 		{
 			Name:        "v1.5",
 			Description: "Version 1.5",
-			ProjectID:   projects[2].ID,
+			ProjectID:   sampleProjects[2].ID,
 		},
 	}
 	if err := db.Create(&vers).Error; err != nil {

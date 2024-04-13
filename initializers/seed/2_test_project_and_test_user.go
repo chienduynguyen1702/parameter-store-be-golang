@@ -11,46 +11,48 @@ import (
 // required organization is seeded in the first migration
 
 func SeedDataTestProjectUser(db *gorm.DB) error {
-	testUser := models.User{
+	testestUser := models.User{
 		Username:            "test user",
 		Email:               "test@gmail.com",
-		Password:            "$2a$10$KCzNv5lThy0h65JVRp/.huq1kxa6oq5jt.OHyqy6YfpBd4TAKIk3C",
-		OrganizationID:      1,
+		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
+		OrganizationID:      sampleOrganizations.ID,
 		IsOrganizationAdmin: false,
 		Phone:               "0123123123",
 	}
-	if err := db.Create(&testUser).Error; err != nil {
+	if err := db.Create(&testestUser).Error; err != nil {
 		return err
 	}
+	testUser = testestUser
 	log.Printf("\nTest user data is seeded.\n")
 
-	testProject := models.Project{
-		Name:           "Test Project",
+	golang_swagger := models.Project{
+		Name:           "Golang Swagger Project",
 		StartAt:        time.Now(),
 		Description:    "Test project description",
 		CurrentSprint:  "1",
 		Status:         "In Progress",
 		RepoURL:        "github.com/chienduynguyen1702/golang-swagger",
-		OrganizationID: 1,
+		OrganizationID: sampleOrganizations.ID,
 		Address:        "SoICT, HUST",
 		RepoApiToken:   "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",
 	}
 
-	if err := db.Create(&testProject).Error; err != nil {
+	if err := db.Create(&golang_swagger).Error; err != nil {
 		return err
 	}
+	testProject = golang_swagger
 	upr := []models.UserRoleProject{
 		// admin user as project admin
 		{
-			UserID:    1,
+			UserID:    sampleAdmin.ID,
 			ProjectID: testProject.ID,
-			RoleID:    2,
+			RoleID:    defaultRoles[1].ID,
 		},
 		// test user as project member
 		{
 			UserID:    testUser.ID,
 			ProjectID: testProject.ID,
-			RoleID:    3,
+			RoleID:    defaultRoles[2].ID,
 		},
 	}
 	if err := db.Create(&upr).Error; err != nil {

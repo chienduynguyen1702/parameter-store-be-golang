@@ -8,11 +8,11 @@ import (
 
 func SeedAgent(DB *gorm.DB) error {
 	agent := models.Agent{
-		ProjectID:     4,
+		ProjectID:     testProject.ID,
 		Name:          "Test Agent",
 		APIToken:      "123123", // use this token to Get params from agent by stage and environment
-		StageID:       8,
-		EnvironmentID: 8,
+		StageID:       defaultStages[3].ID,
+		EnvironmentID: defaultEnvironments[3].ID,
 		WorkflowName:  "Build Docker And Deploy",
 	}
 	if err := DB.Create(&agent).Error; err != nil {
