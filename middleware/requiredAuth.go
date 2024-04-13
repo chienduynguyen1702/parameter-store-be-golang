@@ -43,7 +43,11 @@ func RequiredAuth(c *gin.Context) {
 		controllers.DB.First(&user, claims["user_id"])
 
 		if user.ID == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find user"})
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to find user"})
+			return
+		}
+		if user.IsArchived {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "User is archived"})
 			return
 		}
 		// Set the user and their organization_id in the context

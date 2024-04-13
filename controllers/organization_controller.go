@@ -208,6 +208,10 @@ func CreateNewProject(c *gin.Context) {
 		OrganizationID: userOrganizationID,
 		Name:           requestBody.Name,
 		Description:    requestBody.Description,
+		StartAt:        time.Now(),
+		Status:         "In Progress",
+		CurrentSprint:  "1",
+		RepoURL:        "github.com/OWNER/REPO",
 	}
 
 	// Save the new project to the database

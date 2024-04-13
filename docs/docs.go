@@ -734,7 +734,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.AddUserToProject.UserRoleProjectBody"
+                            "$ref": "#/definitions/controllers.AddUserToProject.UserRoleBody"
                         }
                     }
                 ],
@@ -1414,14 +1414,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.AddUserToProject.UserRoleProjectBody": {
+        "controllers.AddUserToProject.UserRoleBody": {
             "type": "object",
             "properties": {
-                "role_id": {
-                    "type": "integer"
+                "role": {
+                    "type": "string"
                 },
-                "user_id": {
-                    "type": "integer"
+                "username": {
+                    "type": "string"
                 }
             }
         },

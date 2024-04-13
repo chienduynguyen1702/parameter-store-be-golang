@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"parameter-store-be/models"
 	"strconv"
@@ -159,19 +160,20 @@ func UpdateProjectInformation(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param UserRoleProject body controllers.AddUserToProject.UserRoleProjectBody true "UserRoleProject"
+// @Param UserRoleProject body controllers.AddUserToProject.UserRoleBody true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User added to project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
 // @Router /api/v1/projects/{project_id}/overview/add-user [post]
 func AddUserToProject(c *gin.Context) {
 	// Bind JSON data to UserRoleProject struct
-	type UserRoleProjectBody struct {
-		UserID uint ` json:"user_id"`
-		RoleID uint ` json:"role_id"`
+	type UserRoleBody struct {
+		Username string ` json:"username"`
+		Role     string ` json:"role"`
 	}
-	var urpb UserRoleProjectBody
-	if err := c.ShouldBindJSON(&urpb); err != nil {
+	var urb UserRoleBody
+	if err := c.ShouldBindJSON(&urb); err != nil {
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -180,23 +182,46 @@ func AddUserToProject(c *gin.Context) {
 	projectID := c.Param("project_id")
 	parsedProjectID, err := strconv.ParseUint(projectID, 10, 64)
 	if err != nil {
+		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	org_id, exist := c.Get("org_id")
+	if !exist {
+		log.Println("Failed to get organization ID from user")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+		return
+	}
+
+	var addedUser models.User
+	// Retrieve user from the database using the username
+	result := DB.Where("username = ? AND organization_id = ?", urb.Username, org_id).First(&addedUser)
+	if result.RowsAffected == 0 {
+		
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+	var role models.Role
+	// Retrieve role from the database using the role name
+	result = DB.Where("name = ?", urb.Role).First(&role)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found"})
 		return
 	}
 
 	var urp models.UserRoleProject
 	// Check if the user is already in the project
-	result := DB.Where("user_id = ? AND project_id = ?", urpb.UserID, parsedProjectID).First(&urp)
-	if result.RowsAffected > 0 {
+	result = DB.Where("user_id = ? AND project_id = ?", addedUser.ID, parsedProjectID).First(&urp)
+	if result.RowsAffected != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User is already in the project"})
 		return
 	}
 
 	// Create a new user to project relationship
 	urp = models.UserRoleProject{
-		UserID:    urpb.UserID,
+		UserID:    addedUser.ID,
 		ProjectID: uint(parsedProjectID),
-		RoleID:    urpb.RoleID,
+		RoleID:    role.ID,
 	}
 	// Save the new user to project relationship to the database
 	DB.Create(&urp)

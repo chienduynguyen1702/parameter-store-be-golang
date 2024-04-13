@@ -1,10 +1,10 @@
 definitions:
-  controllers.AddUserToProject.UserRoleProjectBody:
+  controllers.AddUserToProject.UserRoleBody:
     properties:
-      role_id:
-        type: integer
-      user_id:
-        type: integer
+      role:
+        type: string
+      username:
+        type: string
     type: object
   controllers.CreateParameter.createParameterRequestBody:
     properties:
@@ -676,7 +676,7 @@ paths:
         name: UserRoleProject
         required: true
         schema:
-          $ref: '#/definitions/controllers.AddUserToProject.UserRoleProjectBody'
+          $ref: '#/definitions/controllers.AddUserToProject.UserRoleBody'
       produces:
       - application/json
       responses:
