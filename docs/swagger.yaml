@@ -1,11 +1,4 @@
 definitions:
-  controllers.CreateEnvironment.createEnvironmentRequestBody:
-    properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
   controllers.CreateParameter.createParameterRequestBody:
     properties:
       name:
@@ -15,13 +8,6 @@ definitions:
     required:
     - name
     - value
-    type: object
-  controllers.CreateStage.createStageRequestBody:
-    properties:
-      name:
-        type: string
-    required:
-    - name
     type: object
   controllers.CreateUser.createUserRequestBody:
     properties:
@@ -66,20 +52,6 @@ definitions:
     - email
     - organization_name
     - password
-    type: object
-  controllers.UpdateEnvironment.updateEnvironmentRequestBody:
-    properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  controllers.UpdateStage.updateStageRequestBody:
-    properties:
-      name:
-        type: string
-    required:
-    - name
     type: object
   controllers.UpdateUserInformation.updateUserRequestBody:
     properties:
@@ -165,8 +137,6 @@ definitions:
         type: integer
       name:
         type: string
-      project_id:
-        type: integer
       updatedAt:
         type: string
     type: object
@@ -245,8 +215,6 @@ definitions:
         type: integer
       name:
         type: string
-      project_id:
-        type: integer
       updatedAt:
         type: string
     type: object
@@ -481,6 +449,29 @@ paths:
       summary: Validate a user
       tags:
       - Auth
+  /api/v1/envs:
+    get:
+      consumes:
+      - application/json
+      description: Get all environments
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"environments": "environments"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list environments"}'
+          schema:
+            type: string
+      summary: Get all environments
+      tags:
+      - Environments
   /api/v1/organizations/:
     get:
       consumes:
@@ -708,142 +699,6 @@ paths:
       summary: Create new agent
       tags:
       - Project Detail / Agents
-  /api/v1/projects/{project_id}/environments:
-    get:
-      consumes:
-      - application/json
-      description: Get all environments
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"environments": "environments"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to list environments"}'
-          schema:
-            type: string
-      summary: Get all environments
-      tags:
-      - Project Detail / Parameters / Environments
-    post:
-      consumes:
-      - application/json
-      description: Create new environment
-      parameters:
-      - description: Environment
-        in: body
-        name: Environment
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.CreateEnvironment.createEnvironmentRequestBody'
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"environment": "environment"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to create environment"}'
-          schema:
-            type: string
-      summary: Create new environment
-      tags:
-      - Project Detail / Parameters / Environments
-  /api/v1/projects/{project_id}/environments/{environment_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete environment
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Environment ID
-        in: path
-        name: environment_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"message": "Environment deleted"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to delete environment"}'
-          schema:
-            type: string
-      summary: Delete environment
-      tags:
-      - Project Detail / Parameters / Environments
-    put:
-      consumes:
-      - application/json
-      description: Update environment
-      parameters:
-      - description: Environment
-        in: body
-        name: Environment
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.UpdateEnvironment.updateEnvironmentRequestBody'
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Environment ID
-        in: path
-        name: environment_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"environment": "environment"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to update environment"}'
-          schema:
-            type: string
-      summary: Update environment
-      tags:
-      - Project Detail / Parameters / Environments
   /api/v1/projects/{project_id}/overview:
     get:
       consumes:
@@ -1038,137 +893,6 @@ paths:
       summary: Get latest parameter
       tags:
       - Project Detail / Parameters
-  /api/v1/projects/{project_id}/stages:
-    get:
-      consumes:
-      - application/json
-      description: Get all stages
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"stages": "stages"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to list stages"}'
-          schema:
-            type: string
-      summary: Get all stages
-      tags:
-      - Project Detail / Parameters / Stages
-    post:
-      consumes:
-      - application/json
-      description: Create new stage
-      parameters:
-      - description: Stage
-        in: body
-        name: Stage
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.CreateStage.createStageRequestBody'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: '{"message": "Stage created successfully", "stage": "stage"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to create stage"}'
-          schema:
-            type: string
-      summary: Create new stage
-      tags:
-      - Project Detail / Parameters / Stages
-  /api/v1/projects/{project_id}/stages/{stage_id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete stage
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Stage ID
-        in: path
-        name: stage_id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"message": "Stage deleted successfully"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to delete stage"}'
-          schema:
-            type: string
-      summary: Delete stage
-      tags:
-      - Project Detail / Parameters / Stages
-    put:
-      consumes:
-      - application/json
-      description: Update stage
-      parameters:
-      - description: Project ID
-        in: path
-        name: project_id
-        required: true
-        type: string
-      - description: Stage ID
-        in: path
-        name: stage_id
-        required: true
-        type: string
-      - description: Stage
-        in: body
-        name: Stage
-        required: true
-        schema:
-          $ref: '#/definitions/controllers.UpdateStage.updateStageRequestBody'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: '{"message": "Stage updated successfully", "stage": "stage"}'
-          schema:
-            type: string
-        "400":
-          description: '{"error": "Bad request"}'
-          schema:
-            type: string
-        "500":
-          description: '{"error": "Failed to update stage"}'
-          schema:
-            type: string
-      summary: Update stage
-      tags:
-      - Project Detail / Parameters / Stages
   /api/v1/projects/{project_id}/versions:
     get:
       consumes:
@@ -1454,4 +1178,27 @@ paths:
       summary: List archived users
       tags:
       - Setting / User
+  /api/v1/stages:
+    get:
+      consumes:
+      - application/json
+      description: Get all stages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"stages": "stages"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list stages"}'
+          schema:
+            type: string
+      summary: Get all stages
+      tags:
+      - Stages
 swagger: "2.0"

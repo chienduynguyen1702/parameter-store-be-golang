@@ -137,6 +137,54 @@ func SeedDatabase(db *gorm.DB) error {
 
 	log.Printf("\nDefault roles and permission data are seeded.\n")
 
+	stages := []models.Stage{
+		{
+			Name:        "Build",
+			Description: "Build stage",
+		},
+		{
+			Name:        "Test",
+			Description: "Test stage",
+		},
+		{
+			Name:        "Release",
+			Description: "Release stage",
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+		},
+	}
+	if err := db.Create(&stages).Error; err != nil {
+		return err
+	}
+	log.Printf("\nTest project stages data is seeded.\n")
+
+	envs := []models.Environment{
+		{
+			Name:        "Development",
+			Description: "Development environment",
+		},
+		{
+			Name:        "Testing",
+			Description: "Testing environment",
+		},
+		{
+			Name:        "Staging",
+			Description: "Staging environment",
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+		},
+	}
+	if err := db.Create(&envs).Error; err != nil {
+		return err
+	}
+	log.Printf("\nTest project environments data is seeded.\n")
+
+	//////////////////////////////////////////// Sample Org Data ////////////////////////////////////////////
+
 	organization := models.Organization{
 		Name:              "HUST",
 		AliasName:         "Hanoi University of Science and Technology",
@@ -275,80 +323,6 @@ func SeedDatabase(db *gorm.DB) error {
 	}
 
 	log.Printf("\nDefault relation user project role is seed\n")
-
-	stages := []models.Stage{
-		{
-			Name:        "Build",
-			Description: "Build stage",
-			ProjectID:   projects[0].ID,
-		},
-		{
-			Name:        "Deploy",
-			Description: "Deploy stage",
-			ProjectID:   projects[0].ID,
-		},
-		{
-			Name:        "Build",
-			Description: "Build stage",
-			ProjectID:   projects[1].ID,
-		},
-		{
-			Name:        "Deploy",
-			Description: "Deploy stage",
-			ProjectID:   projects[1].ID,
-		},
-		{
-			Name:        "Build",
-			Description: "Build stage",
-			ProjectID:   projects[2].ID,
-		},
-		{
-			Name:        "Deploy",
-			Description: "Deploy stage",
-			ProjectID:   projects[2].ID,
-		},
-	}
-	if err := db.Create(&stages).Error; err != nil {
-		return err
-	}
-	log.Printf("\nTest project stages data is seeded.\n")
-
-	envs := []models.Environment{
-		{
-			Name:        "Development",
-			Description: "Development environment",
-			ProjectID:   projects[0].ID,
-		},
-		{
-			Name:        "Production",
-			Description: "Production environment",
-			ProjectID:   projects[0].ID,
-		},
-		{
-			Name:        "Development",
-			Description: "Development environment",
-			ProjectID:   projects[1].ID,
-		},
-		{
-			Name:        "Production",
-			Description: "Production environment",
-			ProjectID:   projects[1].ID,
-		},
-		{
-			Name:        "Development",
-			Description: "Development environment",
-			ProjectID:   projects[2].ID,
-		},
-		{
-			Name:        "Production",
-			Description: "Production environment",
-			ProjectID:   projects[2].ID,
-		},
-	}
-	if err := db.Create(&envs).Error; err != nil {
-		return err
-	}
-	log.Printf("\nTest project environments data is seeded.\n")
 
 	vers := []models.Version{
 		{

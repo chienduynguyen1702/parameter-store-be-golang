@@ -7,7 +7,7 @@ import (
 )
 
 func RunSeed(db *gorm.DB) error {
-	// 1 - Seed organization , user, project, user_project_role
+	// 1 - Seed organization , user, project, user_project_role, default role, stage, environment, permission
 	if err := seed.SeedDatabase(db); err != nil {
 		return err
 	}
@@ -17,8 +17,8 @@ func RunSeed(db *gorm.DB) error {
 		return err
 	}
 
-	// 3 - Seed stages, environment, version, params for test project
-	if err := seed.SeedDataTestProjectStageEnvVer(db); err != nil {
+	// 3 - Seed version, params for test project
+	if err := seed.SeedDataTestProjectVersion(db); err != nil {
 		return err
 	}
 

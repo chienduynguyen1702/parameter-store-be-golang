@@ -24,20 +24,6 @@ func setupGroupProject(r *gin.RouterGroup) {
 			// agentGroup.PUT("/:agent_id", controllers.UpdateProjectInformation)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}
-		stageGroup := projectGroup.Group("/stages")
-		{
-			stageGroup.GET("/", controllers.GetStages)
-			stageGroup.POST("/", controllers.CreateStage, middleware.RequiredIsAdmin)
-			stageGroup.PUT("/:stage_id", controllers.UpdateStage, middleware.RequiredIsAdmin)
-			stageGroup.DELETE("/:stage_id", controllers.DeleteStage, middleware.RequiredIsAdmin)
-		}
-		environmentGroup := projectGroup.Group("/environments")
-		{
-			environmentGroup.GET("/", controllers.GetEnvironments)
-			environmentGroup.POST("/", controllers.CreateEnvironment, middleware.RequiredIsAdmin)
-			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironment, middleware.RequiredIsAdmin)
-			environmentGroup.DELETE("/:environment_id", controllers.DeleteEnvironment, middleware.RequiredIsAdmin)
-		}
 		versionGroup := projectGroup.Group("/versions")
 		{
 			versionGroup.GET("/", controllers.GetProjectVersions)
