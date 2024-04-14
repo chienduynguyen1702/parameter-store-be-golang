@@ -24,6 +24,7 @@ func Migration(db *gorm.DB) error {
 		log.Println("Failed to migrate Version models")
 		return err
 	}
+	db.Migrator().CreateIndex(&models.Version{}, "agent_name_project_id")
 	err = db.AutoMigrate(&models.Stage{})
 	if err != nil {
 		log.Println("Failed to migrate Stage models")

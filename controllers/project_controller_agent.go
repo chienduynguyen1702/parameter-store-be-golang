@@ -29,7 +29,7 @@ type agentResponse struct {
 // @Accept json
 // @Produce json
 // @Param project_id path int true "Project ID"
-// @Success 200 {array}	 models.Agent
+// @Success 200 {array}	 controllers.agentResponse
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
 // @Router /api/v1/projects/{project_id}/agents [get]

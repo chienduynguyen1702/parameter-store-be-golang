@@ -21,13 +21,13 @@ type Project struct {
 	IsArchived      bool      `gorm:"default:false" json:"is_archived"`
 	ArchivedBy      string    `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
 	ArchivedAt      time.Time `gorm:"type:timestamp;" json:"archived_at"`
-	LatestVersionID uint      `gorm:"foreignKey:LatestVersionID" json:"latest_version"`
-	LatestVersion   Version
+	LatestVersionID uint      `gorm:"foreignKey:LatestVersionID" json:"latest_version_id"`
 
-	Stages       []Stage           `gorm:"many2many:project_stages;" json:"stages"`
-	Environments []Environment     `gorm:"many2many:project_environments;" json:"environments"`
-	Versions     []Version         `gorm:"one2many:project_versions;" json:"versions"`
-	Agents       []Agent           `gorm:"one2many:project_agents;" json:"agents"`
-	Parameters   []Parameter       `gorm:"one2many:project_parameters;" json:"parameters"`
-	UserRoles    []UserRoleProject `gorm:"one2many:user_role_project;" json:"user_role"`
+	LatestVersion Version           `json:"latest_version"`
+	Stages        []Stage           `gorm:"many2many:project_stages;" json:"stages"`
+	Environments  []Environment     `gorm:"many2many:project_environments;" json:"environments"`
+	Versions      []Version         `gorm:"one2many:project_versions;" json:"versions"`
+	Agents        []Agent           `gorm:"one2many:project_agents;" json:"agents"`
+	Parameters    []Parameter       `gorm:"one2many:project_parameters;" json:"parameters"`
+	UserRoles     []UserRoleProject `gorm:"one2many:user_role_project;" json:"user_role"`
 }

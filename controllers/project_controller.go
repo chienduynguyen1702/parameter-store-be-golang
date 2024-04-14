@@ -35,6 +35,12 @@ func GetProjectAllInfo(c *gin.Context) {
 	result := DB.Preload("Stages").
 		Preload("Versions").
 		Preload("Versions.Parameters").
+		Preload("Versions.Parameters.Stage").
+		Preload("Versions.Parameters.Environment").
+		Preload("LatestVersion").
+		Preload("LatestVersion.Parameters").
+		Preload("LatestVersion.Parameters.Stage").
+		Preload("LatestVersion.Parameters.Environment").
 		Preload("Environments").
 		Preload("Agents").
 		Preload("Parameters").

@@ -665,7 +665,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Agent"
+                                "$ref": "#/definitions/controllers.agentResponse"
                             }
                         }
                     },
@@ -1228,6 +1228,264 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/parameters/archived": {
+            "get": {
+                "description": "Get archived parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Get archived parameters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Parameter"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get archived parameters\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters/{parameter_id}": {
+            "get": {
+                "description": "Get parameter by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Get parameter by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parameter ID",
+                        "name": "parameter_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Parameter"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Update parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parameter ID",
+                        "name": "parameter_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Parameter",
+                        "name": "Parameter",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.UpdateParameter.updateParameterRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameter updated\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters/{parameter_id}/archive": {
+            "put": {
+                "description": "Archive parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Archive parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parameter ID",
+                        "name": "parameter_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameter archived\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to archive parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive": {
+            "put": {
+                "description": "Unarchive parameter",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Unarchive parameter",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Parameter ID",
+                        "name": "parameter_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameter unarchived\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to unarchive parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/versions": {
             "get": {
                 "description": "Get versions of project",
@@ -1295,12 +1553,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Version",
-                        "name": "Version",
+                        "description": "Version name",
+                        "name": "versionName",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Version"
+                            "$ref": "#/definitions/controllers.CreateNewVersion.versionName"
                         }
                     }
                 ],
@@ -1748,6 +2006,17 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.CreateNewVersion.versionName": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.CreateParameter.createParameterRequestBody": {
             "type": "object",
             "required": [
@@ -1755,7 +2024,16 @@ const docTemplate = `{
                 "value"
             ],
             "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
                 "name": {
+                    "type": "string"
+                },
+                "stage": {
                     "type": "string"
                 },
                 "value": {
@@ -1797,6 +2075,55 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.UpdateParameter.updateParameterRequestBody": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stage": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.agentResponse": {
+            "type": "object",
+            "properties": {
+                "environment": {
+                    "$ref": "#/definitions/models.Environment"
+                },
+                "environment_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "projectID": {
+                    "type": "integer"
+                },
+                "stage": {
+                    "$ref": "#/definitions/models.Stage"
+                },
+                "stage_id": {
+                    "type": "integer"
+                },
+                "workflow_name": {
                     "type": "string"
                 }
             }
@@ -1882,6 +2209,13 @@ const docTemplate = `{
                 "api_token": {
                     "type": "string"
                 },
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "description": "foreign key to user model",
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -1949,6 +2283,13 @@ const docTemplate = `{
         "models.Parameter": {
             "type": "object",
             "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "description": "foreign key to user model",
+                    "type": "string"
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -1966,6 +2307,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "is_archived": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"

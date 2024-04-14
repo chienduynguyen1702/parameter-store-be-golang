@@ -6,9 +6,22 @@ definitions:
       username:
         type: string
     type: object
-  controllers.CreateParameter.createParameterRequestBody:
+  controllers.CreateNewVersion.versionName:
     properties:
       name:
+        type: string
+    required:
+    - name
+    type: object
+  controllers.CreateParameter.createParameterRequestBody:
+    properties:
+      description:
+        type: string
+      environment:
+        type: string
+      name:
+        type: string
+      stage:
         type: string
       value:
         type: string
@@ -41,6 +54,38 @@ definitions:
     - email
     - organization_name
     - password
+    type: object
+  controllers.UpdateParameter.updateParameterRequestBody:
+    properties:
+      description:
+        type: string
+      environment:
+        type: string
+      name:
+        type: string
+      stage:
+        type: string
+      value:
+        type: string
+    type: object
+  controllers.agentResponse:
+    properties:
+      environment:
+        $ref: '#/definitions/models.Environment'
+      environment_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      projectID:
+        type: integer
+      stage:
+        $ref: '#/definitions/models.Stage'
+      stage_id:
+        type: integer
+      workflow_name:
+        type: string
     type: object
   controllers.organizationBody:
     properties:
@@ -96,6 +141,11 @@ definitions:
     properties:
       api_token:
         type: string
+      archived_at:
+        type: string
+      archived_by:
+        description: foreign key to user model
+        type: string
       createdAt:
         type: string
       deletedAt:
@@ -140,6 +190,11 @@ definitions:
     type: object
   models.Parameter:
     properties:
+      archived_at:
+        type: string
+      archived_by:
+        description: foreign key to user model
+        type: string
       createdAt:
         type: string
       deletedAt:
@@ -152,6 +207,8 @@ definitions:
         type: integer
       id:
         type: integer
+      is_archived:
+        type: boolean
       name:
         type: string
       project_id:
@@ -637,7 +694,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Agent'
+              $ref: '#/definitions/controllers.agentResponse'
             type: array
         "400":
           description: '{"error": "Bad request"}'
@@ -1011,6 +1068,178 @@ paths:
       summary: Get latest parameter
       tags:
       - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/{parameter_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get parameter by ID
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Parameter'
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get parameter"}'
+          schema:
+            type: string
+      summary: Get parameter by ID
+      tags:
+      - Project Detail / Parameters
+    put:
+      consumes:
+      - application/json
+      description: Update parameter
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      - description: Parameter
+        in: body
+        name: Parameter
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.UpdateParameter.updateParameterRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameter updated"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to update parameter"}'
+          schema:
+            type: string
+      summary: Update parameter
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/{parameter_id}/archive:
+    put:
+      consumes:
+      - application/json
+      description: Archive parameter
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameter archived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to archive parameter"}'
+          schema:
+            type: string
+      summary: Archive parameter
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive:
+    put:
+      consumes:
+      - application/json
+      description: Unarchive parameter
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameter unarchived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to unarchive parameter"}'
+          schema:
+            type: string
+      summary: Unarchive parameter
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/archived:
+    get:
+      consumes:
+      - application/json
+      description: Get archived parameters
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Parameter'
+            type: array
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get archived parameters"}'
+          schema:
+            type: string
+      summary: Get archived parameters
+      tags:
+      - Project Detail / Parameters
   /api/v1/projects/{project_id}/versions:
     get:
       consumes:
@@ -1052,12 +1281,12 @@ paths:
         name: project_id
         required: true
         type: integer
-      - description: Version
+      - description: Version name
         in: body
-        name: Version
+        name: versionName
         required: true
         schema:
-          $ref: '#/definitions/models.Version'
+          $ref: '#/definitions/controllers.CreateNewVersion.versionName'
       produces:
       - application/json
       responses:
