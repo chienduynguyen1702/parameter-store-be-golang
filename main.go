@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"parameter-store-be/controllers"
@@ -46,6 +45,6 @@ func main() {
 		log.Fatal("$PORT must be set")
 	}
 
-	fmt.Println("Server is running on port", port)
+	log.Println("Server is running on port", port, "in", os.Getenv("GIN_MODE"), "mode.")
 	r.Run(":" + port)
 }

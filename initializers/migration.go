@@ -1,7 +1,6 @@
 package initializers
 
 import (
-	"fmt"
 	"log"
 	"parameter-store-be/models"
 
@@ -70,6 +69,6 @@ func Migration(db *gorm.DB) error {
 	if err != nil {
 		log.Println("Failed to migrate AgentLog models")
 	}
-	fmt.Printf("\nDatabase migrated\n")
+	log.Printf("Database migrated\n")
 	return nil
 }

@@ -37,20 +37,21 @@ func SetupV1Router() *gin.Engine {
 		setupGroupStage(v1)
 		setupGroupEnvironment(v1)
 	}
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	// Swagger setup
-	if gin.Mode() == gin.DebugMode {
+	if os.Getenv("ENVIRONMENT") == "dev" {
 		docs.SwaggerInfo.Title = "Parameter Store Backend API"
 		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
 		docs.SwaggerInfo.Version = "1.0"
 		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
-		// docs.SwaggerInfo.BasePath = "/api/v1"
 		docs.SwaggerInfo.Schemes = []string{"http"}
-	} else if gin.Mode() == gin.ReleaseMode {
+	} else if os.Getenv("ENVIRONMENT") == "production" {
 		docs.SwaggerInfo.Title = "Parameter Store Backend API"
 		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
 		docs.SwaggerInfo.Version = "1.0"
 		docs.SwaggerInfo.Host = "parameter-store-be-golang.up.railway.app"
-		// docs.SwaggerInfo.BasePath = "/api/v1"
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
