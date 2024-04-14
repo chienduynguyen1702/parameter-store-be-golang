@@ -347,7 +347,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organizations/projects": {
+        "/api/v1/project-list/": {
             "get": {
                 "description": "List projects",
                 "consumes": [
@@ -357,7 +357,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Organization"
+                    "Project List"
                 ],
                 "summary": "List projects",
                 "responses": {
@@ -390,7 +390,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Organization"
+                    "Project List"
                 ],
                 "summary": "Create new project",
                 "parameters": [
@@ -426,7 +426,42 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/organizations/projects/{project_id}": {
+        "/api/v1/project-list/archived": {
+            "get": {
+                "description": "List archived projects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project List"
+                ],
+                "summary": "List archived projects",
+                "responses": {
+                    "200": {
+                        "description": "{\"projects\": \"projects\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list archived projects\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/project-list/{project_id}": {
             "delete": {
                 "description": "Delete project",
                 "consumes": [
@@ -436,7 +471,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Organization"
+                    "Project List"
                 ],
                 "summary": "Delete project",
                 "parameters": [
@@ -463,6 +498,94 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to delete project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/project-list/{project_id}/archive": {
+            "put": {
+                "description": "Archive project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project List"
+                ],
+                "summary": "Archive project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Project archived\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to archive project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/project-list/{project_id}/unarchive": {
+            "put": {
+                "description": "Unarchive project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project List"
+                ],
+                "summary": "Unarchive project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Project unarchived\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to unarchive project\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -761,9 +884,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/{project_id}/agents/{agent_id}/restore": {
+        "/api/v1/projects/{project_id}/agents/{agent_id}/unarchive": {
             "put": {
-                "description": "Restore agent",
+                "description": "Unarchive agent",
                 "consumes": [
                     "application/json"
                 ],
@@ -773,7 +896,7 @@ const docTemplate = `{
                 "tags": [
                     "Project Detail / Agents"
                 ],
-                "summary": "Restore agent",
+                "summary": "Unarchive agent",
                 "parameters": [
                     {
                         "type": "string",
@@ -792,7 +915,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "{\"message\": \"Agent restored\"}",
+                        "description": "{\"message\": \"Agent unarchived\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -804,7 +927,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "{\"error\": \"Failed to restore agent\"}",
+                        "description": "{\"error\": \"Failed to unarchive agent\"}",
                         "schema": {
                             "type": "string"
                         }

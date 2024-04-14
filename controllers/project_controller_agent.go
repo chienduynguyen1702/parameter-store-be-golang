@@ -162,7 +162,7 @@ func ArchiveAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
 		return
 	}
-	if agent.IsArchived == true {
+	if agent.IsArchived {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent is already archived"})
 		return
 	}
@@ -171,18 +171,18 @@ func ArchiveAgent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Agent archived"})
 }
 
-// RestoreAgent godoc
-// @Summary Restore agent
-// @Description Restore agent
+// UnarchiveAgent godoc
+// @Summary Unarchive agent
+// @Description Unarchive agent
 // @Tags Project Detail / Agents
 // @Accept json
 // @Produce json
 // @Param agent_id path string true "Agent ID"
 // @Param project_id path int true "Project ID"
-// @Success 200 string {string} json "{"message": "Agent restored"}"
+// @Success 200 string {string} json "{"message": "Agent unarchived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
-// @Failure 500 string {string} json "{"error": "Failed to restore agent"}"
-// @Router /api/v1/projects/{project_id}/agents/{agent_id}/restore [put]
+// @Failure 500 string {string} json "{"error": "Failed to unarchive agent"}"
+// @Router /api/v1/projects/{project_id}/agents/{agent_id}/unarchive [put]
 func RestoreAgent(c *gin.Context) {
 	agentID := c.Param("agent_id")
 	projectID, err := strconv.Atoi(c.Param("project_id"))
@@ -200,7 +200,7 @@ func RestoreAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
 		return
 	}
-	if agent.IsArchived == false {
+	if !agent.IsArchived {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent is not archived"})
 		return
 	}

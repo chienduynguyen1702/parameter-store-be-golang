@@ -428,7 +428,7 @@ paths:
       summary: Update organization information
       tags:
       - Organization
-  /api/v1/organizations/projects:
+  /api/v1/project-list/:
     get:
       consumes:
       - application/json
@@ -450,7 +450,7 @@ paths:
             type: string
       summary: List projects
       tags:
-      - Organization
+      - Project List
     post:
       consumes:
       - application/json
@@ -479,8 +479,8 @@ paths:
             type: string
       summary: Create new project
       tags:
-      - Organization
-  /api/v1/organizations/projects/{project_id}:
+      - Project List
+  /api/v1/project-list/{project_id}:
     delete:
       consumes:
       - application/json
@@ -508,7 +508,88 @@ paths:
             type: string
       summary: Delete project
       tags:
-      - Organization
+      - Project List
+  /api/v1/project-list/{project_id}/archive:
+    put:
+      consumes:
+      - application/json
+      description: Archive project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Project archived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to archive project"}'
+          schema:
+            type: string
+      summary: Archive project
+      tags:
+      - Project List
+  /api/v1/project-list/{project_id}/unarchive:
+    put:
+      consumes:
+      - application/json
+      description: Unarchive project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Project unarchived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to unarchive project"}'
+          schema:
+            type: string
+      summary: Unarchive project
+      tags:
+      - Project List
+  /api/v1/project-list/archived:
+    get:
+      consumes:
+      - application/json
+      description: List archived projects
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"projects": "projects"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list archived projects"}'
+          schema:
+            type: string
+      summary: List archived projects
+      tags:
+      - Project List
   /api/v1/projects/{project_id}:
     get:
       consumes:
@@ -671,11 +752,11 @@ paths:
       summary: Archive agent
       tags:
       - Project Detail / Agents
-  /api/v1/projects/{project_id}/agents/{agent_id}/restore:
+  /api/v1/projects/{project_id}/agents/{agent_id}/unarchive:
     put:
       consumes:
       - application/json
-      description: Restore agent
+      description: Unarchive agent
       parameters:
       - description: Agent ID
         in: path
@@ -691,7 +772,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: '{"message": "Agent restored"}'
+          description: '{"message": "Agent unarchived"}'
           schema:
             type: string
         "400":
@@ -699,10 +780,10 @@ paths:
           schema:
             type: string
         "500":
-          description: '{"error": "Failed to restore agent"}'
+          description: '{"error": "Failed to unarchive agent"}'
           schema:
             type: string
-      summary: Restore agent
+      summary: Unarchive agent
       tags:
       - Project Detail / Agents
   /api/v1/projects/{project_id}/agents/archived:

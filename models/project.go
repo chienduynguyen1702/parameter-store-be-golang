@@ -18,6 +18,9 @@ type Project struct {
 	CurrentSprint   string    `gorm:"type:varchar(100)" json:"current_sprint"`
 	RepoURL         string    `gorm:"type:varchar(100)" json:"repo_url"`
 	RepoApiToken    string    `gorm:"type:varchar(100)" json:"repo_api_token"`
+	IsArchived      bool      `gorm:"default:false" json:"is_archived"`
+	ArchivedBy      string    `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
+	ArchivedAt      time.Time `gorm:"type:timestamp;" json:"archived_at"`
 	LatestVersionID uint      `gorm:"foreignKey:LatestVersionID" json:"latest_version"`
 	LatestVersion   Version
 

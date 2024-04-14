@@ -19,8 +19,8 @@ func setupGroupSetting(r *gin.RouterGroup) {
 			userGroup.DELETE("/:user_id", controllers.DeleteUser)
 
 			userGroup.GET("/archived", controllers.ListArchivedUser)
-			userGroup.PUT("/:user_id/archive", controllers.ArchiveUser)
-			userGroup.PUT("/:user_id/restore", controllers.RestoreUser)
+			userGroup.PATCH("/:user_id/archive", controllers.ArchiveUser)
+			userGroup.PATCH("/:user_id/unarchive", controllers.RestoreUser)
 		}
 		roleGroup := userSettingGroup.Group("/roles")
 		{

@@ -30,6 +30,7 @@ func SetupV1Router() *gin.Engine {
 	{
 		setupGroupAuth(v1)
 		setupGroupOrganization(v1)
+		setupGroupProjectList(v1)
 		setupGroupProject(v1)
 		setupGroupSetting(v1)
 		setupGroupAgent(v1)
