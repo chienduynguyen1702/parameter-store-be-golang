@@ -111,6 +111,13 @@ definitions:
       start_at:
         type: string
     type: object
+  controllers.requestAuthAgentBody:
+    properties:
+      api_token:
+        type: string
+    required:
+    - api_token
+    type: object
   controllers.userRequestBody:
     properties:
       confirm_password:
@@ -293,7 +300,37 @@ paths:
             type: string
       summary: Rerun workflow by agent
       tags:
-      - Project Detail / Agents
+      - Agents
+  /api/v1/agents/auth-parameters:
+    post:
+      consumes:
+      - application/json
+      description: Get parameter by auth agent
+      parameters:
+      - description: Request Auth Agent Body
+        in: body
+        name: requestAuthAgentBody
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.requestAuthAgentBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameter retrieved"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to retrieve parameter"}'
+          schema:
+            type: string
+      summary: Get parameter by auth agent
+      tags:
+      - Agents
   /api/v1/auth/login:
     post:
       consumes:

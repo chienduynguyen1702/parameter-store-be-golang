@@ -4,6 +4,52 @@
         "contact": {}
     },
     "paths": {
+        "/api/v1/agents/auth-parameters": {
+            "post": {
+                "description": "Get parameter by auth agent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Agents"
+                ],
+                "summary": "Get parameter by auth agent",
+                "parameters": [
+                    {
+                        "description": "Request Auth Agent Body",
+                        "name": "requestAuthAgentBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.requestAuthAgentBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameter retrieved\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to retrieve parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/agents/{agent_id}/rerun-workflow": {
             "post": {
                 "description": "Rerun workflow by agent",
@@ -14,7 +60,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Project Detail / Agents"
+                    "Agents"
                 ],
                 "summary": "Rerun workflow by agent",
                 "parameters": [
@@ -2150,6 +2196,17 @@
                     "type": "string"
                 },
                 "start_at": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.requestAuthAgentBody": {
+            "type": "object",
+            "required": [
+                "api_token"
+            ],
+            "properties": {
+                "api_token": {
                     "type": "string"
                 }
             }

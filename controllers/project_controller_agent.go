@@ -237,10 +237,49 @@ func CreateNewAgent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Agent created"})
 }
 
+type requestAuthAgentBody struct {
+	ApiToken string `json:"api_token" binding:"required"`
+}
+
+// GetParameterByAuthAgent godoc
+// @Summary Get parameter by auth agent
+// @Description Get parameter by auth agent
+// @Tags Agents
+// @Accept json
+// @Produce json
+// @Param requestAuthAgentBody body controllers.requestAuthAgentBody true "Request Auth Agent Body"
+// @Success 200 string {string} json "{"message": "Parameter retrieved"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to retrieve parameter"}"
+// @Router /api/v1/agents/auth-parameters [post]
+func GetParameterByAuthAgent(c *gin.Context) {
+	var reqBody requestAuthAgentBody
+	if err := c.ShouldBindJSON(&reqBody); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var agent models.Agent
+	result := DB.Where("api_token = ?", reqBody.ApiToken).First(&agent)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by API token"})
+		return
+	}
+
+	var project models.Project
+	if err := DB.
+		Preload("LatestVersion").
+		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? ", agent.StageID, agent.EnvironmentID).
+		First(&project, agent.ProjectID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
+}
+
 // RerunWorkFlowByAgent godoc
 // @Summary Rerun workflow by agent
 // @Description Rerun workflow by agent
-// @Tags Project Detail / Agents
+// @Tags Agents
 // @Accept json
 // @Produce json
 // @Param agent_id path string true "Agent ID"

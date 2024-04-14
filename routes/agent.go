@@ -10,5 +10,6 @@ func setupGroupAgent(r *gin.RouterGroup) {
 	agentGroup := r.Group("/agents")
 	{
 		agentGroup.POST("/:agent_id/rerun-workflow", controllers.RerunWorkFlowByAgent)
+		agentGroup.POST("/auth-parameters", controllers.GetParameterByAuthAgent)
 	}
 }
