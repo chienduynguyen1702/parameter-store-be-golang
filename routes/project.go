@@ -19,8 +19,12 @@ func setupGroupProject(r *gin.RouterGroup) {
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{
-			agentGroup.GET("/", controllers.GetProjectAgents)
+			agentGroup.GET("/", controllers.GetAgents)
 			agentGroup.POST("/", controllers.CreateNewAgent, middleware.RequiredIsAdmin)
+			agentGroup.GET("/:agent_id", controllers.GetAgentDetail)
+			agentGroup.PUT("/:agent_id/archive", controllers.ArchiveAgent, middleware.RequiredIsAdmin)
+			agentGroup.PUT("/:agent_id/restore", controllers.RestoreAgent, middleware.RequiredIsAdmin)
+			agentGroup.GET("/archived", controllers.GetArchivedAgents)
 			// agentGroup.PUT("/:agent_id", controllers.UpdateProjectInformation)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}

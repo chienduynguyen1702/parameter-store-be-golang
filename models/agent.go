@@ -14,4 +14,5 @@ type Agent struct {
 	EnvironmentID uint `gorm:"foreignKey:EnvironmentID;not null" json:"environment_id"`
 	Environment   Environment
 	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
+	IsArchived    bool   `gorm:"default:false" json:"is_archived"`
 }

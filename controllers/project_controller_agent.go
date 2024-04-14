@@ -33,7 +33,7 @@ type agentResponse struct {
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
 // @Router /api/v1/projects/{project_id}/agents [get]
-func GetProjectAgents(c *gin.Context) {
+func GetAgents(c *gin.Context) {
 	projectID, err := strconv.Atoi(c.Param("project_id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
@@ -41,7 +41,7 @@ func GetProjectAgents(c *gin.Context) {
 	}
 	var agents []models.Agent
 	DB.Preload("Stage").Preload("Environment").
-		Where("project_id = ?", projectID).Find(&agents)
+		Where("project_id = ? AND is_archived != ?", projectID, true).Find(&agents)
 
 	// Convert to response
 	var agentsResponse []agentResponse
@@ -58,6 +58,155 @@ func GetProjectAgents(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
+}
+
+// GetAgentDetail godoc
+// @Summary Get agent detail
+// @Description Get agent detail
+// @Tags Project Detail / Agents
+// @Accept json
+// @Produce json
+// @Param agent_id path string true "Agent ID"
+// @Param project_id path int true "Project ID"
+// @Success 200 {object} models.Agent
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get agent by ID"}"
+// @Router /api/v1/projects/{project_id}/agents/{agent_id} [get]
+func GetAgentDetail(c *gin.Context) {
+	agentID := c.Param("agent_id")
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	var agent models.Agent
+	result := DB.
+		Preload("Stage").
+		Preload("Environment").
+		First(&agent, agentID)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by ID"})
+		return
+	}
+	if agent.ProjectID != uint(projectID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"agent": agent})
+}
+
+// GetProjectArchivedAgents godoc
+// @Summary Get archived agents of project
+// @Description Get archived agents of project
+// @Tags Project Detail / Agents
+// @Accept json
+// @Produce json
+// @Param project_id path int true "Project ID"
+// @Success 200 {array}	 models.Agent
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get agents"}"
+// @Router /api/v1/projects/{project_id}/agents/archived [get]
+func GetArchivedAgents(c *gin.Context) {
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	var agents []models.Agent
+	DB.Preload("Stage").Preload("Environment").
+		Where("project_id = ? AND is_archived = ?", projectID, true).Find(&agents)
+
+	// Convert to response
+	var agentsResponse []agentResponse
+	for _, agent := range agents {
+		agentsResponse = append(agentsResponse, agentResponse{
+			ID:            agent.ID,
+			ProjectID:     agent.ProjectID,
+			Name:          agent.Name,
+			StageID:       agent.StageID,
+			Stage:         agent.Stage,
+			EnvironmentID: agent.EnvironmentID,
+			Environment:   agent.Environment,
+			WorkflowName:  agent.WorkflowName,
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
+}
+
+// ArchiveAgent godoc
+// @Summary Archive agent
+// @Description Archive agent
+// @Tags Project Detail / Agents
+// @Accept json
+// @Produce json
+// @Param agent_id path string true "Agent ID"
+// @Param project_id path int true "Project ID"
+// @Success 200 string {string} json "{"message": "Agent archived"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to archive agent"}"
+// @Router /api/v1/projects/{project_id}/agents/{agent_id}/archive [put]
+func ArchiveAgent(c *gin.Context) {
+	agentID := c.Param("agent_id")
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	var agent models.Agent
+	result := DB.First(&agent, agentID)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by ID"})
+		return
+	}
+	if agent.ProjectID != uint(projectID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
+		return
+	}
+	if agent.IsArchived == true {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent is already archived"})
+		return
+	}
+	agent.IsArchived = true
+	DB.Save(&agent)
+	c.JSON(http.StatusOK, gin.H{"message": "Agent archived"})
+}
+
+// RestoreAgent godoc
+// @Summary Restore agent
+// @Description Restore agent
+// @Tags Project Detail / Agents
+// @Accept json
+// @Produce json
+// @Param agent_id path string true "Agent ID"
+// @Param project_id path int true "Project ID"
+// @Success 200 string {string} json "{"message": "Agent restored"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to restore agent"}"
+// @Router /api/v1/projects/{project_id}/agents/{agent_id}/restore [put]
+func RestoreAgent(c *gin.Context) {
+	agentID := c.Param("agent_id")
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	var agent models.Agent
+	result := DB.First(&agent, agentID)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by ID"})
+		return
+	}
+	if agent.ProjectID != uint(projectID) {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
+		return
+	}
+	if agent.IsArchived == false {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent is not archived"})
+		return
+	}
+	agent.IsArchived = false
+	DB.Save(&agent)
+	c.JSON(http.StatusOK, gin.H{"message": "Agent restored"})
 }
 
 // CreateNewAgent godoc

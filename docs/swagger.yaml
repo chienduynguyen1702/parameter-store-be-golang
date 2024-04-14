@@ -106,6 +106,8 @@ definitions:
         type: integer
       id:
         type: integer
+      is_archived:
+        type: boolean
       name:
         type: string
       projectID:
@@ -599,6 +601,139 @@ paths:
           schema:
             type: string
       summary: Create new agent
+      tags:
+      - Project Detail / Agents
+  /api/v1/projects/{project_id}/agents/{agent_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get agent detail
+      parameters:
+      - description: Agent ID
+        in: path
+        name: agent_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Agent'
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get agent by ID"}'
+          schema:
+            type: string
+      summary: Get agent detail
+      tags:
+      - Project Detail / Agents
+  /api/v1/projects/{project_id}/agents/{agent_id}/archive:
+    put:
+      consumes:
+      - application/json
+      description: Archive agent
+      parameters:
+      - description: Agent ID
+        in: path
+        name: agent_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Agent archived"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to archive agent"}'
+          schema:
+            type: string
+      summary: Archive agent
+      tags:
+      - Project Detail / Agents
+  /api/v1/projects/{project_id}/agents/{agent_id}/restore:
+    put:
+      consumes:
+      - application/json
+      description: Restore agent
+      parameters:
+      - description: Agent ID
+        in: path
+        name: agent_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Agent restored"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to restore agent"}'
+          schema:
+            type: string
+      summary: Restore agent
+      tags:
+      - Project Detail / Agents
+  /api/v1/projects/{project_id}/agents/archived:
+    get:
+      consumes:
+      - application/json
+      description: Get archived agents of project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Agent'
+            type: array
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get agents"}'
+          schema:
+            type: string
+      summary: Get archived agents of project
       tags:
       - Project Detail / Agents
   /api/v1/projects/{project_id}/overview:
