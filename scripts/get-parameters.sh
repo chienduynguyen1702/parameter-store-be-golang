@@ -8,12 +8,13 @@ show_help() {
     echo "    -o, --output-file-name <file-name>  Name of the output file. Default is 'parameters.txt'."
     echo "Requirements:"
     echo "    - 'jq' must be installed."
-    echo "    - Environment variable \$ENDPOINT_API_TOKEN must be set in user profile."
+    echo "    - Environment variable \$PARAMETER_STORE_TOKEN must be set in user profile."
     echo ""
     echo "By Parameter Store - HUST - 20205059"
 }
 
 output_file="parameters.txt"
+log_file="get-parameters.log"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -35,20 +36,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ -z "$ENDPOINT_API_TOKEN" ]; then
-    echo "Environment variable \$ENDPOINT_API_TOKEN is not set."
+if [ -z "$PARAMETER_STORE_TOKEN" ]; then
+    echo "Environment variable \$PARAMETER_STORE_TOKEN is not set."
     exit 1
 fi
 
-response=$(curl -s -X POST https://parameter-store-be-golang.up.railway.app/api/v1/agents/get-parameters \
+response=$(curl -s -X POST https://parameter-store-be-golang.up.railway.app/api/v1/agents/auth-parameters \
     -H "Content-Type: application/json" \
-    -d "{\"api_token\":\"$ENDPOINT_API_TOKEN\"}")
+    -d "{\"api_token\":\"$PARAMETER_STORE_TOKEN\"}")
 
 if [ $? -ne 0 ]; then
     echo "Error executing curl command."
     exit 1
 fi
-echo "Response: $response"
 parameters=$(echo "$response" | jq -r '.parameters[] | "\(.name)=\(.value)"')
 
 if [ -z "$parameters" ]; then

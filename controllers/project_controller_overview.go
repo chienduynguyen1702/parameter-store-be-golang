@@ -89,11 +89,11 @@ func GetProjectOverView(c *gin.Context) {
 }
 
 type projectBody struct {
-	Name          string    `gorm:"type:varchar(100);not null" json:"name"`
-	StartAt       time.Time `json:"start_at"`
-	Description   string    `gorm:"type:text" json:"description"`
-	CurrentSprint string    `gorm:"type:varchar(100)" json:"current_sprint"`
-	RepoURL       string    `gorm:"type:varchar(100);not null" json:"repo_url"`
+	Name          string `gorm:"type:varchar(100);not null" json:"name"`
+	StartAt       string `json:"start_at"`
+	Description   string `gorm:"type:text" json:"description"`
+	CurrentSprint string `gorm:"type:varchar(100)" json:"current_sprint"`
+	RepoURL       string `gorm:"type:varchar(100);not null" json:"repo_url"`
 }
 
 // UpdateProjectInformation godoc
@@ -139,10 +139,16 @@ func UpdateProjectInformation(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
 		return
 	}
-
+	// parse string to time
+	startAt, err := time.Parse("2006-01-02", requestBody.StartAt)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start date"})
+		return
+	}
 	// Update project fields
 	project.Name = requestBody.Name
-	project.StartAt = requestBody.StartAt
+	project.StartAt = startAt
 	project.Description = requestBody.Description
 	project.CurrentSprint = requestBody.CurrentSprint
 	project.RepoURL = requestBody.RepoURL
@@ -197,7 +203,7 @@ func AddUserToProject(c *gin.Context) {
 	// Retrieve user from the database using the username
 	result := DB.Where("username = ? AND organization_id = ?", urb.Username, org_id).First(&addedUser)
 	if result.RowsAffected == 0 {
-		
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
 		return
 	}

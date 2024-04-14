@@ -268,7 +268,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	var project models.Project
 	if err := DB.
 		Preload("LatestVersion").
-		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? ", agent.StageID, agent.EnvironmentID).
+		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
 		First(&project, agent.ProjectID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
 		return

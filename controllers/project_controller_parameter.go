@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
@@ -186,7 +185,24 @@ func CreateParameter(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "Parameter created successfully"})
+	// rerun github actions workflow
+	// Get project by ID to get agent workflow name
+	responseStatusCode, latency, message, err := rerunCICDWorkflow(newParameter.ProjectID, newParameter.StageID, newParameter.EnvironmentID)
+	if responseStatusCode == 403 {
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"latency": latency,
+			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+		})
+	}
+	if err != nil {
+		c.JSON(responseStatusCode, gin.H{"error": message})
+		return
+	}
+	c.JSON(responseStatusCode, gin.H{
+		"status":  responseStatusCode,
+		"latency": latency,
+		"message": message})
 }
 
 // GetArchivedParameters godoc
@@ -245,7 +261,20 @@ func ArchiveParameter(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive parameter"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Parameter archived"})
+	// rerun github actions workflow
+	// Get project by ID to get agent workflow name
+	responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+	if responseStatusCode == 403 {
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"latency": latency,
+			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+		})
+	}
+	if err != nil {
+		c.JSON(responseStatusCode, gin.H{"error": message})
+		return
+	}
 }
 
 // UnarchiveParameter godoc
@@ -276,7 +305,24 @@ func UnarchiveParameter(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive parameter"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "Parameter unarchived"})
+	// rerun github actions workflow
+	// Get project by ID to get agent workflow name
+	responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+	if responseStatusCode == 403 {
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"latency": latency,
+			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+		})
+	}
+	if err != nil {
+		c.JSON(responseStatusCode, gin.H{"error": message})
+		return
+	}
+	c.JSON(responseStatusCode, gin.H{
+		"status":  responseStatusCode,
+		"latency": latency,
+		"message": message})
 }
 
 // UpdateParameter godoc
@@ -350,75 +396,118 @@ func UpdateParameter(c *gin.Context) {
 
 	// If parameter is updated at Name or Value or Stage or Environment
 	// then rerun github actions workflow
+	var l time.Duration
 	if currentParameter.Name != parameter.Name ||
 		currentParameter.Value != parameter.Value ||
 		currentParameter.StageID != parameter.StageID ||
 		currentParameter.EnvironmentID != parameter.EnvironmentID {
 		// Get project by ID to get agent workflow name
-		var project models.Project
-		var usedAgent models.Agent
-		if err := DB.
-			Preload("Agents", "stage_id = ? AND environment_id = ?", parameter.StageID, parameter.EnvironmentID).
-			First(&project, projectID).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project to rerun cicd"})
-			return
-		}
-		if project.Agents == nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agent to rerun cicd"})
-			return
-		}
-		if len(project.Agents) != 1 {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agent to rerun cicd"})
-			return
-		} else {
-			usedAgent = project.Agents[0]
-			if usedAgent.WorkflowName == "" {
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agent workflow name to rerun cicd"})
-				return
-			}
-		}
-		if project.RepoApiToken == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo api token to rerun cicd"})
-			return
-		}
-		if project.RepoURL == "" {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo URL to rerun cicd"})
-			return
-		}
-
-		githubRepository, err := github.ParseRepoURL(project.RepoURL)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repo URL to rerun cicd"})
-			return
-		}
-		startTime := time.Now()
-		responseStatusCode, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
-		latency := time.Since(startTime)
+		responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+		l = latency
 		if responseStatusCode == 403 {
 			c.JSON(http.StatusCreated, gin.H{
-				"latency": latency.String(),
-				"status":  responseStatusCode,
-				"message": fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL),
+				"status":  http.StatusCreated,
+				"latency": latency,
+				"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
 			})
-			return
 		}
 		if err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"latency": latency.String(),
-				"status":  responseStatusCode,
-				"message": err.Error(),
-			})
+			c.JSON(responseStatusCode, gin.H{"error": message})
 			return
 		}
-		c.JSON(http.StatusCreated, gin.H{
-			"status":  http.StatusOK,
-			"message": fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions", project.RepoURL),
-		})
+		c.JSON(responseStatusCode, gin.H{
+			"status":  responseStatusCode,
+			"latency": latency,
+			"message": message})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{
-		"status":  http.StatusOK,
-		"message": "Parameter updated",
+		"status":  http.StatusCreated,
+		"latency": l,
+		"message": "Parameter updated. Started rerun cicd. Check github actions of the project's repo.",
 	})
 }
+
+func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnvironmentID uint) (int, time.Duration, string, error) {
+	var project models.Project
+	var usedAgent models.Agent
+	if err := DB.
+		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
+		First(&project, updatedProjectID).Error; err != nil {
+		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
+	}
+	if project.Agents == nil {
+		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+	}
+	if len(project.Agents) != 1 {
+		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+	} else {
+		usedAgent = project.Agents[0]
+		if usedAgent.WorkflowName == "" {
+			return http.StatusInternalServerError, 0, "Failed to get agent workflow name to rerun cicd", nil
+		}
+	}
+	if project.RepoApiToken == "" {
+		return http.StatusInternalServerError, 0, "Failed to get repo api token to rerun cicd", nil
+	}
+	if project.RepoURL == "" {
+		return http.StatusInternalServerError, 0, "Failed to get repo URL to rerun cicd", nil
+	}
+
+	githubRepository, err := github.ParseRepoURL(project.RepoURL)
+	if err != nil {
+		return http.StatusNotFound, 0, "Failed to parse repo URL to rerun cicd", err
+	}
+	startTime := time.Now()
+	responseStatusCode, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
+	latency := time.Since(startTime)
+	if responseStatusCode == 403 {
+		return 403, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
+	}
+	if err != nil {
+		return http.StatusInternalServerError, 0, err.Error(), nil
+	}
+	return http.StatusCreated, latency, fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions", project.RepoURL), nil
+}
+
+// func rerunCICDWorkflowHandler(c *gin.Context) {
+// 	var project models.Project
+// 	var usedAgent models.Agent
+// 	if err := DB.
+// 		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
+// 		First(&project, updatedProjectID).Error; err != nil {
+// 		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
+// 	}
+// 	if project.Agents == nil {
+// 		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+// 	}
+// 	if len(project.Agents) != 1 {
+// 		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+// 	} else {
+// 		usedAgent = project.Agents[0]
+// 		if usedAgent.WorkflowName == "" {
+// 			return http.StatusInternalServerError, 0, "Failed to get agent workflow name to rerun cicd", nil
+// 		}
+// 	}
+// 	if project.RepoApiToken == "" {
+// 		return http.StatusInternalServerError, 0, "Failed to get repo api token to rerun cicd", nil
+// 	}
+// 	if project.RepoURL == "" {
+// 		return http.StatusInternalServerError, 0, "Failed to get repo URL to rerun cicd", nil
+// 	}
+
+// 	githubRepository, err := github.ParseRepoURL(project.RepoURL)
+// 	if err != nil {
+// 		return http.StatusNotFound, 0, "Failed to parse repo URL to rerun cicd", err
+// 	}
+// 	startTime := time.Now()
+// 	responseStatusCode, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
+// 	latency := time.Since(startTime)
+// 	if responseStatusCode == 403 {
+// 		return 403, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
+// 	}
+// 	if err != nil {
+// 		return http.StatusInternalServerError, 0, err.Error(), nil
+// 	}
+// 	return http.StatusCreated, latency, fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions", project.RepoURL), nil
+// }
