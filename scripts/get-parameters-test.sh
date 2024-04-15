@@ -41,7 +41,7 @@ if [ -z "$PARAMETER_STORE_TOKEN" ]; then
     exit 1
 fi
 
-response=$(curl -s -X POST http://localhost:8088/api/v1/agents/auth-parameters \
+response=$(curl -s -X POST http://localhost:8086/api/v1/agents/auth-parameters \
     -H "Content-Type: application/json" \
     -d "{\"api_token\":\"$PARAMETER_STORE_TOKEN\"}")
 

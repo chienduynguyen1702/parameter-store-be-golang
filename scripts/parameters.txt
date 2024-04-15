@@ -1,0 +1,4 @@
+GIN_MODE=release
+ENABLE_SWAGGER=true
+zxcv=zxcv
+TEST=123412341234
