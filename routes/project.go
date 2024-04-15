@@ -46,12 +46,12 @@ func setupGroupProject(r *gin.RouterGroup) {
 			parameterGroup.PATCH("/:parameter_id/archive", controllers.ArchiveParameter, middleware.RequiredIsAdmin)
 			parameterGroup.PATCH("/:parameter_id/unarchive", controllers.UnarchiveParameter, middleware.RequiredIsAdmin)
 		}
-		// trackingGroup := projectGroup.Group("/tracking")
-		// {
-		// trackingGroup.GET("/", controllers.GetProjectTracking)
-		// trackingGroup.POST("/", controllers.CreateNewTracking)
-		// trackingGroup.PUT("/:tracking_id", controllers.UpdateTracking)
-		// trackingGroup.DELETE("/:tracking_id", controllers.DeleteTracking)
-		// }
+		trackingGroup := projectGroup.Group("/tracking")
+		{
+			trackingGroup.GET("/", controllers.GetProjectTracking)
+			// trackingGroup.POST("/", controllers.CreateNewTracking)
+			// trackingGroup.PUT("/:tracking_id", controllers.UpdateTracking)
+			// trackingGroup.DELETE("/:tracking_id", controllers.DeleteTracking)
+		}
 	}
 }

@@ -277,6 +277,20 @@ type requestAuthAgentBody struct {
 	ApiToken string `json:"api_token" binding:"required"`
 }
 
+func agentLog(agent models.Agent, project models.Project, action string, path string, responseStatusCode int, latency time.Duration) {
+	log := models.AgentLog{
+		AgentID:        agent.ID,
+		Agent:          agent,
+		Action:         action,
+		ProjectID:      project.ID,
+		Project:        project,
+		Path:           path,
+		ResponseStatus: responseStatusCode,
+		Latency:        int(latency.Milliseconds()),
+	}
+	DB.Create(&log)
+}
+
 // GetParameterByAuthAgent godoc
 // @Summary Get parameter by auth agent
 // @Description Get parameter by auth agent
@@ -300,7 +314,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by API token"})
 		return
 	}
-
+	startTime := time.Now()
 	var project models.Project
 	if err := DB.
 		Preload("LatestVersion").
@@ -309,6 +323,8 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
 		return
 	}
+	latency := time.Since(startTime)
+	agentLog(agent, project, "Get Params", "POST /api/v1/agents/auth-parameters", http.StatusOK, latency)
 	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
 }
 
@@ -363,6 +379,7 @@ func RerunWorkFlowByAgent(c *gin.Context) {
 		})
 		return
 	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"latency": latency.String(),
 		"status":  responseStatusCode,

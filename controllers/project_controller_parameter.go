@@ -42,6 +42,8 @@ func GetProjectParameters(c *gin.Context) {
 		Preload("LatestVersion").
 		// where parameter is not archived
 		Preload("LatestVersion.Parameters", "is_archived = ?", false).
+		Preload("LatestVersion.Parameters.Stage").
+		Preload("LatestVersion.Parameters.Environment").
 		First(&project, projectID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
@@ -171,6 +173,8 @@ func CreateParameter(c *gin.Context) {
 		ProjectID:     project.ID,
 		StageID:       stage.ID,
 		EnvironmentID: environment.ID,
+		Stage:         stage,
+		Environment:   environment,
 	}
 
 	// Append the new parameter to the latest version's Parameters slice
