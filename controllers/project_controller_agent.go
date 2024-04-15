@@ -209,6 +209,14 @@ func RestoreAgent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Agent restored"})
 }
 
+type agentRequestBody struct {
+	Name         string `json:"name" binding:"required"`
+	Stage        string `json:"stage" binding:"required"`
+	Environment  string `json:"environment" binding:"required"`
+	WorkflowName string `json:"workflow_name" binding:"required"`
+	Description  string `json:"description"`
+}
+
 // CreateNewAgent godoc
 // @Summary Create new agent
 // @Description Create new agent
@@ -227,13 +235,41 @@ func CreateNewAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
-	var agent models.Agent
+	var agent agentRequestBody
 	if err := c.ShouldBindJSON(&agent); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	agent.ProjectID = uint(projectID)
-	DB.Create(&agent)
+	// find stage and environment by name agent provided
+	var stage models.Stage
+	result := DB.Where("name = ?", agent.Stage).First(&stage)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get stage by name"})
+		return
+	}
+	var environment models.Environment
+	result = DB.Where("name = ?", agent.Environment).First(&environment)
+	if result.Error != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get environment by name"})
+		return
+	}
+	// create new agent
+	newAgent := models.Agent{
+		ProjectID:     uint(projectID),
+		Name:          agent.Name,
+		StageID:       stage.ID,
+		EnvironmentID: environment.ID,
+		WorkflowName:  agent.WorkflowName,
+		Description:   agent.Description,
+		IsArchived:    false,
+		ArchivedBy:    "",
+		ArchivedAt:    time.Time{},
+	}
+	if err := DB.Create(&newAgent).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create agent"})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{"message": "Agent created"})
 }
 
