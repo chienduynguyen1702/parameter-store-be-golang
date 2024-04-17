@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"parameter-store-be/models"
@@ -324,7 +325,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	latency := time.Since(startTime)
-	agentLog(agent, project, "Get Params", "applied previous updated param", http.StatusOK, latency)
+	agentLog(agent, project, "Get Params", "Succeed: Applied previous updated param", http.StatusOK, latency)
 	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
 }
 
@@ -371,6 +372,7 @@ func RerunWorkFlowByAgent(c *gin.Context) {
 
 	if responseStatusCode == http.StatusForbidden { // if workflow is already running
 		responseStatusCode = http.StatusAccepted
+		responseBodyMessage = "CICD is already running"
 	}
 	if responseStatusCode == http.StatusCreated { // if workflow is rerun
 		responseBodyMessage = "CICD is starting rerun"
@@ -399,15 +401,17 @@ func rerunLog(projectID uint, agentID uint, responseStatus int, message string, 
 		ResponseStatus: responseStatus,
 		Action:         "Rerun Workflow",
 		Latency:        int(latency.Milliseconds()),
+		// Message:        message,
 	}
 	switch cicdResponseCode {
 	case 201:
 		log.Message = "Created: CICD is starting rerun"
-	case 401:
-	case 403:
+	case 202:
 		log.Message = "Accepted: CICD is already running"
-		log.ResponseStatus = 202
+	case 401:
+		log.Message = fmt.Sprintf("Unauthorized: %s", message)
 	case 404:
+		log.Message = fmt.Sprintf("Not Found: %s", message)
 	case 500:
 		log.Message = "Internal Server Error"
 	}

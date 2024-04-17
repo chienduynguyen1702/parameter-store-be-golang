@@ -102,11 +102,11 @@ func getWorkflowID(repoOwner string, repoName string, workflowName string, apiTo
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusUnauthorized {
 		// fmt.Println("Error response get workflow ID:", response.Status)
-		return "Unauthorized with token", response.StatusCode, fmt.Errorf("error to authenticate repo github.com/%v/%v: %v", repoOwner, repoName, response.Status)
+		return "", response.StatusCode, fmt.Errorf("unauthenticated by token to repo github.com/%v/%v", repoOwner, repoName)
 	}
 	if response.StatusCode == http.StatusNotFound {
 		// fmt.Println("Error response get workflow ID:", response.Status)
-		return "Not found owner or repo name", response.StatusCode, fmt.Errorf("error to find repo github.com/%v/%v: %v", repoOwner, repoName, response.Status)
+		return "", response.StatusCode, fmt.Errorf("error to find repo github.com/%v/%v", repoOwner, repoName)
 	}
 	// Read the response body
 	responseBody, err := io.ReadAll(response.Body)
@@ -138,7 +138,7 @@ func getWorkflowID(repoOwner string, repoName string, workflowName string, apiTo
 		}
 	}
 	if !workflowIsFound {
-		return "", http.StatusNotFound, fmt.Errorf("workflow name \"%s\" not found", workflowName)
+		return "", http.StatusNotFound, fmt.Errorf("not found workflow name \"%s\" in github.com/%v/%v", workflowName, repoOwner, repoName)
 	}
 
 	return idMatchedWorkflow, response.StatusCode, nil
