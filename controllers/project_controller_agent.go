@@ -277,14 +277,14 @@ type requestAuthAgentBody struct {
 	ApiToken string `json:"api_token" binding:"required"`
 }
 
-func agentLog(agent models.Agent, project models.Project, action string, path string, responseStatusCode int, latency time.Duration) {
+func agentLog(agent models.Agent, project models.Project, action string, message string, responseStatusCode int, latency time.Duration) {
 	log := models.AgentLog{
 		AgentID:        agent.ID,
 		Agent:          agent,
 		Action:         action,
 		ProjectID:      project.ID,
 		Project:        project,
-		Path:           path,
+		Message:        message,
 		ResponseStatus: responseStatusCode,
 		Latency:        int(latency.Milliseconds()),
 	}
@@ -324,7 +324,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	latency := time.Since(startTime)
-	agentLog(agent, project, "Get Params", "POST /api/v1/agents/auth-parameters", http.StatusOK, latency)
+	agentLog(agent, project, "Get Params", "applied previous updated param", http.StatusOK, latency)
 	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
 }
 
@@ -341,7 +341,6 @@ func GetParameterByAuthAgent(c *gin.Context) {
 // @Router /api/v1/agents/{agent_id}/rerun-workflow [post]
 func RerunWorkFlowByAgent(c *gin.Context) {
 	agent_id := c.Param("agent_id")
-
 	var agent models.Agent
 	result := DB.
 		Preload("Stage").
@@ -367,22 +366,51 @@ func RerunWorkFlowByAgent(c *gin.Context) {
 		return
 	}
 	startTime := time.Now()
-	responseStatusCode, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, agent.WorkflowName, project.RepoApiToken)
+	responseStatusCode, responseBodyMessage, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, agent.WorkflowName, project.RepoApiToken)
 	latency := time.Since(startTime)
+
+	if responseStatusCode == http.StatusForbidden { // if workflow is already running
+		responseStatusCode = http.StatusAccepted
+	}
+	if responseStatusCode == http.StatusCreated { // if workflow is rerun
+		responseBodyMessage = "CICD is starting rerun"
+	}
 	if err != nil {
-		// fmt.Println(err)
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
+		rerunLog(project.ID, agent.ID, responseStatusCode, responseBodyMessage, responseStatusCode, latency)
+		c.JSON(responseStatusCode, gin.H{
 			"latency": latency.String(),
 			"status":  responseStatusCode,
-			"message": err.Error(),
+			"message": responseBodyMessage,
 		})
 		return
 	}
-
-	c.JSON(http.StatusCreated, gin.H{
+	rerunLog(project.ID, agent.ID, responseStatusCode, responseBodyMessage, responseStatusCode, latency)
+	c.JSON(responseStatusCode, gin.H{
 		"latency": latency.String(),
 		"status":  responseStatusCode,
-		"message": "rerun workflow by agent successfully",
+		"message": responseBodyMessage,
 	})
+}
+
+func rerunLog(projectID uint, agentID uint, responseStatus int, message string, cicdResponseCode int, latency time.Duration) {
+	log := models.AgentLog{
+		ProjectID:      projectID,
+		AgentID:        agentID,
+		ResponseStatus: responseStatus,
+		Action:         "Rerun Workflow",
+		Latency:        int(latency.Milliseconds()),
+	}
+	switch cicdResponseCode {
+	case 201:
+		log.Message = "Created: CICD is starting rerun"
+	case 401:
+	case 403:
+		log.Message = "Accepted: CICD is already running"
+		log.ResponseStatus = 202
+	case 404:
+	case 500:
+		log.Message = "Internal Server Error"
+	}
+
+	DB.Create(&log)
 }

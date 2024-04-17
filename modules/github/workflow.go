@@ -26,10 +26,11 @@ input
 - workflowName : name of the workflow
 - apiToken : github api token
 output
-- status : if Rerun is successful or not
+- response message: message of the action rerun
+- response status : status of the action rerun
 - error : error if any
 */
-func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiToken string) (int, error) {
+func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiToken string) (int, string, error) {
 	// API docs : https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#re-run-a-workflow
 	// curl -L \
 	// -X POST \
@@ -41,35 +42,24 @@ func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiTo
 	// 1 - Get the latest workflow run
 	workflowID, statusCode, err := getWorkflowID(repoOwner, repoName, workflowName, apiToken)
 	if err != nil {
-		return statusCode, err
+		return statusCode, err.Error(), err
 	}
 	// 2 - Rerun the workflow
 	client := &http.Client{}
 	rerunWorkflowRequest, err := makeNewRerunWorkflowRequest(repoOwner, repoName, workflowID, apiToken)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("error creating request for rerun: %v", err)
+		return http.StatusInternalServerError, "", fmt.Errorf("error creating request for rerun: %v", err)
 	}
 	// Send the request
-	response, err := client.Do(rerunWorkflowRequest)
-	if err != nil {
-		return response.StatusCode, fmt.Errorf("error sending request for rerun: %v", err)
-	}
+	response, errReq := client.Do(rerunWorkflowRequest)
 
 	// Read the response body
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return http.StatusInternalServerError, fmt.Errorf("error reading response for rerun: %v", err)
+		return http.StatusInternalServerError, "", fmt.Errorf("error reading response for rerun: %v", err)
 	}
 
-	// debug
-	// fmt.Printf("Rerun workflow response: %s\n", string(responseBody))
-
-	// if resonse status !=201 then return error
-	if response.StatusCode != 201 {
-		return response.StatusCode, fmt.Errorf("error rerunning workflow: %s ", string(responseBody))
-	}
-
-	return response.StatusCode, nil
+	return response.StatusCode, string(responseBody), errReq
 }
 func makeNewRerunWorkflowRequest(repoOwner string, repoName string, workflowID string, apiToken string) (*http.Request, error) {
 	// Create a new POST request
@@ -106,11 +96,18 @@ func getWorkflowID(repoOwner string, repoName string, workflowName string, apiTo
 	// Send the GET request
 	response, err := client.Do(listWorkflowRequest)
 	if err != nil {
-		// fmt.Println("Error sending request to get workflow ID:", err)
+		fmt.Println("Error sending request to get workflow ID:", err)
 		return "", response.StatusCode, fmt.Errorf("error sending request to get workflow ID: %v", err)
 	}
 	defer response.Body.Close()
-
+	if response.StatusCode == http.StatusUnauthorized {
+		// fmt.Println("Error response get workflow ID:", response.Status)
+		return "Unauthorized with token", response.StatusCode, fmt.Errorf("error to authenticate repo github.com/%v/%v: %v", repoOwner, repoName, response.Status)
+	}
+	if response.StatusCode == http.StatusNotFound {
+		// fmt.Println("Error response get workflow ID:", response.Status)
+		return "Not found owner or repo name", response.StatusCode, fmt.Errorf("error to find repo github.com/%v/%v: %v", repoOwner, repoName, response.Status)
+	}
 	// Read the response body
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {

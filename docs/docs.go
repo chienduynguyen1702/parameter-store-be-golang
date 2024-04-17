@@ -1532,6 +1532,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/tracking": {
+            "get": {
+                "description": "Get project tracking",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Tracking"
+                ],
+                "summary": "Get project tracking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"tracking\": \"tracking\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get project tracking\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/versions": {
             "get": {
                 "description": "Get versions of project",
@@ -2278,6 +2322,9 @@ const docTemplate = `{
                 },
                 "deletedAt": {
                     "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
                 },
                 "environment": {
                     "$ref": "#/definitions/models.Environment"

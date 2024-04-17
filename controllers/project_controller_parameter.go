@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
@@ -463,8 +464,9 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 		return http.StatusNotFound, 0, "Failed to parse repo URL to rerun cicd", err
 	}
 	startTime := time.Now()
-	responseStatusCode, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
+	responseStatusCode, responseMessage, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
 	latency := time.Since(startTime)
+	log.Println(responseMessage)
 	if responseStatusCode == 403 {
 		return 403, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
 	}
