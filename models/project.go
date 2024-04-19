@@ -24,8 +24,8 @@ type Project struct {
 	LatestVersionID uint      `gorm:"foreignKey:LatestVersionID" json:"latest_version_id"`
 
 	LatestVersion Version           `json:"latest_version"`
-	Stages        []Stage           `gorm:"many2many:project_stages;" json:"stages"`
-	Environments  []Environment     `gorm:"many2many:project_environments;" json:"environments"`
+	Stages        []Stage           `gorm:"one2many:project_stages;" json:"stages"`
+	Environments  []Environment     `gorm:"one2many:project_environments;" json:"environments"`
 	Versions      []Version         `gorm:"one2many:project_versions;" json:"versions"`
 	Agents        []Agent           `gorm:"one2many:project_agents;" json:"agents"`
 	Parameters    []Parameter       `gorm:"one2many:project_parameters;" json:"parameters"`

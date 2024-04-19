@@ -25,7 +25,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 			agentGroup.PATCH("/:agent_id/archive", controllers.ArchiveAgent, middleware.RequiredIsAdmin)
 			agentGroup.PATCH("/:agent_id/unarchive", controllers.RestoreAgent, middleware.RequiredIsAdmin)
 			agentGroup.GET("/archived", controllers.GetArchivedAgents)
-			// agentGroup.PUT("/:agent_id", controllers.UpdateProjectInformation)
+			agentGroup.PUT("/:agent_id", controllers.UpdateAgent, middleware.RequiredIsAdmin)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}
 		versionGroup := projectGroup.Group("/versions")
@@ -52,6 +52,30 @@ func setupGroupProject(r *gin.RouterGroup) {
 			// trackingGroup.POST("/", controllers.CreateNewTracking)
 			// trackingGroup.PUT("/:tracking_id", controllers.UpdateTracking)
 			// trackingGroup.DELETE("/:tracking_id", controllers.DeleteTracking)
+		}
+		stageGroup := projectGroup.Group("/stages")
+		{
+			stageGroup.GET("/", controllers.GetListStageInProject)
+			stageGroup.POST("/", controllers.CreateStageInProject, middleware.RequiredIsAdmin)
+			stageGroup.PUT("/:stage_id", controllers.UpdateStageInProject, middleware.RequiredIsAdmin)
+
+			stageGroup.GET("/:stage_id", controllers.GetStageInProject)
+
+			stageGroup.GET("/archived", controllers.GetListArchivedStageInProject)
+			stageGroup.PATCH("/:stage_id/archive", controllers.ArchiveStageInProject, middleware.RequiredIsAdmin)
+			stageGroup.PATCH("/:stage_id/unarchive", controllers.UnarchiveStageInProject, middleware.RequiredIsAdmin)
+		}
+		environmentGroup := projectGroup.Group("/environments")
+		{
+			environmentGroup.GET("/", controllers.GetListEnvironmentInProject)
+			environmentGroup.POST("/", controllers.CreateEnvironmentInProject, middleware.RequiredIsAdmin)
+			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironmentInProject, middleware.RequiredIsAdmin)
+
+			environmentGroup.GET("/:environment_id", controllers.GetEnvironmentInProject)
+
+			environmentGroup.GET("/archived", controllers.GetListArchivedEnvironmentInProject)
+			environmentGroup.PATCH("/:environment_id/archive", controllers.ArchiveEnvironmentInProject, middleware.RequiredIsAdmin)
+			environmentGroup.PATCH("/:environment_id/unarchive", controllers.UnarchiveEnvironmentInProject, middleware.RequiredIsAdmin)
 		}
 	}
 }

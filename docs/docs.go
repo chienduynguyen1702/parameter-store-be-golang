@@ -755,7 +755,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Agent"
+                            "$ref": "#/definitions/controllers.agentRequestBody"
                         }
                     }
                 ],
@@ -981,6 +981,356 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/environments": {
+            "get": {
+                "description": "Get all environments in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Get all environments in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"environments\": \"environments\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list environments\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a environment in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Create a environment in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Environment creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.environmentRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "{\"message\": \"Environment created successfully\", \"environment\": \"environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to create environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/environments/archived": {
+            "get": {
+                "description": "Get all archived environments in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Get all archived environments in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"environments\": \"environments\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list archived environments\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/environments/{environment_id}": {
+            "get": {
+                "description": "Get a environment in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Get a environment in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Environment ID",
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"environment\": \"environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a environment in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Update a environment in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Environment ID",
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Environment update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.environmentRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Environment updated successfully\", \"environment\": \"environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/environments/{environment_id}/archive": {
+            "patch": {
+                "description": "Archive a environment in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Archive a environment in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Environment ID",
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Environment archived successfully\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to archive environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/environments/{environment_id}/unarchive": {
+            "patch": {
+                "description": "Unarchive a environment in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Environments"
+                ],
+                "summary": "Unarchive a environment in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Environment ID",
+                        "name": "environment_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Environment unarchived successfully\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to unarchive environment\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/overview": {
             "get": {
                 "description": "Get project overview",
@@ -1122,6 +1472,57 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to add user to project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/overview/remove-user/{user_id}": {
+            "delete": {
+                "description": "Remove user from project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Remove user from project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User removed from project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to remove user from project\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1525,6 +1926,356 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to unarchive parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/stages": {
+            "get": {
+                "description": "Get all stages in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Get all stages in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"stages\": \"stages\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list stages\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Create a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Stage creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.stageRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "{\"message\": \"Stage created successfully\", \"stage\": \"stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to create stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/stages/archived": {
+            "get": {
+                "description": "Get all archived stages in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Get all archived stages in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"stages\": \"stages\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to list archived stages\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/stages/{stage_id}": {
+            "get": {
+                "description": "Get a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Get a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage ID",
+                        "name": "stage_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"stage\": \"stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Update a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage ID",
+                        "name": "stage_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Stage update request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.stageRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Stage updated successfully\", \"stage\": \"stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/stages/{stage_id}/archive": {
+            "patch": {
+                "description": "Archive a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Archive a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage ID",
+                        "name": "stage_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Stage archived successfully\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to archive stage\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/stages/{stage_id}/unarchive": {
+            "patch": {
+                "description": "Unarchive a stage in a project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Stages"
+                ],
+                "summary": "Unarchive a stage in a project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Stage ID",
+                        "name": "stage_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Stage unarchived successfully\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to unarchive stage\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -2189,6 +2940,36 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.agentRequestBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "workflow_name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "environment": {
+                    "type": "string"
+                },
+                "environment_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "stage": {
+                    "type": "string"
+                },
+                "stage_id": {
+                    "type": "integer"
+                },
+                "workflow_name": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.agentResponse": {
             "type": "object",
             "properties": {
@@ -2214,6 +2995,23 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "workflow_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.environmentRequestBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2247,6 +3045,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "repo_api_token": {
+                    "type": "string"
+                },
                 "repo_url": {
                     "type": "string"
                 },
@@ -2262,6 +3063,23 @@ const docTemplate = `{
             ],
             "properties": {
                 "api_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.stageRequestBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "color": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -2361,6 +3179,12 @@ const docTemplate = `{
         "models.Environment": {
             "type": "object",
             "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "type": "string"
+                },
                 "color": {
                     "type": "string"
                 },
@@ -2376,8 +3200,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_archived": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "project_id": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -2438,6 +3268,12 @@ const docTemplate = `{
         "models.Stage": {
             "type": "object",
             "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "type": "string"
+                },
                 "color": {
                     "type": "string"
                 },
@@ -2453,8 +3289,14 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_archived": {
+                    "type": "boolean"
+                },
                 "name": {
                     "type": "string"
+                },
+                "project_id": {
+                    "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"

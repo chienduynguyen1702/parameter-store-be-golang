@@ -21,6 +21,8 @@ type agentResponse struct {
 	EnvironmentID uint `gorm:"foreignKey:EnvironmentID;not null" json:"environment_id"`
 	Environment   models.Environment
 	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
+	Description   string `gorm:"type:varchar(100);not null" json:"description"`
+	LastUsedAt    time.Time
 }
 
 // GetProjectAgents godoc
@@ -53,9 +55,11 @@ func GetAgents(c *gin.Context) {
 			Name:          agent.Name,
 			StageID:       agent.StageID,
 			Stage:         agent.Stage,
+			Description:   agent.Description,
 			EnvironmentID: agent.EnvironmentID,
 			Environment:   agent.Environment,
 			WorkflowName:  agent.WorkflowName,
+			LastUsedAt:    agent.LastUsedAt,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
@@ -211,11 +215,13 @@ func RestoreAgent(c *gin.Context) {
 }
 
 type agentRequestBody struct {
-	Name         string `json:"name" binding:"required"`
-	Stage        string `json:"stage" binding:"required"`
-	Environment  string `json:"environment" binding:"required"`
-	WorkflowName string `json:"workflow_name" binding:"required"`
-	Description  string `json:"description"`
+	Name          string `json:"name" binding:"required"`
+	Stage         string `json:"stage"  binding:"required"`
+	StageID       uint   `json:"stage_id"`
+	Environment   string `json:"environment"  binding:"required"`
+	EnvironmentID uint   `json:"environment_id"`
+	WorkflowName  string `json:"workflow_name" binding:"required"`
+	Description   string `json:"description" binding:"required"`
 }
 
 // CreateNewAgent godoc
@@ -225,7 +231,7 @@ type agentRequestBody struct {
 // @Accept json
 // @Produce json
 // @Param project_id path int true "Project ID"
-// @Param Agent body models.Agent true "Agent"
+// @Param Agent body controllers.agentRequestBody true "Agent"
 // @Success 200 string {string} json "{"message": "Agent created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create agent"}"
@@ -241,25 +247,35 @@ func CreateNewAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	// find stage and environment by name agent provided
-	var stage models.Stage
-	result := DB.Where("name = ?", agent.Stage).First(&stage)
-	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get stage by name"})
+	//debug
+	// log.Println(agent)
+	// find stage and environment in project by projectID
+	project := models.Project{}
+	DB.Preload("Stages").Preload("Environments").First(&project, projectID)
+	// validate workflow name
+	if err := github.ValidateWorkflowName(agent.WorkflowName, project.RepoURL, project.RepoApiToken); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	var environment models.Environment
-	result = DB.Where("name = ?", agent.Environment).First(&environment)
-	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get environment by name"})
-		return
+	//find stage id and environment id
+	for _, stage := range project.Stages {
+		if stage.Name == agent.Stage {
+			agent.StageID = stage.ID
+			break
+		}
+	}
+	for _, environment := range project.Environments {
+		if environment.Name == agent.Environment {
+			agent.EnvironmentID = environment.ID
+			break
+		}
 	}
 	// create new agent
 	newAgent := models.Agent{
 		ProjectID:     uint(projectID),
 		Name:          agent.Name,
-		StageID:       stage.ID,
-		EnvironmentID: environment.ID,
+		StageID:       agent.StageID,
+		EnvironmentID: agent.EnvironmentID,
 		WorkflowName:  agent.WorkflowName,
 		Description:   agent.Description,
 		IsArchived:    false,
@@ -272,6 +288,69 @@ func CreateNewAgent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Agent created"})
+}
+
+// UpdateAgent godoc
+// @Summary Update agent
+// @Description Update agent
+// @Tags Project Detail / Agents
+// @Accept json
+// @Produce json
+// @Param agent_id path string true "Agent ID"
+// @Param project_id path int true "Project ID"
+// @Param Agent body controllers.agentRequestBody true "Agent"
+// @Success 200 string {string} json "{"message": "Agent updated"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to update agent"}"
+// @Router /api/v1/projects/{project_id}/agents/{agent_id} [put]
+func UpdateAgent(c *gin.Context) {
+	agentID := c.Param("agent_id")
+	projectID, err := strconv.Atoi(c.Param("project_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+	var agent agentRequestBody
+	if err := c.ShouldBindJSON(&agent); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// find stage and environment in project by projectID
+	project := models.Project{}
+	DB.Preload("Stages").Preload("Environments").First(&project, projectID)
+	// validate workflow name
+	if err := github.ValidateWorkflowName(agent.WorkflowName, project.RepoURL, project.RepoApiToken); err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		return
+	}
+	//find stage id and environment id
+	for _, stage := range project.Stages {
+		if stage.Name == agent.Stage {
+			agent.StageID = stage.ID
+			break
+		}
+	}
+	for _, environment := range project.Environments {
+		if environment.Name == agent.Environment {
+			agent.EnvironmentID = environment.ID
+			break
+		}
+	}
+	// update agent
+	agentUpdate := models.Agent{
+		Name:          agent.Name,
+		StageID:       agent.StageID,
+		EnvironmentID: agent.EnvironmentID,
+		WorkflowName:  agent.WorkflowName,
+		Description:   agent.Description,
+	}
+	if err := DB.Model(&models.Agent{}).Where("id = ?", agentID).Updates(agentUpdate).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Agent updated"})
 }
 
 type requestAuthAgentBody struct {
@@ -315,6 +394,8 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by API token"})
 		return
 	}
+	agent.LastUsedAt = time.Now()
+	DB.Save(&agent)
 	startTime := time.Now()
 	var project models.Project
 	if err := DB.

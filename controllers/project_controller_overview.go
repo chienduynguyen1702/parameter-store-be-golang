@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"parameter-store-be/models"
+	"parameter-store-be/modules/github"
 	"strconv"
 	"time"
 
@@ -40,7 +41,10 @@ func GetProjectOverView(c *gin.Context) {
 
 	// Retrieve project from the database using the project ID
 	var project models.Project
-	result := DB.First(&project, projectID)
+	result := DB.
+		Preload("Stages").
+		Preload("Environments").
+		First(&project, projectID)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
 		return
@@ -94,6 +98,7 @@ type projectBody struct {
 	Description   string `gorm:"type:text" json:"description"`
 	CurrentSprint string `gorm:"type:varchar(100)" json:"current_sprint"`
 	RepoURL       string `gorm:"type:varchar(100);not null" json:"repo_url"`
+	RepoApiToken  string `gorm:"type:varchar(100)" json:"repo_api_token"`
 }
 
 // UpdateProjectInformation godoc
@@ -152,7 +157,11 @@ func UpdateProjectInformation(c *gin.Context) {
 	project.Description = requestBody.Description
 	project.CurrentSprint = requestBody.CurrentSprint
 	project.RepoURL = requestBody.RepoURL
-
+	if err := github.ValidateGithubRepo(project.RepoURL, project.RepoApiToken); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	// Save the updated project back to the database
 	DB.Save(&project)
 
@@ -233,4 +242,35 @@ func AddUserToProject(c *gin.Context) {
 	DB.Create(&urp)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User added to project"})
+}
+
+// RemoveUserFromProject godoc
+// @Summary Remove user from project
+// @Description Remove user from project
+// @Tags Project Detail / Overview
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 200 string {string} json "{"message": "User removed from project"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to remove user from project"}"
+// @Router /api/v1/projects/{project_id}/overview/remove-user/{user_id} [delete]
+func RemoveUserFromProject(c *gin.Context) {
+	// Retrieve project ID and user ID from the URL
+	projectID := c.Param("project_id")
+	userID := c.Param("user_id")
+
+	// Retrieve user to project relationship from the database using the project ID and user ID
+	var urp models.UserRoleProject
+	result := DB.Where("user_id = ? AND project_id = ?", userID, projectID).First(&urp)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not in the project"})
+		return
+	}
+
+	// Delete the user to project relationship from the database
+	DB.Delete(&urp)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User removed from project"})
 }
