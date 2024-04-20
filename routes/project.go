@@ -19,6 +19,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 			overviewGroup.POST("/remove-user", controllers.RemoveUserFromProject, middleware.RequiredIsAdmin)
 			overviewGroup.GET("/users/:user_id", controllers.GetUserInProject)
 			overviewGroup.PUT("/users/:user_id", controllers.UpdateUserInProject)
+			overviewGroup.DELETE("/users/:user_id", controllers.RemoveUserFromProject, middleware.RequiredIsAdmin)
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{
