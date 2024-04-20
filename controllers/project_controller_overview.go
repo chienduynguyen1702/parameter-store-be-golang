@@ -179,6 +179,12 @@ func UpdateProjectInformation(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"project": project})
 }
 
+// Bind JSON data to UserRoleProject struct
+type UserRoleBody struct {
+	Username string ` json:"username"`
+	Role     string ` json:"role"`
+}
+
 // AddUserToProject godoc
 // @Summary Add user to project include role
 // @Description Add user to project include role
@@ -192,11 +198,6 @@ func UpdateProjectInformation(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
 // @Router /api/v1/projects/{project_id}/overview/add-user [post]
 func AddUserToProject(c *gin.Context) {
-	// Bind JSON data to UserRoleProject struct
-	type UserRoleBody struct {
-		Username string ` json:"username"`
-		Role     string ` json:"role"`
-	}
 	var urb UserRoleBody
 	if err := c.ShouldBindJSON(&urb); err != nil {
 		log.Println(err.Error())
@@ -284,4 +285,104 @@ func RemoveUserFromProject(c *gin.Context) {
 	DB.Delete(&urp)
 
 	c.JSON(http.StatusOK, gin.H{"message": "User removed from project"})
+}
+
+// GetUserInProject godoc
+// @Summary Get all user in project
+// @Description Get all user in project
+// @Tags Project Detail / Overview
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Success 200 string {string} json "{"users": "users"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get user in project"}"
+// @Router /api/v1/projects/{project_id}/overview/users/{user_id} [get]
+func GetUserInProject(c *gin.Context) {
+	// Retrieve project ID from the URL
+	projectID := c.Param("project_id")
+	userID := c.Param("user_id")
+
+	// Retrieve users and their roles in the given project
+	var urp models.UserRoleProject
+	DB.Preload("User").Preload("Role").Where("project_id = ? AND user_id = ?", projectID, userID).Find(&urp)
+
+	type UserRoleInProject struct {
+		UserID   uint   `json:"id"`
+		UserName string `json:"username"`
+		RoleName string `json:"role"`
+		Email    string `json:"email"`
+		Phone    string `json:"phone"`
+	}
+	userRoleInProject := UserRoleInProject{
+		UserID:   urp.User.ID,
+		UserName: urp.User.Username,
+		RoleName: urp.Role.Name,
+		Email:    urp.User.Email,
+		Phone:    urp.User.Phone,
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"users": userRoleInProject,
+		},
+	})
+}
+
+// UpdateUserInProject godoc
+// @Summary Update user in project
+// @Description Update user in project
+// @Tags Project Detail / Overview
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param user_id path string true "User ID"
+// @Param UserRoleProject body controllers.AddUserToProject.UserRoleBody true "UserRoleProject"
+// @Success 200 string {string} json "{"message": "User updated in project"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to update user in project"}"
+// @Router /api/v1/projects/{project_id}/overview/update-user/{user_id} [put]
+func UpdateUserInProject(c *gin.Context) {
+	var urb UserRoleBody
+	if err := c.ShouldBindJSON(&urb); err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Retrieve project ID and user ID from the URL
+	projectID := c.Param("project_id")
+	userID := c.Param("user_id")
+
+	// Retrieve user from the database using the username
+	var user models.User
+	result := DB.Where("username = ?", urb.Username).First(&user)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User not found"})
+		return
+	}
+
+	// Retrieve role from the database using the role name
+	var role models.Role
+	result = DB.Where("name = ?", urb.Role).First(&role)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Role not found"})
+		return
+	}
+
+	// Retrieve user to project relationship from the database using the project ID and user ID
+	var urp models.UserRoleProject
+	result = DB.Where("user_id = ? AND project_id = ?", userID, projectID).First(&urp)
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "User is not in the project"})
+		return
+	}
+
+	// Update the user to project relationship in the database
+	urp.UserID = user.ID
+	urp.RoleID = role.ID
+	DB.Save(&urp)
+
+	c.JSON(http.StatusOK, gin.H{"message": "User updated in project"})
 }
