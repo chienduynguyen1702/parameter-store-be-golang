@@ -93,12 +93,23 @@ func GetProjectOverView(c *gin.Context) {
 }
 
 type projectBody struct {
-	Name          string `gorm:"type:varchar(100);not null" json:"name"`
-	StartAt       string `json:"start_at"`
-	Description   string `gorm:"type:text" json:"description"`
-	CurrentSprint string `gorm:"type:varchar(100)" json:"current_sprint"`
-	RepoURL       string `gorm:"type:varchar(100);not null" json:"repo_url"`
-	RepoApiToken  string `gorm:"type:varchar(100)" json:"repo_api_token"`
+	Name          string `binding:"required" json:"name" `
+	StartAt       string `binding:"required" json:"start_at" `
+	Description   string `binding:"required" json:"description" `
+	CurrentSprint string `binding:"required" json:"current_sprint" `
+	AutoUpdate    bool   `json:"auto_update" `
+	RepoURL       string `binding:"required" json:"repo_url" `
+	RepoApiToken  string `binding:"required" json:"repo_api_token" `
+}
+
+func (pb projectBody) Print() {
+	log.Println("name: ", pb.Name)
+	log.Println("start_at: ", pb.StartAt)
+	log.Println("description: ", pb.Description)
+	log.Println("current_sprint: ", pb.CurrentSprint)
+	log.Println("auto_update: ", pb.AutoUpdate)
+	log.Println("repo_url: ", pb.RepoURL)
+	log.Println("repo_api_token: ", pb.RepoApiToken)
 }
 
 // UpdateProjectInformation godoc
@@ -133,7 +144,7 @@ func UpdateProjectInformation(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	requestBody.Print()
 	// Retrieve project ID from the URL
 	projectID := c.Param("project_id")
 

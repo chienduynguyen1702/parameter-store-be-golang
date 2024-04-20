@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -233,7 +234,19 @@ func ArchiveEnvironmentInProject(c *gin.Context) {
 		return
 	}
 
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	username := user.(models.User).Username
+	
 	environment.IsArchived = true
+	environment.ArchivedAt = time.Now()
+	environment.ArchivedBy = username
 	if err := DB.Save(&environment).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive environment"})
 		return

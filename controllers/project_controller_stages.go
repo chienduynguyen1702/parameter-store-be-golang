@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -220,7 +221,6 @@ func ArchiveStageInProject(c *gin.Context) {
 	projectID := c.Param("project_id")
 	// Retrieve stage ID from the URL
 	stageID := c.Param("stage_id")
-
 	// Archive the stage in the database using the project ID and stage ID
 	var stage models.Stage
 	result := DB.Where("project_id = ? AND id = ?", projectID, stageID).First(&stage)
@@ -233,7 +233,19 @@ func ArchiveStageInProject(c *gin.Context) {
 		return
 	}
 
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	username := user.(models.User).Username
+
 	stage.IsArchived = true
+	stage.ArchivedAt = time.Now()
+	stage.ArchivedBy = username
 	if err := DB.Save(&stage).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive stage"})
 		return

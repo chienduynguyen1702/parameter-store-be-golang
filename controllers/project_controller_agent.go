@@ -23,6 +23,8 @@ type agentResponse struct {
 	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
 	Description   string `gorm:"type:varchar(100);not null" json:"description"`
 	LastUsedAt    time.Time
+	ArchivedAt    time.Time `json:"archived_at"`
+	ArchivedBy    string    `json:"archived_by"`
 }
 
 // GetProjectAgents godoc
@@ -133,6 +135,8 @@ func GetArchivedAgents(c *gin.Context) {
 			EnvironmentID: agent.EnvironmentID,
 			Environment:   agent.Environment,
 			WorkflowName:  agent.WorkflowName,
+			ArchivedAt:    agent.ArchivedAt,
+			ArchivedBy:    agent.ArchivedBy,
 		})
 	}
 	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
@@ -171,8 +175,22 @@ func ArchiveAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent is already archived"})
 		return
 	}
+
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+
 	agent.IsArchived = true
-	DB.Save(&agent)
+	agent.ArchivedAt = time.Now()
+	agent.ArchivedBy = user.(models.User).Username
+	if err := DB.Save(&agent).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive agent"})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"message": "Agent archived"})
 }
 
