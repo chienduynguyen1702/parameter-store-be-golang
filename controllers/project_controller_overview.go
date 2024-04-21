@@ -156,7 +156,7 @@ func UpdateProjectInformation(c *gin.Context) {
 		return
 	}
 	// parse string to time
-	startAt, err := time.Parse("2006-01-02", requestBody.StartAt)
+	startAt, err := time.Parse("01-02-2006", requestBody.StartAt)
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid start date"})
