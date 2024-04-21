@@ -299,13 +299,18 @@ func CreateNewAgent(c *gin.Context) {
 		IsArchived:    false,
 		ArchivedBy:    "",
 		ArchivedAt:    time.Time{},
+		APIToken:      "123123",
+		// APIToken: 	models.GenerateAPIToken(),
 	}
 	if err := DB.Create(&newAgent).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create agent"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Agent created"})
+	c.JSON(http.StatusOK, gin.H{
+		"message":   "Agent created",
+		"api_token": newAgent.APIToken,
+	})
 }
 
 // UpdateAgent godoc
