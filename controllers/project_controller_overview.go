@@ -42,8 +42,8 @@ func GetProjectOverView(c *gin.Context) {
 	// Retrieve project from the database using the project ID
 	var project models.Project
 	result := DB.
-		Preload("Stages").
-		Preload("Environments").
+		Preload("Stages", "is_archived = ?", false).
+		Preload("Environments", "is_archived = ?", false).
 		First(&project, projectID)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
