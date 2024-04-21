@@ -114,7 +114,7 @@ func UpdateOrganizationInformation(c *gin.Context) {
 	// debug bind data
 	fmt.Println(requestBody.EstablishmentDate)
 	// parst string to time
-	establishmentDate, err := time.Parse("01-02-2006", requestBody.EstablishmentDate)
+	establishmentDate, err := time.Parse("02-01-2006", requestBody.EstablishmentDate)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
