@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"parameter-store-be/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -63,10 +64,10 @@ func GetOrganizationInformation(c *gin.Context) {
 }
 
 type organizationBody struct {
-	Name              string `gorm:"type:varchar(100);not null"`
-	AliasName         string `gorm:"type:varchar(100)"`
-	EstablishmentDate time.Time
-	Description       string `gorm:"type:text"`
+	Name              string `gorm:"type:varchar(100);not null" json:"name" binding:"required"`
+	AliasName         string `gorm:"type:varchar(100)" json:"alias_name" binding:"required"`
+	EstablishmentDate string `json:"establishment_date" binding:"required"`
+	Description       string `gorm:"type:text" json:"description" binding:"required"`
 }
 
 // UpdateOrganizationInformation godoc
@@ -75,28 +76,30 @@ type organizationBody struct {
 // @Tags Organization
 // @Accept json
 // @Produce json
+// @Param organization_id path int true "Organization ID"
 // @Param Organization body organizationBody true "Organization"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
-// @Router /api/v1/organizations/ [put]
+// @Router /api/v1/organizations/{organization_id} [put]
 func UpdateOrganizationInformation(c *gin.Context) {
-	// Retrieve user from context
-	user, exists := c.Get("user")
-	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+	// Retrieve organization ID from the URL
+	organizationIDParam := c.Param("organization_id")
+	if organizationIDParam == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Organization ID is required"})
 		return
 	}
-	// Type assertion to extract organization ID
-	userOrganizationID := user.(models.User).OrganizationID
-	if userOrganizationID == 0 {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+	// parse to int
+	organizationIDInt, err := strconv.Atoi(organizationIDParam)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Organization ID must be an integer"})
 		return
 	}
-	fmt.Println("debug")
+	organizationID := uint(organizationIDInt)
+
 	// Retrieve organization from the database using the user's organization ID
 	var organization models.Organization
-	result := DB.First(&organization, userOrganizationID)
+	result := DB.First(&organization, organizationID)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve organization"})
 		return
@@ -108,11 +111,18 @@ func UpdateOrganizationInformation(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	// debug bind data
+	fmt.Println(requestBody.EstablishmentDate)
+	// parst string to time
+	establishmentDate, err := time.Parse("01-02-2006", requestBody.EstablishmentDate)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	// Update organization fields
 	organization.Name = requestBody.Name
 	organization.AliasName = requestBody.AliasName
-	organization.EstablishmentDate = requestBody.EstablishmentDate
+	organization.EstablishmentDate = establishmentDate
 	organization.Description = requestBody.Description
 
 	// Save the updated organization back to the database
