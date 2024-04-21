@@ -46,7 +46,7 @@ func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiTo
 	}
 	// 2 - Rerun the workflow
 	client := &http.Client{}
-	rerunWorkflowRequest, err := makeNewRerunWorkflowRequest(repoOwner, repoName, workflowID, apiToken)
+	rerunWorkflowRequest, err := makeRerunWorkflowRequest(repoOwner, repoName, workflowID, apiToken)
 	if err != nil {
 		return http.StatusInternalServerError, "", fmt.Errorf("error creating request for rerun: %v", err)
 	}
@@ -61,7 +61,7 @@ func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiTo
 
 	return response.StatusCode, string(responseBody), errReq
 }
-func makeNewRerunWorkflowRequest(repoOwner string, repoName string, workflowID string, apiToken string) (*http.Request, error) {
+func makeRerunWorkflowRequest(repoOwner string, repoName string, workflowID string, apiToken string) (*http.Request, error) {
 	// Create a new POST request
 	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs/%s/rerun", GitHubAPIEndpoint, repoOwner, repoName, workflowID)
 	// fmt.Println("NewRerunWorkflowRequest URL: ", url)
@@ -89,7 +89,7 @@ func getWorkflowID(repoOwner string, repoName string, workflowName string, apiTo
 
 	// Create a new HTTP client
 	client := &http.Client{}
-	listWorkflowRequest, err := makeNewListWorkflowRequest(repoOwner, repoName, apiToken)
+	listWorkflowRequest, err := makeListWorkflowRunRequest(repoOwner, repoName, apiToken)
 	if err != nil {
 		return "", http.StatusInternalServerError, fmt.Errorf("error creating request to get workflow ID: %v", err)
 	}
@@ -144,7 +144,7 @@ func getWorkflowID(repoOwner string, repoName string, workflowName string, apiTo
 	return idMatchedWorkflow, response.StatusCode, nil
 }
 
-func makeNewListWorkflowRequest(repoOwner string, repoName string, apiToken string) (*http.Request, error) {
+func makeListWorkflowRunRequest(repoOwner string, repoName string, apiToken string) (*http.Request, error) {
 
 	// Create a new GET request
 	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs", GitHubAPIEndpoint, repoOwner, repoName)
@@ -160,4 +160,81 @@ func makeNewListWorkflowRequest(repoOwner string, repoName string, apiToken stri
 	// debug
 	// fmt.Println("ListWorkflowRequest: ", request)
 	return request, nil
+}
+
+type WorkflowsResponse struct {
+	TotalCount int `json:"total_count"`
+	Workflows  []struct {
+		ID    int    `json:"id"`
+		Name  string `json:"name"`
+		Path  string `json:"path"`
+		State string `json:"state"`
+	} `json:"workflows"`
+}
+
+func makeListWorkflowsRequest(repoOwner string, repoName string, apiToken string) (*http.Request, error) {
+
+	// Create a new GET request
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/workflows", GitHubAPIEndpoint, repoOwner, repoName)
+	// fmt.Println("ListWorkflowRequest URL: ", url)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		// fmt.Println("Error creating request:", err)
+		return nil, fmt.Errorf("error creating list workflow request: %v", err)
+	}
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	// debug
+	// fmt.Println("ListWorkflowRequest: ", request)
+	return request, nil
+}
+func GetWorkflows(RepoURL string, apiToken string) (WorkflowsResponse, error) {
+	// Parse the repository URL
+	repo, err := ParseRepoURL(RepoURL)
+	if err != nil {
+		return WorkflowsResponse{}, fmt.Errorf("error parsing repository URL: %v", err)
+	}
+
+	// Create a new HTTP client
+	client := &http.Client{}
+	listWorkflowRequest, err := makeListWorkflowsRequest(repo.Owner, repo.Name, apiToken)
+	if err != nil {
+		return WorkflowsResponse{}, fmt.Errorf("error creating request to get workflow ID: %v", err)
+	}
+	// Send the GET request
+	response, err := client.Do(listWorkflowRequest)
+	if err != nil {
+		fmt.Println("Error sending request to get workflow ID:", err)
+		return WorkflowsResponse{}, fmt.Errorf("error sending request to get workflow ID: %v", err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode == http.StatusUnauthorized {
+		// fmt.Println("Error response get workflow ID:", response.Status)
+		return WorkflowsResponse{}, fmt.Errorf("unauthenticated by token to repo github.com/%v/%v", repo.Owner, repo.Name)
+	}
+	if response.StatusCode == http.StatusNotFound {
+		// fmt.Println("Error response get workflow ID:", response.Status)
+		return WorkflowsResponse{}, fmt.Errorf("error to find repo github.com/%v/%v", repo.Owner, repo.Name)
+	}
+	// Read the response body
+	responseBody, err := io.ReadAll(response.Body)
+	if err != nil {
+		// fmt.Println("Error reading response get workflow ID:", err)
+		return WorkflowsResponse{}, fmt.Errorf("error reading response get workflow ID: %v", err)
+	}
+	// debug
+	// fmt.Println("Response body: ", string(responseBody))
+	// Unmarshal the response body
+	var workflowsResponse WorkflowsResponse
+	err = json.Unmarshal(responseBody, &workflowsResponse)
+	if err != nil {
+		// fmt.Println("Error unmarshalling response get workflow ID:", err)
+		return WorkflowsResponse{}, fmt.Errorf("error unmarshalling response get workflow ID: %v", err)
+	}
+
+	// debug
+	// fmt.Println("List workflow: ", workflowsResponse)
+
+	return workflowsResponse, nil
 }

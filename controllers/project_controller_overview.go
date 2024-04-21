@@ -85,10 +85,18 @@ func GetProjectOverView(c *gin.Context) {
 			// LastLogIn: urp.User.LastLogIn,
 		})
 	}
-
+	listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
+	if err != nil {
+		log.Println(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get workflows"})
+		return
+	}
+	// debug
+	// log.Println("List workflows: ", listWorkflows)
 	c.JSON(http.StatusOK, gin.H{
 		"overview": project,
 		"users":    userRoleInProject,
+		"workflow": listWorkflows,
 	})
 }
 
