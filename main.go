@@ -20,7 +20,9 @@ func init() {
 	}
 
 	// Migration db
-	initializers.Migration(db) // migration db
+	if os.Getenv("RUN_MIGRATION") == "true" {
+		initializers.Migration(db) // migration db
+	}
 	// Seed data
 	// if os.Getenv("SERVERLESS_DEPLOY") != "true" {
 	// if err := initializers.RunSeed(db); err != nil {
