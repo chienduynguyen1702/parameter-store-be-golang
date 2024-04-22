@@ -11,6 +11,6 @@ func setupGroupOrganization(r *gin.RouterGroup) {
 	organizationGroup := r.Group("/organizations", middleware.RequiredAuth)
 	{
 		organizationGroup.GET("/", controllers.GetOrganizationInformation)
-		organizationGroup.PUT("/:organization_id", controllers.UpdateOrganizationInformation, middleware.RequiredIsOrgAdmin)
+		organizationGroup.PUT("/:organization_id", middleware.RequiredIsOrgAdmin, controllers.UpdateOrganizationInformation)
 	}
 }

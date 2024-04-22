@@ -45,12 +45,16 @@ func GetProjectTracking(c *gin.Context) {
 	}
 
 	// Retrieve tracking from the database using the project ID
-	var logs []models.AgentLog
-	DB.Preload("Agent").Where("project_id = ?", projectID).Find(&logs)
+	var agentLogs []models.AgentLog
+	DB.Preload("Agent").Where("project_id = ?", projectID).Find(&agentLogs)
+	var projectLogs []models.ProjectLog
+	DB.Preload("User").Where("project_id = ?", projectID).Find(&projectLogs)
 
+	// Combine agentLogs and projectLogs
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
-			"tracking": logs,
+			"agent_logs":   agentLogs,
+			"project_logs": projectLogs,
 		},
 	})
 }

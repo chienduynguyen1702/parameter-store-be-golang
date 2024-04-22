@@ -14,41 +14,41 @@ func setupGroupProject(r *gin.RouterGroup) {
 		overviewGroup := projectGroup.Group("/overview")
 		{
 			overviewGroup.GET("/", controllers.GetProjectOverView)
-			overviewGroup.PUT("/", controllers.UpdateProjectInformation, middleware.RequiredIsAdmin)
-			overviewGroup.POST("/add-user", controllers.AddUserToProject, middleware.RequiredIsAdmin)
-			overviewGroup.POST("/remove-user", controllers.RemoveUserFromProject, middleware.RequiredIsAdmin)
+			overviewGroup.PUT("/", middleware.RequiredIsAdmin, controllers.UpdateProjectInformation)
+			overviewGroup.POST("/add-user", middleware.RequiredIsAdmin, controllers.AddUserToProject)
+			overviewGroup.POST("/remove-user", middleware.RequiredIsAdmin, controllers.RemoveUserFromProject)
 			overviewGroup.GET("/users/:user_id", controllers.GetUserInProject)
 			overviewGroup.PUT("/users/:user_id", controllers.UpdateUserInProject)
-			overviewGroup.DELETE("/users/:user_id", controllers.RemoveUserFromProject, middleware.RequiredIsAdmin)
+			overviewGroup.DELETE("/users/:user_id", middleware.RequiredIsAdmin, controllers.RemoveUserFromProject)
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{
 			agentGroup.GET("/", controllers.GetAgents)
-			agentGroup.POST("/", controllers.CreateNewAgent, middleware.RequiredIsAdmin)
+			agentGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateNewAgent)
 			agentGroup.GET("/:agent_id", controllers.GetAgentDetail)
-			agentGroup.PATCH("/:agent_id/archive", controllers.ArchiveAgent, middleware.RequiredIsAdmin)
-			agentGroup.PATCH("/:agent_id/unarchive", controllers.RestoreAgent, middleware.RequiredIsAdmin)
+			agentGroup.PATCH("/:agent_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveAgent)
+			agentGroup.PATCH("/:agent_id/unarchive", middleware.RequiredIsAdmin, controllers.RestoreAgent)
 			agentGroup.GET("/archived", controllers.GetArchivedAgents)
-			agentGroup.PUT("/:agent_id", controllers.UpdateAgent, middleware.RequiredIsAdmin)
+			agentGroup.PUT("/:agent_id", middleware.RequiredIsAdmin, controllers.UpdateAgent)
 			// agentGroup.DELETE("/:agent_id", controllers.DeleteAgent)
 		}
 		versionGroup := projectGroup.Group("/versions")
 		{
 			versionGroup.GET("/", controllers.GetProjectVersions)
-			versionGroup.POST("/", controllers.CreateNewVersion, middleware.RequiredIsAdmin)
+			versionGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateNewVersion)
 
 		}
 		parameterGroup := projectGroup.Group("/parameters")
 		{
 			parameterGroup.GET("/", controllers.GetProjectParameters)
-			parameterGroup.POST("/", controllers.CreateParameter, middleware.RequiredIsAdmin)
-			parameterGroup.PUT("/:parameter_id", controllers.UpdateParameter, middleware.RequiredIsAdmin)
+			parameterGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateParameter)
+			parameterGroup.PUT("/:parameter_id", middleware.RequiredIsAdmin, controllers.UpdateParameter)
 
 			parameterGroup.GET("/:parameter_id", controllers.GetParameterByID)
 
 			parameterGroup.GET("/archived", controllers.GetArchivedParameters)
-			parameterGroup.PATCH("/:parameter_id/archive", controllers.ArchiveParameter, middleware.RequiredIsAdmin)
-			parameterGroup.PATCH("/:parameter_id/unarchive", controllers.UnarchiveParameter, middleware.RequiredIsAdmin)
+			parameterGroup.PATCH("/:parameter_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveParameter)
+			parameterGroup.PATCH("/:parameter_id/unarchive", middleware.RequiredIsAdmin, controllers.UnarchiveParameter)
 		}
 		trackingGroup := projectGroup.Group("/tracking")
 		{
@@ -60,26 +60,26 @@ func setupGroupProject(r *gin.RouterGroup) {
 		stageGroup := projectGroup.Group("/stages")
 		{
 			stageGroup.GET("/", controllers.GetListStageInProject)
-			stageGroup.POST("/", controllers.CreateStageInProject, middleware.RequiredIsAdmin)
-			stageGroup.PUT("/:stage_id", controllers.UpdateStageInProject, middleware.RequiredIsAdmin)
+			stageGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateStageInProject)
+			stageGroup.PUT("/:stage_id", middleware.RequiredIsAdmin, controllers.UpdateStageInProject)
 
 			stageGroup.GET("/:stage_id", controllers.GetStageInProject)
 
 			stageGroup.GET("/archived", controllers.GetListArchivedStageInProject)
-			stageGroup.PATCH("/:stage_id/archive", controllers.ArchiveStageInProject, middleware.RequiredIsAdmin)
-			stageGroup.PATCH("/:stage_id/unarchive", controllers.UnarchiveStageInProject, middleware.RequiredIsAdmin)
+			stageGroup.PATCH("/:stage_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveStageInProject)
+			stageGroup.PATCH("/:stage_id/unarchive", middleware.RequiredIsAdmin, controllers.UnarchiveStageInProject)
 		}
 		environmentGroup := projectGroup.Group("/environments")
 		{
 			environmentGroup.GET("/", controllers.GetListEnvironmentInProject)
-			environmentGroup.POST("/", controllers.CreateEnvironmentInProject, middleware.RequiredIsAdmin)
-			environmentGroup.PUT("/:environment_id", controllers.UpdateEnvironmentInProject, middleware.RequiredIsAdmin)
+			environmentGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateEnvironmentInProject)
+			environmentGroup.PUT("/:environment_id", middleware.RequiredIsAdmin, controllers.UpdateEnvironmentInProject)
 
 			environmentGroup.GET("/:environment_id", controllers.GetEnvironmentInProject)
 
 			environmentGroup.GET("/archived", controllers.GetListArchivedEnvironmentInProject)
-			environmentGroup.PATCH("/:environment_id/archive", controllers.ArchiveEnvironmentInProject, middleware.RequiredIsAdmin)
-			environmentGroup.PATCH("/:environment_id/unarchive", controllers.UnarchiveEnvironmentInProject, middleware.RequiredIsAdmin)
+			environmentGroup.PATCH("/:environment_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveEnvironmentInProject)
+			environmentGroup.PATCH("/:environment_id/unarchive", middleware.RequiredIsAdmin, controllers.UnarchiveEnvironmentInProject)
 		}
 	}
 }

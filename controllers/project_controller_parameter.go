@@ -135,6 +135,14 @@ func GetLatestParameters(c *gin.Context) {
 func CreateParameter(c *gin.Context) {
 	projectID := c.Param("project_id")
 
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
 	type createParameterRequestBody struct {
 		Name        string `json:"name" binding:"required"`
 		Value       string `json:"value" binding:"required"`
@@ -151,31 +159,49 @@ func CreateParameter(c *gin.Context) {
 	var project models.Project
 	if err := DB.
 		Preload("Versions").
+		Preload("Stages").
+		Preload("Environments").
 		First(&project, projectID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
 	}
 	latestVersion := project.Versions[len(project.Versions)-1]
 
-	var stage models.Stage
-	if err := DB.Where("name = ?", newParameterBody.Stage).First(&stage).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get stage"})
-		return
+	// var stage models.Stage
+	// if err := DB.Where("name = ?", newParameterBody.Stage).First(&stage).Error; err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get stage"})
+	// 	return
+	// }
+	// var environment models.Environment
+	// if err := DB.Where("name = ?", newParameterBody.Environment).First(&environment).Error; err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get environment"})
+	// 	return
+	// }
+	stages := project.Stages
+	var findingStage models.Stage
+	for _, stage := range stages {
+		if stage.Name == newParameterBody.Stage {
+			findingStage = stage
+			break
+		}
 	}
-	var environment models.Environment
-	if err := DB.Where("name = ?", newParameterBody.Environment).First(&environment).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get environment"})
-		return
+	env := project.Environments
+	var findingEnvironment models.Environment
+	for _, e := range env {
+		if e.Name == newParameterBody.Environment {
+			findingEnvironment = e
+			break
+		}
 	}
 
 	newParameter := models.Parameter{
 		Name:          newParameterBody.Name,
 		Value:         newParameterBody.Value,
 		ProjectID:     project.ID,
-		StageID:       stage.ID,
-		EnvironmentID: environment.ID,
-		Stage:         stage,
-		Environment:   environment,
+		StageID:       findingStage.ID,
+		EnvironmentID: findingEnvironment.ID,
+		Stage:         findingStage,
+		Environment:   findingEnvironment,
 	}
 
 	// Append the new parameter to the latest version's Parameters slice
@@ -194,16 +220,20 @@ func CreateParameter(c *gin.Context) {
 	// Get project by ID to get agent workflow name
 	responseStatusCode, latency, message, err := rerunCICDWorkflow(newParameter.ProjectID, newParameter.StageID, newParameter.EnvironmentID)
 	if responseStatusCode == 403 {
+		responseStatusCode = http.StatusCreated
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
 			"latency": latency,
 			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
 		})
+		return
 	}
 	if err != nil {
+		projectLogByUser(newParameter.ProjectID, "Create Parameter", "Failed to create parameter", responseStatusCode, latency, u.ID)
 		c.JSON(responseStatusCode, gin.H{"error": message})
 		return
 	}
+	projectLogByUser(newParameter.ProjectID, "Create Parameter", fmt.Sprint("Created parameter ", newParameter.Name), responseStatusCode, latency, u.ID)
 	c.JSON(responseStatusCode, gin.H{
 		"status":  responseStatusCode,
 		"latency": latency,
@@ -276,6 +306,7 @@ func ArchiveParameter(c *gin.Context) {
 			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
 		})
 	}
+	projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, latency, u.ID)
 	if err != nil {
 		c.JSON(responseStatusCode, gin.H{"error": message})
 		return
@@ -324,6 +355,7 @@ func UnarchiveParameter(c *gin.Context) {
 		c.JSON(responseStatusCode, gin.H{"error": message})
 		return
 	}
+	projectLogByUser(parameter.ProjectID, "Unarchive Parameter", fmt.Sprint("Unarchived parameter ", parameter.Name), http.StatusCreated, latency, 0)
 	c.JSON(responseStatusCode, gin.H{
 		"status":  responseStatusCode,
 		"latency": latency,
@@ -365,6 +397,35 @@ func UpdateParameter(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter"})
 		return
 	}
+	// preload stages and environments in project
+	var project models.Project
+
+	if err := DB.
+		Preload("Stages").
+		Preload("Environments").
+		First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	// get stages and environments from project
+	stages := project.Stages
+	var findingStage models.Stage
+	for _, stage := range stages {
+		if stage.Name == updateParameterBody.Stage {
+			findingStage = stage
+			break
+		}
+	}
+
+	env := project.Environments
+	var findingEnvironment models.Environment
+	for _, e := range env {
+		if e.Name == updateParameterBody.Environment {
+			findingEnvironment = e
+			break
+		}
+	}
+
 	//duplicate parameter to check if parameter is updated at Name or Value or Stage or Environment
 	currentParameter := parameter
 	if updateParameterBody.Name != "" {
@@ -377,20 +438,10 @@ func UpdateParameter(c *gin.Context) {
 		parameter.Description = updateParameterBody.Description
 	}
 	if updateParameterBody.Stage != "" {
-		var stage models.Stage
-		if err := DB.Where("name = ?", updateParameterBody.Stage).First(&stage).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get stage"})
-			return
-		}
-		parameter.StageID = stage.ID
+		parameter.StageID = findingStage.ID
 	}
 	if updateParameterBody.Environment != "" {
-		var environment models.Environment
-		if err := DB.Where("name = ?", updateParameterBody.Environment).First(&environment).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get environment"})
-			return
-		}
-		parameter.EnvironmentID = environment.ID
+		parameter.EnvironmentID = findingEnvironment.ID
 	}
 
 	if err := DB.Save(&parameter).Error; err != nil {
@@ -426,6 +477,15 @@ func UpdateParameter(c *gin.Context) {
 			"message": message})
 		return
 	}
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
+	projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, l, u.ID)
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
 		"latency": l,
@@ -468,7 +528,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	latency := time.Since(startTime)
 	log.Println(responseMessage)
 	if responseStatusCode == 403 {
-		return 403, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
+		return 201, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
 	}
 	if err != nil {
 		return http.StatusInternalServerError, 0, err.Error(), nil

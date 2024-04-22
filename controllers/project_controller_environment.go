@@ -219,6 +219,13 @@ func GetListArchivedEnvironmentInProject(c *gin.Context) {
 func ArchiveEnvironmentInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
 	projectID := c.Param("project_id")
+	uint64ProjectID, err := strconv.ParseUint(projectID, 10, 64)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
+		return
+	}
+
 	// Retrieve environment ID from the URL
 	environmentID := c.Param("environment_id")
 
@@ -243,7 +250,8 @@ func ArchiveEnvironmentInProject(c *gin.Context) {
 	}
 	// Type assertion to extract username
 	username := user.(models.User).Username
-	
+	uID := user.(models.User).ID
+
 	environment.IsArchived = true
 	environment.ArchivedAt = time.Now()
 	environment.ArchivedBy = username
@@ -251,7 +259,8 @@ func ArchiveEnvironmentInProject(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive environment"})
 		return
 	}
-
+	// log to project log
+	projectLogByUser(uint(uint64ProjectID), "ARCHIVE_ENVIRONMENT", "Environment archived", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Environment archived successfully",
 	})
@@ -293,6 +302,17 @@ func UnarchiveEnvironmentInProject(c *gin.Context) {
 		return
 	}
 
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	uID := user.(models.User).ID
+	// log to project log
+	projectLogByUser(environment.ProjectID, "UNARCHIVE_ENVIRONMENT", "Environment unarchived", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Environment unarchived successfully",
 	})

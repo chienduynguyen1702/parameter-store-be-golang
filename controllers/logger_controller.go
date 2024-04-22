@@ -44,3 +44,32 @@ func agentLog(agent models.Agent, project models.Project, action string, message
 	}
 	DB.Create(&log)
 }
+
+func projectLogByUser(projectID uint, action string, message string, responseStatusCode int, latency time.Duration, userID uint) {
+	log := models.ProjectLog{
+		// IsByUser:       true,
+		// AgentID:        0,
+		UserID:         userID,
+		Action:         action,
+		ProjectID:      projectID,
+		Message:        message,
+		ResponseStatus: responseStatusCode,
+		Latency:        int(latency.Milliseconds()),
+	}
+	DB.Create(&log)
+}
+
+// func projectLogByAgent(projectID uint, agentID uint, action string, message string, responseStatusCode int, latency time.Duration) {
+// 	log := models.ProjectLog{
+// 		IsByUser:       false,
+// 		UserID:         0,
+// 		// AgentID:        agentID,
+// 		Action:         action,
+// 		ProjectID:      projectID,
+// 		Message:        message,
+// 		ResponseStatus: responseStatusCode,
+// 		Latency:        int(latency.Milliseconds()),
+// 	}
+// 	DB.Create(&log)
+
+// }

@@ -121,6 +121,17 @@ func CreateStageInProject(c *gin.Context) {
 		return
 	}
 
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
+	// log stage creation
+	projectLogByUser(projectIDUint, "Create Stage", "Stage created successfully", http.StatusCreated, 0, u.ID)
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Stage created successfully",
 		"stage":   newStage,
@@ -168,6 +179,16 @@ func UpdateStageInProject(c *gin.Context) {
 		return
 	}
 
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
+	// log stage update
+	projectLogByUser(stage.ProjectID, "Update Stage", "Stage updated successfully", http.StatusOK, 0, u.ID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Stage updated successfully",
 		"stage":   stage,
@@ -250,7 +271,8 @@ func ArchiveStageInProject(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive stage"})
 		return
 	}
-
+	// log stage archive
+	projectLogByUser(stage.ProjectID, "Archive Stage", "Stage archived successfully", http.StatusOK, 0, user.(models.User).ID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Stage archived successfully",
 	})
@@ -291,7 +313,17 @@ func UnarchiveStageInProject(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive stage"})
 		return
 	}
-
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	uID := user.(models.User).ID
+	// log stage unarchive
+	projectLogByUser(stage.ProjectID, "Unarchive Stage", "Stage unarchived successfully", http.StatusOK, 0, uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Stage unarchived successfully",
 	})

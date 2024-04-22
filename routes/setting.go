@@ -13,14 +13,14 @@ func setupGroupSetting(r *gin.RouterGroup) {
 		userGroup := userSettingGroup.Group("/users")
 		{
 			userGroup.GET("", controllers.ListUser)
-			userGroup.POST("", controllers.CreateUser)
+			userGroup.POST("", middleware.RequiredIsAdmin, controllers.CreateUser)
 			userGroup.GET("/:user_id", controllers.GetUserById)
-			userGroup.PUT("/:user_id", controllers.UpdateUserInformation)
-			userGroup.DELETE("/:user_id", controllers.DeleteUser)
+			userGroup.PUT("/:user_id", middleware.RequiredIsAdmin, controllers.UpdateUserInformation)
+			userGroup.DELETE("/:user_id", middleware.RequiredIsAdmin, controllers.DeleteUser)
 
 			userGroup.GET("/archived", controllers.ListArchivedUser)
-			userGroup.PATCH("/:user_id/archive", controllers.ArchiveUser)
-			userGroup.PATCH("/:user_id/unarchive", controllers.RestoreUser)
+			userGroup.PATCH("/:user_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveUser)
+			userGroup.PATCH("/:user_id/unarchive", middleware.RequiredIsAdmin, controllers.RestoreUser)
 		}
 		roleGroup := userSettingGroup.Group("/roles")
 		{

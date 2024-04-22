@@ -190,6 +190,7 @@ func ArchiveAgent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive agent"})
 		return
 	}
+	projectLogByUser(uint(projectID), "Archive Agent", "Succeed: Agent archived", http.StatusOK, time.Since(time.Now()), 0)
 	c.JSON(http.StatusOK, gin.H{"message": "Agent archived"})
 }
 
@@ -228,6 +229,7 @@ func RestoreAgent(c *gin.Context) {
 	}
 	agent.IsArchived = false
 	DB.Save(&agent)
+	projectLogByUser(uint(projectID), "Restore Agent", "Succeed: Agent restored", http.StatusOK, time.Since(time.Now()), 0)
 	c.JSON(http.StatusOK, gin.H{"message": "Agent restored"})
 }
 
@@ -305,7 +307,7 @@ func CreateNewAgent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create agent"})
 		return
 	}
-
+	projectLogByUser(uint(projectID), "Create Agent", "Succeed: Agent created", http.StatusCreated, time.Since(time.Now()), 0)
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "Agent created",
 		"api_token": newAgent.APIToken,
@@ -371,7 +373,7 @@ func UpdateAgent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent"})
 		return
 	}
-
+	projectLogByUser(uint(projectID), "Update Agent", "Succeed: Agent updated", http.StatusOK, time.Since(time.Now()), 0)
 	c.JSON(http.StatusOK, gin.H{"message": "Agent updated"})
 }
 
@@ -410,11 +412,12 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		Preload("LatestVersion").
 		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
 		First(&project, agent.ProjectID).Error; err != nil {
+		agentLog(agent, project, "Get Parameter", "Failed: Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
 		return
 	}
 	latency := time.Since(startTime)
-	agentLog(agent, project, "Get Params", "Succeed: Applied previous updated param", http.StatusOK, latency)
+	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)
 	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
 }
 

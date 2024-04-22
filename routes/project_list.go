@@ -11,11 +11,11 @@ func setupGroupProjectList(r *gin.RouterGroup) {
 	projectListGroup := r.Group("/project-list", middleware.RequiredAuth)
 	{
 		projectListGroup.GET("/", controllers.ListProjects)
-		projectListGroup.POST("/", controllers.CreateNewProject, middleware.RequiredIsOrgAdmin)
-		// projectListGroup.DELETE("/:project_id", controllers.DeleteProject, middleware.RequiredIsOrgAdmin)
+		projectListGroup.POST("/", middleware.RequiredIsOrgAdmin, controllers.CreateNewProject)
+		// projectListGroup.DELETE("/:project_id", middleware.RequiredIsOrgAdmin, controllers.DeleteProject)
 
 		projectListGroup.GET("/archived", controllers.ListArchivedProjects)
-		projectListGroup.PATCH("/:project_id/archive", controllers.ArchiveProject, middleware.RequiredIsOrgAdmin)
-		projectListGroup.PATCH("/:project_id/unarchive", controllers.UnarchiveProject, middleware.RequiredIsOrgAdmin)
+		projectListGroup.PATCH("/:project_id/archive", middleware.RequiredIsOrgAdmin, controllers.ArchiveProject)
+		projectListGroup.PATCH("/:project_id/unarchive", middleware.RequiredIsOrgAdmin, controllers.UnarchiveProject)
 	}
 }
