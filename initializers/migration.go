@@ -74,6 +74,14 @@ func Migration(db *gorm.DB) error {
 	if err != nil {
 		log.Println("Failed to migrate ProjectLog models")
 	}
+	err = db.AutoMigrate(&models.Workflow{})
+	if err != nil {
+		log.Println("Failed to migrate Workflow models")
+	}
+	err = db.AutoMigrate(&models.WorkflowLog{})
+	if err != nil {
+		log.Println("Failed to migrate WorkflowLog models")
+	}
 	log.Printf("Database migrated\n")
 	return nil
 }

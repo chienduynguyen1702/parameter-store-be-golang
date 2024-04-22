@@ -31,4 +31,5 @@ type Project struct {
 	Parameters      []Parameter       `gorm:"one2many:project_parameters;" json:"parameters"`
 	UserRoles       []UserRoleProject `gorm:"one2many:user_role_project;" json:"user_role"`
 	Logs            []ProjectLog      `gorm:"one2many:project_logs;" json:"logs"`
+	Workflows       []Workflow        `gorm:"one2many:project_workflows;" json:"workflows"`
 }

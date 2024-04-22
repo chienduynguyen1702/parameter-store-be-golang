@@ -47,6 +47,9 @@ func GetProjectAllInfo(c *gin.Context) {
 		Preload("UserRoles").
 		Preload("UserRoles.User"). // Preload User association
 		Preload("UserRoles.Role"). // Preload Role association
+		Preload("Logs").
+		Preload("Workflows").
+		Preload("Workflows.Logs").
 		First(&project, project_id)
 	if result.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
