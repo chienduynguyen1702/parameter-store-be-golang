@@ -93,10 +93,28 @@ func GetProjectOverView(c *gin.Context) {
 	}
 	// debug
 	// log.Println("List workflows: ", listWorkflows)
+	// Save the listWorkflows of project back to the database
+	for _, workflow := range listWorkflows.Workflows {
+		var wf models.Workflow
+		result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
+		if result.RowsAffected == 0 {
+			// log.Println("Workflow id: ", workflow.ID)
+			wf = models.Workflow{
+				WorkflowID: workflow.ID,
+				Name:       workflow.Name,
+				Path:       workflow.Path,
+				ProjectID:  project.ID,
+				State:      workflow.State,
+			}
+			DB.Create(&wf)
+		}
+	}
+	// preload workflows from the database using the project ID
+	DB.Model(&project).Preload("Workflows").Find(&project)
 	c.JSON(http.StatusOK, gin.H{
-		"overview": project,
-		"users":    userRoleInProject,
-		"workflow": listWorkflows,
+		"overview":  project,
+		"users":     userRoleInProject,
+		"workflows": project.Workflows,
 	})
 }
 
