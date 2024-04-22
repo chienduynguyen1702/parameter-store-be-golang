@@ -1,11 +1,4 @@
 definitions:
-  controllers.AddUserToProject.UserRoleBody:
-    properties:
-      role:
-        type: string
-      username:
-        type: string
-    type: object
   controllers.CreateNewVersion.versionName:
     properties:
       name:
@@ -68,6 +61,13 @@ definitions:
       value:
         type: string
     type: object
+  controllers.UserRoleBody:
+    properties:
+      role:
+        type: string
+      username:
+        type: string
+    type: object
   controllers.agentRequestBody:
     properties:
       description:
@@ -85,17 +85,28 @@ definitions:
       workflow_name:
         type: string
     required:
+    - description
+    - environment
     - name
+    - stage
     - workflow_name
     type: object
   controllers.agentResponse:
     properties:
+      archived_at:
+        type: string
+      archived_by:
+        type: string
+      description:
+        type: string
       environment:
         $ref: '#/definitions/models.Environment'
       environment_id:
         type: integer
       id:
         type: integer
+      lastUsedAt:
+        type: string
       name:
         type: string
       projectID:
@@ -120,17 +131,24 @@ definitions:
     type: object
   controllers.organizationBody:
     properties:
-      aliasName:
+      alias_name:
         type: string
       description:
         type: string
-      establishmentDate:
+      establishment_date:
         type: string
       name:
         type: string
+    required:
+    - alias_name
+    - description
+    - establishment_date
+    - name
     type: object
   controllers.projectBody:
     properties:
+      auto_update:
+        type: boolean
       current_sprint:
         type: string
       description:
@@ -143,6 +161,13 @@ definitions:
         type: string
       start_at:
         type: string
+    required:
+    - current_sprint
+    - description
+    - name
+    - repo_api_token
+    - repo_url
+    - start_at
     type: object
   controllers.requestAuthAgentBody:
     properties:
@@ -211,6 +236,8 @@ definitions:
         type: integer
       is_archived:
         type: boolean
+      last_used_at:
+        type: string
       name:
         type: string
       projectID:
@@ -555,11 +582,17 @@ paths:
       summary: Get organization information
       tags:
       - Organization
+  /api/v1/organizations/{organization_id}:
     put:
       consumes:
       - application/json
       description: Update organization information
       parameters:
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
       - description: Organization
         in: body
         name: Organization
@@ -874,6 +907,45 @@ paths:
       summary: Get agent detail
       tags:
       - Project Detail / Agents
+    put:
+      consumes:
+      - application/json
+      description: Update agent
+      parameters:
+      - description: Agent ID
+        in: path
+        name: agent_id
+        required: true
+        type: string
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: integer
+      - description: Agent
+        in: body
+        name: Agent
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.agentRequestBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Agent updated"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to update agent"}'
+          schema:
+            type: string
+      summary: Update agent
+      tags:
+      - Project Detail / Agents
   /api/v1/projects/{project_id}/agents/{agent_id}/archive:
     put:
       consumes:
@@ -973,6 +1045,35 @@ paths:
       summary: Get archived agents of project
       tags:
       - Project Detail / Agents
+  /api/v1/projects/{project_id}/dashboard:
+    get:
+      consumes:
+      - application/json
+      description: Get dashboard data
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"dashboard": "dashboard"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get dashboard data"}'
+          schema:
+            type: string
+      summary: Get dashboard data
+      tags:
+      - Project Detail / Dashboard
   /api/v1/projects/{project_id}/environments:
     get:
       consumes:
@@ -1287,7 +1388,7 @@ paths:
         name: UserRoleProject
         required: true
         schema:
-          $ref: '#/definitions/controllers.AddUserToProject.UserRoleBody'
+          $ref: '#/definitions/controllers.UserRoleBody'
       produces:
       - application/json
       responses:
@@ -1338,6 +1439,80 @@ paths:
           schema:
             type: string
       summary: Remove user from project
+      tags:
+      - Project Detail / Overview
+  /api/v1/projects/{project_id}/overview/update-user/{user_id}:
+    put:
+      consumes:
+      - application/json
+      description: Update user in project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      - description: UserRoleProject
+        in: body
+        name: UserRoleProject
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.UserRoleBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User updated in project"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to update user in project"}'
+          schema:
+            type: string
+      summary: Update user in project
+      tags:
+      - Project Detail / Overview
+  /api/v1/projects/{project_id}/overview/users/{user_id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all user in project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: User ID
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"users": "users"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get user in project"}'
+          schema:
+            type: string
+      summary: Get all user in project
       tags:
       - Project Detail / Overview
   /api/v1/projects/{project_id}/parameters:

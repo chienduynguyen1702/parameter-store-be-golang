@@ -347,7 +347,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/api/v1/organizations/{organization_id}": {
             "put": {
                 "description": "Update organization information",
                 "consumes": [
@@ -361,6 +363,13 @@ const docTemplate = `{
                 ],
                 "summary": "Update organization information",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Organization",
                         "name": "Organization",
@@ -877,6 +886,64 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update agent",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Agents"
+                ],
+                "summary": "Update agent",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Agent ID",
+                        "name": "agent_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Agent",
+                        "name": "Agent",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.agentRequestBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Agent updated\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update agent\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/api/v1/projects/{project_id}/agents/{agent_id}/archive": {
@@ -974,6 +1041,50 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to unarchive agent\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/dashboard": {
+            "get": {
+                "description": "Get dashboard data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Dashboard"
+                ],
+                "summary": "Get dashboard data",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"dashboard\": \"dashboard\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get dashboard data\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -1453,7 +1564,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/controllers.AddUserToProject.UserRoleBody"
+                            "$ref": "#/definitions/controllers.UserRoleBody"
                         }
                     }
                 ],
@@ -1523,6 +1634,117 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to remove user from project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/overview/update-user/{user_id}": {
+            "put": {
+                "description": "Update user in project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Update user in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UserRoleProject",
+                        "name": "UserRoleProject",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.UserRoleBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User updated in project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to update user in project\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/overview/users/{user_id}": {
+            "get": {
+                "description": "Get all user in project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Overview"
+                ],
+                "summary": "Get all user in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"users\": \"users\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get user in project\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -2836,17 +3058,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "controllers.AddUserToProject.UserRoleBody": {
-            "type": "object",
-            "properties": {
-                "role": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "controllers.CreateNewVersion.versionName": {
             "type": "object",
             "required": [
@@ -2940,10 +3151,24 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.UserRoleBody": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.agentRequestBody": {
             "type": "object",
             "required": [
+                "description",
+                "environment",
                 "name",
+                "stage",
                 "workflow_name"
             ],
             "properties": {
@@ -2973,6 +3198,15 @@ const docTemplate = `{
         "controllers.agentResponse": {
             "type": "object",
             "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
                 "environment": {
                     "$ref": "#/definitions/models.Environment"
                 },
@@ -2981,6 +3215,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "integer"
+                },
+                "lastUsedAt": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -3018,14 +3255,20 @@ const docTemplate = `{
         },
         "controllers.organizationBody": {
             "type": "object",
+            "required": [
+                "alias_name",
+                "description",
+                "establishment_date",
+                "name"
+            ],
             "properties": {
-                "aliasName": {
+                "alias_name": {
                     "type": "string"
                 },
                 "description": {
                     "type": "string"
                 },
-                "establishmentDate": {
+                "establishment_date": {
                     "type": "string"
                 },
                 "name": {
@@ -3035,7 +3278,18 @@ const docTemplate = `{
         },
         "controllers.projectBody": {
             "type": "object",
+            "required": [
+                "current_sprint",
+                "description",
+                "name",
+                "repo_api_token",
+                "repo_url",
+                "start_at"
+            ],
             "properties": {
+                "auto_update": {
+                    "type": "boolean"
+                },
                 "current_sprint": {
                     "type": "string"
                 },
@@ -3155,6 +3409,9 @@ const docTemplate = `{
                 },
                 "is_archived": {
                     "type": "boolean"
+                },
+                "last_used_at": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

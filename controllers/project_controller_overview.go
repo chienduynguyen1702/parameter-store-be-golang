@@ -219,7 +219,7 @@ type UserRoleBody struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param UserRoleProject body controllers.AddUserToProject.UserRoleBody true "UserRoleProject"
+// @Param UserRoleProject body controllers.UserRoleBody true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User added to project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
@@ -365,7 +365,7 @@ func GetUserInProject(c *gin.Context) {
 // @Produce json
 // @Param project_id path string true "Project ID"
 // @Param user_id path string true "User ID"
-// @Param UserRoleProject body controllers.AddUserToProject.UserRoleBody true "UserRoleProject"
+// @Param UserRoleProject body controllers.UserRoleBody true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User updated in project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update user in project"}"
