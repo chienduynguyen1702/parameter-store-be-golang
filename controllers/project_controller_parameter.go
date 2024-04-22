@@ -494,6 +494,8 @@ func UpdateParameter(c *gin.Context) {
 }
 
 func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnvironmentID uint) (int, time.Duration, string, error) {
+	//debug
+	// log.Println("rerunCICDWorkflow\n", "updatedProjectID", updatedProjectID, "updatedStageID", updatedStageID, "updatedEnvironmentID", updatedEnvironmentID)
 	var project models.Project
 	var usedAgent models.Agent
 	if err := DB.
@@ -503,11 +505,9 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	}
 	if project.Agents == nil {
 		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
-	}
-	if len(project.Agents) != 1 {
-		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
 	} else {
 		usedAgent = project.Agents[0]
+		// log.Println("Agents of project", project.Agents)
 		if usedAgent.WorkflowName == "" {
 			return http.StatusInternalServerError, 0, "Failed to get agent workflow name to rerun cicd", nil
 		}
