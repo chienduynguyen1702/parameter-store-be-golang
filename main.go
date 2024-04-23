@@ -46,7 +46,9 @@ func main() {
 	if port == "" {
 		log.Fatal("$PORT must be set")
 	}
-	go controllers.ScheduleWorkflowCheck()
+	if os.Getenv("ENABLE_HEALTH_CHECK") == "true" {
+		go controllers.ScheduleWorkflowCheck()
+	}
 	log.Println("Server is running on port", port, "in", os.Getenv("GIN_MODE"), "mode.")
 	r.Run(":" + port)
 }
