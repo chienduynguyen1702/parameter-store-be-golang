@@ -21,7 +21,7 @@ type Agent struct {
 	ArchivedBy    string    `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
 	ArchivedAt    time.Time `gorm:"type:timestamp;" json:"archived_at"`
 
-	Workflow    Workflow
+	// Workflow    Workflow
 	Stage       Stage
 	Environment Environment
 }
