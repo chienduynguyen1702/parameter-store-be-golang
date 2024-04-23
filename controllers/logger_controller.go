@@ -73,3 +73,20 @@ func projectLogByUser(projectID uint, action string, message string, responseSta
 // 	DB.Create(&log)
 
 // }
+
+func workflowLog(workflowID uint, workflowRunId uint, attemptNumber int) {
+	// find workflow by ID
+	var workflow models.Workflow
+	DB.Where("workflow_id = ?", workflowID).First(&workflow)
+	workflow.IsUpdatedLastest = false
+	workflow.AttemptNumber = attemptNumber
+	DB.Save(&workflow)
+
+	// create workflow log
+	log := models.WorkflowLog{
+		WorkflowID:    workflowID,
+		WorkflowRunId: workflowRunId,
+		AttemptNumber: attemptNumber,
+	}
+	DB.Create(&log)
+}

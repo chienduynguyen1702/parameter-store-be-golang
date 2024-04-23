@@ -270,13 +270,13 @@ func CreateNewAgent(c *gin.Context) {
 	// log.Println(agent)
 	// find stage and environment in project by projectID
 	project := models.Project{}
-	DB.Preload("Stages").Preload("Environments").First(&project, projectID)
+	DB.Preload("Stages").Preload("Environments").Preload("Workflows").First(&project, projectID)
 	// validate workflow name
 	if err := github.ValidateWorkflowName(agent.WorkflowName, project.RepoURL, project.RepoApiToken); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	//find stage id and environment id
+	//find stage id and environment id workfow id
 	for _, stage := range project.Stages {
 		if stage.Name == agent.Stage {
 			agent.StageID = stage.ID
@@ -289,12 +289,21 @@ func CreateNewAgent(c *gin.Context) {
 			break
 		}
 	}
+	var findingWorkflowID uint
+	for _, workflow := range project.Workflows {
+		if workflow.Name == agent.WorkflowName {
+			findingWorkflowID = uint(workflow.WorkflowID)
+			break
+		}
+	}
+
 	// create new agent
 	newAgent := models.Agent{
 		ProjectID:     uint(projectID),
 		Name:          agent.Name,
 		StageID:       agent.StageID,
 		EnvironmentID: agent.EnvironmentID,
+		WorkflowID:    findingWorkflowID,
 		WorkflowName:  agent.WorkflowName,
 		Description:   agent.Description,
 		IsArchived:    false,
@@ -361,11 +370,20 @@ func UpdateAgent(c *gin.Context) {
 			break
 		}
 	}
+	var findingWorkflowID uint
+	for _, workflow := range project.Workflows {
+		if workflow.Name == agent.WorkflowName {
+			findingWorkflowID = uint(workflow.WorkflowID)
+			break
+		}
+	}
+
 	// update agent
 	agentUpdate := models.Agent{
 		Name:          agent.Name,
 		StageID:       agent.StageID,
 		EnvironmentID: agent.EnvironmentID,
+		WorkflowID:    findingWorkflowID,
 		WorkflowName:  agent.WorkflowName,
 		Description:   agent.Description,
 	}

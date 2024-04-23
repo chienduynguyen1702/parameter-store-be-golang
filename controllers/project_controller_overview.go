@@ -102,7 +102,7 @@ func GetProjectOverView(c *gin.Context) {
 			return
 		}
 
-		_, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
+		_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
 
 		if err != nil {
 			log.Println(err.Error())
@@ -115,7 +115,7 @@ func GetProjectOverView(c *gin.Context) {
 		if result.RowsAffected == 0 {
 			// log.Println("Workflow id: ", workflow.ID)
 			wf = models.Workflow{
-				WorkflowID:    workflow.ID,
+				WorkflowID:    uint(workflow.ID),
 				Name:          workflow.Name,
 				Path:          workflow.Path,
 				ProjectID:     project.ID,

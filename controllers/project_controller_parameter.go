@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -161,6 +162,7 @@ func CreateParameter(c *gin.Context) {
 		Preload("Versions").
 		Preload("Stages").
 		Preload("Environments").
+		Preload("Workflows").
 		First(&project, projectID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
@@ -299,14 +301,15 @@ func ArchiveParameter(c *gin.Context) {
 	// rerun github actions workflow
 	// Get project by ID to get agent workflow name
 	responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+	projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, latency, u.ID)
 	if responseStatusCode == 403 {
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
 			"latency": latency,
 			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
 		})
+		return
 	}
-	projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, latency, u.ID)
 	if err != nil {
 		c.JSON(responseStatusCode, gin.H{"error": message})
 		return
@@ -459,6 +462,7 @@ func UpdateParameter(c *gin.Context) {
 		currentParameter.EnvironmentID != parameter.EnvironmentID {
 		// Get project by ID to get agent workflow name
 		responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+
 		l = latency
 		if responseStatusCode == 403 {
 			c.JSON(http.StatusCreated, gin.H{
@@ -492,7 +496,6 @@ func UpdateParameter(c *gin.Context) {
 		"message": "Parameter updated. Started rerun cicd. Check github actions of the project's repo.",
 	})
 }
-
 func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnvironmentID uint) (int, time.Duration, string, error) {
 	//debug
 	// log.Println("rerunCICDWorkflow\n", "updatedProjectID", updatedProjectID, "updatedStageID", updatedStageID, "updatedEnvironmentID", updatedEnvironmentID)
@@ -500,6 +503,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	var usedAgent models.Agent
 	if err := DB.
 		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
+		Preload("Agents.Workflow").
 		First(&project, updatedProjectID).Error; err != nil {
 		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
 	}
@@ -526,6 +530,20 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	startTime := time.Now()
 	responseStatusCode, responseMessage, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
 	latency := time.Since(startTime)
+
+	lastWorkflowRunID, _, lastAttemptNumber, errAttempt := github.GetLastAttemptNumberOfWorkflowRun(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, usedAgent.WorkflowName)
+	if errAttempt != nil {
+		log.Println("Failed to get last attempt number of workflow run")
+	}
+	log.Println("lastAttemptNumber in rerunCICDWorkflow", lastAttemptNumber)
+	log.Println("lastWorkflowRunID in rerunCICDWorkflow", lastWorkflowRunID)
+	//parse lastWorkflowRunID to uint
+	lastWorkflowRunIDUint64, errParse := strconv.ParseUint(lastWorkflowRunID, 10, 64)
+	if errParse != nil {
+		log.Println("Failed to parse lastWorkflowRunID to uint")
+	}
+	//save workflow log
+	workflowLog(usedAgent.WorkflowID, uint(lastWorkflowRunIDUint64), lastAttemptNumber)
 	log.Println(responseMessage)
 	if responseStatusCode == 403 {
 		return 201, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
