@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"log"
 	"parameter-store-be/models"
 
 	"gorm.io/gorm"
@@ -24,5 +25,6 @@ func SeedDataTestProjectVersion(db *gorm.DB) error {
 		return err
 	}
 	testVersions = vers
+	log.Println("Test project version is seeded.")
 	return nil
 }

@@ -55,7 +55,7 @@ func ValidateWorkflowName(workflowName string, repoUrl string, apiToken string) 
 	// fmt.Println("repo owner: ", repo.Owner)
 	// fmt.Println("repo name: ", repo.Name)
 	// fmt.Println("apiToken: ", apiToken)
-	idMatchedWorkflow, statusCode, err := getWorkflowID(repo.Owner, repo.Name, workflowName, apiToken)
+	idMatchedWorkflow, statusCode, err := getWorkflowRunID(repo.Owner, repo.Name, workflowName, apiToken)
 	if err != nil {
 		return err
 	}

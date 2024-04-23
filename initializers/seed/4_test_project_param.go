@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"log"
 	"parameter-store-be/models"
 
 	"gorm.io/gorm"
@@ -37,5 +38,9 @@ func SeedDataTestParam(db *gorm.DB) error {
 	if err := db.Save(&testVersions[0]).Error; err != nil {
 		return err
 	}
+	if err := db.Save(&testVersions[1]).Error; err != nil {
+		return err
+	}
+	log.Println("Test project params are seeded.")
 	return nil
 }

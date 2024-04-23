@@ -16,6 +16,8 @@ type WorkflowRunsResponse struct {
 	WorkflowRuns []struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
+
+		RunAttempt int `json:"run_attempt"`
 	} `json:"workflow_runs"`
 }
 
@@ -40,7 +42,7 @@ func RerunWorkFlow(repoOwner string, repoName string, workflowName string, apiTo
 	// https://api.github.com/repos/OWNER/REPO/actions/runs/RUN_ID/rerun
 
 	// 1 - Get the latest workflow run
-	workflowID, statusCode, err := getWorkflowID(repoOwner, repoName, workflowName, apiToken)
+	workflowID, statusCode, err := getWorkflowRunID(repoOwner, repoName, workflowName, apiToken)
 	if err != nil {
 		return statusCode, err.Error(), err
 	}
@@ -79,7 +81,7 @@ func makeRerunWorkflowRequest(repoOwner string, repoName string, workflowID stri
 	return request, nil
 }
 
-func getWorkflowID(repoOwner string, repoName string, workflowName string, apiToken string) (string, int, error) {
+func getWorkflowRunID(repoOwner string, repoName string, workflowName string, apiToken string) (string, int, error) {
 	// API docs : https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2022-11-28#list-workflow-runs-for-a-repository
 	// curl -L \
 	// -H "Accept: application/vnd.github+json" \
@@ -148,6 +150,24 @@ func makeListWorkflowRunRequest(repoOwner string, repoName string, apiToken stri
 
 	// Create a new GET request
 	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs", GitHubAPIEndpoint, repoOwner, repoName)
+	// fmt.Println("ListWorkflowRequest URL: ", url)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		// fmt.Println("Error creating request:", err)
+		return nil, fmt.Errorf("error creating list workflow request: %v", err)
+	}
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	// debug
+	// fmt.Println("ListWorkflowRequest: ", request)
+	return request, nil
+}
+
+func makeGetWorkflowRunRequest(repoOwner string, repoName string, apiToken string, workflowID string) (*http.Request, error) {
+
+	// Create a new GET request
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs/%s", GitHubAPIEndpoint, repoOwner, repoName, workflowID)
 	// fmt.Println("ListWorkflowRequest URL: ", url)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {

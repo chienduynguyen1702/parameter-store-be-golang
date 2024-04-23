@@ -153,9 +153,9 @@ func SeedDatabase(db *gorm.DB) error {
 			Description: "Deploy stage",
 		},
 	}
-	if err := db.Create(&stages).Error; err != nil {
-		return err
-	}
+	// if err := db.Create(&stages).Error; err != nil {
+	// 	return err
+	// }
 	defaultStages = stages
 	log.Printf("\nnDefault stages data is seeded.\n")
 
@@ -177,9 +177,9 @@ func SeedDatabase(db *gorm.DB) error {
 			Description: "Production environment",
 		},
 	}
-	if err := db.Create(&envs).Error; err != nil {
-		return err
-	}
+	// if err := db.Create(&envs).Error; err != nil {
+	// 	return err
+	// }
 	defaultEnvironments = envs
 	log.Printf("\nDefault evironments data is seeded.\n")
 

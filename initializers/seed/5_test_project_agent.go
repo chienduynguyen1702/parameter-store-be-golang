@@ -1,6 +1,7 @@
 package seed
 
 import (
+	"log"
 	"parameter-store-be/models"
 
 	"gorm.io/gorm"
@@ -18,5 +19,6 @@ func SeedAgent(DB *gorm.DB) error {
 	if err := DB.Create(&agent).Error; err != nil {
 		return err
 	}
+	log.Println("Test project agent is seeded.")
 	return nil
 }
