@@ -109,7 +109,7 @@ func GetProjectOverView(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get last attempt number"})
 			return
 		}
-		log.Println("Last attempt number: ", lastAttemptNumber)
+		// log.Println("Last attempt number: ", lastAttemptNumber)
 		var wf models.Workflow
 		result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
 		if result.RowsAffected == 0 {
