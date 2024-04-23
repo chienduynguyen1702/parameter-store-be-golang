@@ -6,6 +6,7 @@ import (
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -85,7 +86,7 @@ func GetProjectOverView(c *gin.Context) {
 			// LastLogIn: urp.User.LastLogIn,
 		})
 	}
-	listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
+	listWorkflows, err := github.GetListWorkflows(project.RepoURL, project.RepoApiToken)
 	if err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get workflows"})
@@ -105,6 +106,8 @@ func GetProjectOverView(c *gin.Context) {
 				Path:       workflow.Path,
 				ProjectID:  project.ID,
 				State:      workflow.State,
+				// FileName:   TokenizePath(workflow.Path),
+				// AttemptNumber: workflow.RunAttempt,
 			}
 			DB.Create(&wf)
 		}
@@ -116,6 +119,12 @@ func GetProjectOverView(c *gin.Context) {
 		"users":     userRoleInProject,
 		"workflows": project.Workflows,
 	})
+}
+
+// Tokenize path ".github/workflows/file-name" to get file-name
+func TokenizePath(path string) string {
+	tokens := strings.Split(path, "/")
+	return tokens[len(tokens)-1]
 }
 
 type projectBody struct {

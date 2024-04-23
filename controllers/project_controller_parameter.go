@@ -500,23 +500,24 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	var usedAgent models.Agent
 	if err := DB.
 		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
+		Preload("Workflows").
 		First(&project, updatedProjectID).Error; err != nil {
-		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
+		return http.StatusNotFound, 0, "Failed to get project to rerun cicd", err
 	}
-	if project.Agents == nil {
-		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+	//if project has no agent has found
+	if len(project.Agents) == 0 {
+		return http.StatusAccepted, 0, "Parameter is updated. Failed to get agent by stage and environment to rerun cicd.", nil
 	} else {
 		usedAgent = project.Agents[0]
-		// log.Println("Agents of project", project.Agents)
 		if usedAgent.WorkflowName == "" {
-			return http.StatusInternalServerError, 0, "Failed to get agent workflow name to rerun cicd", nil
+			return http.StatusNotFound, 0, "Failed to get agent workflow name to rerun cicd", nil
 		}
 	}
 	if project.RepoApiToken == "" {
-		return http.StatusInternalServerError, 0, "Failed to get repo api token to rerun cicd", nil
+		return http.StatusNotFound, 0, "Failed to get repo api token to rerun cicd", nil
 	}
 	if project.RepoURL == "" {
-		return http.StatusInternalServerError, 0, "Failed to get repo URL to rerun cicd", nil
+		return http.StatusNotFound, 0, "Failed to get repo URL to rerun cicd", nil
 	}
 
 	githubRepository, err := github.ParseRepoURL(project.RepoURL)
@@ -527,13 +528,20 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	responseStatusCode, responseMessage, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
 	latency := time.Since(startTime)
 	log.Println(responseMessage)
+	var findingWorkflowFileName string
+	for _, workflow := range project.Workflows {
+		if workflow.Name == usedAgent.WorkflowName {
+			// findingWorkflowFileName = workflow.FileName
+			break
+		}
+	}
 	if responseStatusCode == 403 {
-		return 201, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions", project.RepoURL), nil
+		return 201, latency, fmt.Sprintf("Parameter updated. Failed to rerun workflow: Workflow is already running. Check github actions at %s/actions/workflows/%s", project.RepoURL, findingWorkflowFileName), nil
 	}
 	if err != nil {
-		return http.StatusInternalServerError, 0, err.Error(), nil
+		return http.StatusNotFound, 0, err.Error(), nil
 	}
-	return http.StatusCreated, latency, fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions", project.RepoURL), nil
+	return http.StatusCreated, latency, fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions/workflows/%s", project.RepoURL, findingWorkflowFileName), nil
 }
 
 // func rerunCICDWorkflowHandler(c *gin.Context) {

@@ -165,10 +165,11 @@ func makeListWorkflowRunRequest(repoOwner string, repoName string, apiToken stri
 type WorkflowsResponse struct {
 	TotalCount int `json:"total_count"`
 	Workflows  []struct {
-		ID    int    `json:"id"`
-		Name  string `json:"name"`
-		Path  string `json:"path"`
-		State string `json:"state"`
+		ID         int    `json:"id"`
+		Name       string `json:"name"`
+		Path       string `json:"path"`
+		State      string `json:"state"`
+		RunAttempt int    `json:"run_attempt"`
 	} `json:"workflows"`
 }
 
@@ -189,7 +190,7 @@ func makeListWorkflowsRequest(repoOwner string, repoName string, apiToken string
 	// fmt.Println("ListWorkflowRequest: ", request)
 	return request, nil
 }
-func GetWorkflows(RepoURL string, apiToken string) (WorkflowsResponse, error) {
+func GetListWorkflows(RepoURL string, apiToken string) (WorkflowsResponse, error) {
 	// Parse the repository URL
 	repo, err := ParseRepoURL(RepoURL)
 	if err != nil {

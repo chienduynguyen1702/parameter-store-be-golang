@@ -20,4 +20,6 @@ var (
 	testVersions = []models.Version{}
 	testUser     = models.User{}
 	testParams   = []models.Parameter{}
+	testStages   = []models.Stage{}
+	testEnv      = models.Environment{}
 )
