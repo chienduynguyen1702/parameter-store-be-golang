@@ -503,7 +503,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	var usedAgent models.Agent
 	if err := DB.
 		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
-		Preload("Agents.Workflow").
+		// Preload("Agents.Workflow").
 		First(&project, updatedProjectID).Error; err != nil {
 		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
 	}
