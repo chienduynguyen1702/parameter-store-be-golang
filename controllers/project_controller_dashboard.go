@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"log"
+	"math"
 	"net/http"
 	"parameter-store-be/models"
 	"time"
@@ -45,7 +45,7 @@ func GetProjectDashboard(c *gin.Context) {
 	// Get current week
 	startOfWeek := getDateTimeOfMondayOfWeek(now)
 	endOfWeek := startOfWeek.AddDate(0, 0, 7)
-	log.Println(startOfWeek, endOfWeek)
+	// log.Println(startOfWeek, endOfWeek)
 	// Get count of project logs within current week
 	var countWeekUpdate int64
 	if err := DB.Model(&models.ProjectLog{}).Where("project_id = ? AND created_at BETWEEN ? AND ?", projectID, startOfWeek, endOfWeek).
@@ -61,12 +61,49 @@ func GetProjectDashboard(c *gin.Context) {
 		return
 	}
 
+	// Get duration of workflow logs within current month
+	var p models.Project
+	if err := DB.Preload("Workflows").Preload("Workflows.Logs").First(&p, projectID).Error; err != nil {
+		// if err := DB.Preload("Workflows", "started_at BETWEEN ? AND ?", startOfMonth, endOfMonth).First(&p, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	type WorkflowRerunDuration struct {
+		WorkflowID      uint
+		WorkflowName    string
+		AverageDuration int
+		UnitTime        string `default:"ms"`
+	}
+	var wrds []WorkflowRerunDuration
+	var workflowLogInThisProject []models.WorkflowLog
+	// get average duration of workflow logs
+	for _, workflow := range p.Workflows {
+
+		// log.Println("Workflow: ", workflow)
+		var avgDuration float64
+		DB.Model(&models.WorkflowLog{}).Where("workflow_id = ?", workflow.WorkflowID).Select("AVG(duration)").Row().Scan(&avgDuration)
+
+		roundedDuration := int(math.Round(avgDuration))
+		// fmt.Printf("WorkflowID: %d, Average Duration: %d\n", workflow.WorkflowID, roundedDuration)
+
+		wrds = append(wrds, WorkflowRerunDuration{
+			WorkflowID:      workflow.WorkflowID,
+			WorkflowName:    workflow.Name,
+			AverageDuration: roundedDuration,
+			UnitTime:        "ms",
+		})
+		workflowLogInThisProject = append(workflowLogInThisProject, workflow.Logs...)
+	}
+	// log.Println("wrds: ", wrds)
 	// Return the result
 	c.JSON(http.StatusOK, gin.H{
-		"update_count_current_month":  countMonthUpdate,
-		"agent_actions_current_month": countMonthAgentActions,
-		"update_count_current_week":   countWeekUpdate,
-		"agent_actions_current_week":  countWeekAgentActions,
+		"count_updated_this_month":       countMonthUpdate,
+		"count_agent_actions_this_month": countMonthAgentActions,
+		"count_workflows":                len(p.Workflows),
+		"count_updated_this_week":        countWeekUpdate,
+		"count_agent_actions_this_week":  countWeekAgentActions,
+		"duration_current_month":         wrds,
+		"logs":                           workflowLogInThisProject,
 	})
 }
 
