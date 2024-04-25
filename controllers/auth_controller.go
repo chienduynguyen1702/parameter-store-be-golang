@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"os"
 	"parameter-store-be/models"
 	"time"
 
@@ -144,7 +145,7 @@ func Login(c *gin.Context) {
 		jwtToken,
 		3600*24*30,
 		"",
-		"",
+		os.Getenv("COOKIE_DOMAIN"),
 		true,
 		true,
 	)
