@@ -1,9 +1,7 @@
 package models
 
-import "gorm.io/gorm"
-
 type Workflow struct {
-	gorm.Model
+	// gorm.Model
 	// ID            uint   `gorm:"primaryKey" json:"id"`
 	WorkflowID    uint   `gorm:"primaryKey" json:"workflow_id"`
 	Name          string `json:"name"`
