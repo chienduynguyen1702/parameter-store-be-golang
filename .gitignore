@@ -22,3 +22,5 @@ tmp/
 # Go workspace file
 go.work
 learning_gorm_volume/
+server.crt
+server.key

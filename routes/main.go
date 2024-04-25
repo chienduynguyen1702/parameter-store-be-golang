@@ -46,13 +46,13 @@ func SetupV1Router() *gin.Engine {
 	docs.SwaggerInfo.Version = "1.0"
 	if os.Getenv("ENVIRONMENT") == "dev" {
 		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
-		docs.SwaggerInfo.Schemes = []string{"http"}
+		docs.SwaggerInfo.Schemes = []string{"https", "http"}
 	} else if os.Getenv("ENVIRONMENT") == "production" {
 		docs.SwaggerInfo.Host = "parameter-store-be-golang.up.railway.app"
 		docs.SwaggerInfo.Schemes = []string{"https"}
 	} else if os.Getenv("ENVIRONMENT") == "datn-server" {
-		docs.SwaggerInfo.Host = "103.166.185.48:6888"
-		docs.SwaggerInfo.Schemes = []string{"http", "https"}
+		docs.SwaggerInfo.Host = os.Getenv("HOSTNAME")
+		docs.SwaggerInfo.Schemes = []string{"https"}
 	}
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
