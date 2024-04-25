@@ -17,7 +17,7 @@ func SetupV1Router() *gin.Engine {
 	r := gin.Default()
 	// CORS setup
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", "http://localhost:" + os.Getenv("PORT")},
+		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", "http://103.166.185.48:6888", "http://localhost:" + os.Getenv("PORT")},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -41,18 +41,18 @@ func SetupV1Router() *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	// Swagger setup
+	docs.SwaggerInfo.Title = "Parameter Store Backend API"
+	docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
+	docs.SwaggerInfo.Version = "1.0"
 	if os.Getenv("ENVIRONMENT") == "dev" {
-		docs.SwaggerInfo.Title = "Parameter Store Backend API"
-		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
-		docs.SwaggerInfo.Version = "1.0"
 		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
 		docs.SwaggerInfo.Schemes = []string{"http"}
 	} else if os.Getenv("ENVIRONMENT") == "production" {
-		docs.SwaggerInfo.Title = "Parameter Store Backend API"
-		docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
-		docs.SwaggerInfo.Version = "1.0"
 		docs.SwaggerInfo.Host = "parameter-store-be-golang.up.railway.app"
 		docs.SwaggerInfo.Schemes = []string{"https"}
+	} else if os.Getenv("ENVIRONMENT") == "datn-server" {
+		docs.SwaggerInfo.Host = "103.166.185.48:6888"
+		docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	}
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
