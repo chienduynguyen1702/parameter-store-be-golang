@@ -3420,13 +3420,21 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "stage": {
-                    "$ref": "#/definitions/models.Stage"
+                    "description": "Workflow    Workflow",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Stage"
+                        }
+                    ]
                 },
                 "stage_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "workflow_id": {
+                    "type": "integer"
                 },
                 "workflow_name": {
                     "type": "string"

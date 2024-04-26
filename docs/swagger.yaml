@@ -243,11 +243,15 @@ definitions:
       projectID:
         type: integer
       stage:
-        $ref: '#/definitions/models.Stage'
+        allOf:
+        - $ref: '#/definitions/models.Stage'
+        description: Workflow    Workflow
       stage_id:
         type: integer
       updatedAt:
         type: string
+      workflow_id:
+        type: integer
       workflow_name:
         type: string
     type: object
