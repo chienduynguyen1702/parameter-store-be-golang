@@ -17,7 +17,7 @@ func SetupV1Router() *gin.Engine {
 	r := gin.Default()
 	// CORS setup
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", os.Getenv("HOSTNAME"), "http://localhost:" + os.Getenv("PORT")},
+		AllowOrigins:     []string{"http://localhost:3000", "https://parameter-store-fe-golang.up.railway.app", os.Getenv("HOSTNAME_URL"), "http://localhost:" + os.Getenv("PORT")},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
