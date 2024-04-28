@@ -2114,6 +2114,35 @@ paths:
       summary: Create new version
       tags:
       - Project Detail / Versions
+  /api/v1/projects/{project_id}/workflows:
+    get:
+      consumes:
+      - application/json
+      description: Get project workflows
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"workflow": "workflow"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get project workflows"}'
+          schema:
+            type: string
+      summary: Get project workflows
+      tags:
+      - Project Detail / Workflows
   /api/v1/settings/roles:
     get:
       consumes:
