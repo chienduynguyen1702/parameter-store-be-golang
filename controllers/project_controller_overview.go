@@ -85,55 +85,55 @@ func GetProjectOverView(c *gin.Context) {
 			// LastLogIn: urp.User.LastLogIn,
 		})
 	}
-	listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
-	if err != nil {
-		log.Println(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get workflows"})
-		return
-	}
-	// debug
-	// log.Println("List workflows: ", listWorkflows)
-	// Save the listWorkflows of project back to the database
-	for _, workflow := range listWorkflows.Workflows {
-		repo, err := github.ParseRepoURL(project.RepoURL)
-		if err != nil {
-			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse repository URL"})
-			return
-		}
+	// listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
+	// if err != nil {
+	// 	log.Println(err.Error())
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get workflows"})
+	// 	return
+	// }
+	// // debug
+	// fmt.Println("List workflows in overview: ", listWorkflows, "\n")
+	// // Save the listWorkflows of project back to the database
+	// for _, workflow := range listWorkflows.Workflows {
+	// 	repo, err := github.ParseRepoURL(project.RepoURL)
+	// 	if err != nil {
+	// 		log.Println(err.Error())
+	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse repository URL"})
+	// 		return
+	// 	}
 
-		_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
+	// 	_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
 
-		if err != nil {
-			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get last attempt number"})
-			return
-		}
-		// log.Println("Last attempt number: ", lastAttemptNumber)
-		var wf models.Workflow
-		result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
-		if result.RowsAffected == 0 {
-			// log.Println("Workflow id: ", workflow.ID)
-			wf = models.Workflow{
-				WorkflowID:    uint(workflow.ID),
-				Name:          workflow.Name,
-				Path:          workflow.Path,
-				ProjectID:     project.ID,
-				State:         workflow.State,
-				AttemptNumber: lastAttemptNumber,
-			}
-			DB.Create(&wf)
-		} else {
-			wf.AttemptNumber = lastAttemptNumber
-			DB.Save(&wf)
-		}
-	}
+	// 	if err != nil {
+	// 		log.Println(err.Error())
+	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get last attempt number"})
+	// 		return
+	// 	}
+	// 	// log.Println("Last attempt number: ", lastAttemptNumber)
+	// 	var wf models.Workflow
+	// 	result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
+	// 	if result.RowsAffected == 0 {
+	// 		// log.Println("Workflow id: ", workflow.ID)
+	// 		wf = models.Workflow{
+	// 			WorkflowID:    uint(workflow.ID),
+	// 			Name:          workflow.Name,
+	// 			Path:          workflow.Path,
+	// 			ProjectID:     project.ID,
+	// 			State:         workflow.State,
+	// 			AttemptNumber: lastAttemptNumber,
+	// 		}
+	// 		DB.Create(&wf)
+	// 	} else {
+	// 		wf.AttemptNumber = lastAttemptNumber
+	// 		DB.Save(&wf)
+	// 	}
+	// }
 	// preload workflows from the database using the project ID
 	DB.Model(&project).Preload("Workflows").Find(&project)
 	c.JSON(http.StatusOK, gin.H{
-		"overview":  project,
-		"users":     userRoleInProject,
-		"workflows": project.Workflows,
+		"overview": project,
+		"users":    userRoleInProject,
+		// "workflows": project.Workflows,
 	})
 }
 

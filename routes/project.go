@@ -21,6 +21,10 @@ func setupGroupProject(r *gin.RouterGroup) {
 			overviewGroup.PUT("/users/:user_id", controllers.UpdateUserInProject)
 			overviewGroup.DELETE("/users/:user_id", middleware.RequiredIsAdmin, controllers.RemoveUserFromProject)
 		}
+		workflowGroup := projectGroup.Group("/workflows")
+		{
+			workflowGroup.GET("/", controllers.GetProjectWorkflows)
+		}
 		dashboardGrop := projectGroup.Group("/dashboard")
 		{
 			dashboardGrop.GET("/", controllers.GetProjectDashboard)
