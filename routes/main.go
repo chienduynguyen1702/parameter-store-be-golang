@@ -46,7 +46,7 @@ func SetupV1Router() *gin.Engine {
 	docs.SwaggerInfo.Version = "1.0"
 	if os.Getenv("ENVIRONMENT") == "dev" {
 		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
-		docs.SwaggerInfo.Schemes = []string{"https", "http"}
+		docs.SwaggerInfo.Schemes = []string{"http", "https"}
 	} else if os.Getenv("ENVIRONMENT") == "production" {
 		docs.SwaggerInfo.Host = "parameter-store-be-golang.up.railway.app"
 		docs.SwaggerInfo.Schemes = []string{"https"}
