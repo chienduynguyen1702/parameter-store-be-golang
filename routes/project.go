@@ -27,7 +27,8 @@ func setupGroupProject(r *gin.RouterGroup) {
 		}
 		dashboardGrop := projectGroup.Group("/dashboard")
 		{
-			dashboardGrop.GET("/", controllers.GetProjectDashboard)
+			dashboardGrop.GET("/totals", controllers.GetProjectDashboardTotals)
+			dashboardGrop.GET("/logs", controllers.GetProjectDashboardLogs)
 		}
 		agentGroup := projectGroup.Group("/agents")
 		{

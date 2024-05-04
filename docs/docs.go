@@ -1048,7 +1048,51 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/projects/{project_id}/dashboard": {
+        "/api/v1/projects/{project_id}/dashboard/logs": {
+            "get": {
+                "description": "Get project dashboard logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Dashboard"
+                ],
+                "summary": "Get project dashboard logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"logs\": \"logs\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get project dashboard logs\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/dashboard/totals": {
             "get": {
                 "description": "Get dashboard data",
                 "consumes": [

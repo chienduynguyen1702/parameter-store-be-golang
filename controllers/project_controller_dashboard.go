@@ -19,8 +19,8 @@ import (
 // @Success 200 string {string} json "{"dashboard": "dashboard"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get dashboard data"}"
-// @Router /api/v1/projects/{project_id}/dashboard [get]
-func GetProjectDashboard(c *gin.Context) {
+// @Router /api/v1/projects/{project_id}/dashboard/totals [get]
+func GetProjectDashboardTotals(c *gin.Context) {
 	//get project_id
 	projectID := c.Param("project_id")
 	// count update within current month in project_logs
@@ -102,9 +102,59 @@ func GetProjectDashboard(c *gin.Context) {
 		"count_workflows":                len(p.Workflows),
 		"count_updated_this_week":        countWeekUpdate,
 		"count_agent_actions_this_week":  countWeekAgentActions,
-		"duration_current_month":         wrds,
-		"logs":                           workflowLogInThisProject,
+		"avg_duration_of_workflows_current_month":         wrds,
+		// "logs":                           workflowLogInThisProject,
 	})
+}
+
+// GetProjectDashboardLogs godoc
+// @Summary Get project dashboard logs
+// @Description Get project dashboard logs
+// @Tags Project Detail / Dashboard
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 string {string} json "{"logs": "logs"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get project dashboard logs"}"
+// @Router /api/v1/projects/{project_id}/dashboard/logs [get]
+func GetProjectDashboardLogs(c *gin.Context) {
+	//get project_id
+	projectID := c.Param("project_id")
+	// Get duration of workflow logs within current month
+	var p models.Project
+	if err := DB.Preload("Workflows").Preload("Workflows.Logs").First(&p, projectID).Error; err != nil {
+		// if err := DB.Preload("Workflows", "started_at BETWEEN ? AND ?", startOfMonth, endOfMonth).First(&p, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	type WorkflowRerunDuration struct {
+		WorkflowID      uint
+		WorkflowName    string
+		AverageDuration int
+		UnitTime        string `default:"ms"`
+	}
+	var wrds []WorkflowRerunDuration
+	var workflowLogInThisProject []models.WorkflowLog
+	// get average duration of workflow logs
+	for _, workflow := range p.Workflows {
+
+		// log.Println("Workflow: ", workflow)
+		var avgDuration float64
+		DB.Model(&models.WorkflowLog{}).Where("workflow_id = ?", workflow.WorkflowID).Select("AVG(duration)").Row().Scan(&avgDuration)
+
+		roundedDuration := int(math.Round(avgDuration))
+		// fmt.Printf("WorkflowID: %d, Average Duration: %d\n", workflow.WorkflowID, roundedDuration)
+
+		wrds = append(wrds, WorkflowRerunDuration{
+			WorkflowID:      workflow.WorkflowID,
+			WorkflowName:    workflow.Name,
+			AverageDuration: roundedDuration,
+			UnitTime:        "ms",
+		})
+		workflowLogInThisProject = append(workflowLogInThisProject, workflow.Logs...)
+	}
+	c.JSON(http.StatusOK, gin.H{"logs": workflowLogInThisProject})
 }
 
 // get Date Of Monday Of Week for a given date
