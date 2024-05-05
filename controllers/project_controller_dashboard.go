@@ -79,7 +79,7 @@ func GetProjectDashboardTotals(c *gin.Context) {
 	for _, workflow := range p.Workflows {
 		listWorkflowIds = append(listWorkflowIds, workflow.WorkflowID)
 	}
-	DB.Model(&models.WorkflowLog{}).Where("workflow_id IN (?)", listWorkflowIds).Select("AVG(duration)").Row().Scan(&avgDurationAllWorkflows)
+	DB.Model(&models.WorkflowLog{}).Where("workflow_id IN (?) AND state = ?", listWorkflowIds, "completed").Select("AVG(duration)").Row().Scan(&avgDurationAllWorkflows)
 
 	roundedDuration := int(math.Round(avgDurationAllWorkflows))
 	// Return the result
