@@ -1060,6 +1060,22 @@ paths:
         name: project_id
         required: true
         type: string
+      - description: 'Granularity: day, week, month, quarter, year'
+        in: query
+        name: granularity
+        type: string
+      - description: Start Date format dd-mm-yyyy
+        in: query
+        name: start_date
+        type: string
+      - description: End Date format dd-mm-yyyy
+        in: query
+        name: end_date
+        type: string
+      - description: Workflow ID specified, if not specified, get all workflows
+        in: query
+        name: workflow_id
+        type: string
       produces:
       - application/json
       responses:

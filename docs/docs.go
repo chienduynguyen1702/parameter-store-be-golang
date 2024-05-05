@@ -1068,6 +1068,30 @@ const docTemplate = `{
                         "name": "project_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Granularity: day, week, month, quarter, year",
+                        "name": "granularity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date format dd-mm-yyyy",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date format dd-mm-yyyy",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workflow ID specified, if not specified, get all workflows",
+                        "name": "workflow_id",
+                        "in": "query"
                     }
                 ],
                 "responses": {

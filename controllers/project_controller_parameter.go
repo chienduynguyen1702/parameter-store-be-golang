@@ -382,6 +382,14 @@ func UpdateParameter(c *gin.Context) {
 	projectID := c.Param("project_id")
 	parameterID := c.Param("parameter_id")
 
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
 	type updateParameterRequestBody struct {
 		Name        string `json:"name"`
 		Value       string `json:"value"`
@@ -475,20 +483,13 @@ func UpdateParameter(c *gin.Context) {
 			c.JSON(responseStatusCode, gin.H{"error": message})
 			return
 		}
+		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, l, u.ID)
 		c.JSON(responseStatusCode, gin.H{
 			"status":  responseStatusCode,
 			"latency": latency,
 			"message": message})
 		return
 	}
-	// get user from context
-	user, exist := c.Get("user")
-	if !exist {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
-		return
-	}
-	// modeling user
-	u := user.(models.User)
 	projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, l, u.ID)
 	c.JSON(http.StatusCreated, gin.H{
 		"status":  http.StatusCreated,
