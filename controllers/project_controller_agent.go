@@ -44,7 +44,7 @@ func GetAgents(c *gin.Context) {
 		return
 	}
 	var agents []models.Agent
-	DB.Preload("Stage").Preload("Environment").
+	DB.Preload("Stage").Preload("Environment").Preload("Workflow").
 		Where("project_id = ? AND is_archived != ?", projectID, true).Find(&agents)
 
 	// Convert to response
@@ -59,7 +59,7 @@ func GetAgents(c *gin.Context) {
 			Description:   agent.Description,
 			EnvironmentID: agent.EnvironmentID,
 			Environment:   agent.Environment,
-			WorkflowName:  agent.WorkflowName,
+			WorkflowName:  agent.Workflow.Name,
 			LastUsedAt:    agent.LastUsedAt,
 		})
 	}
@@ -433,6 +433,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		agentLog(agent, project, "Get Parameter", "Failed: Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
 		return
+	}
+	for _, parameter := range project.LatestVersion.Parameters {
+		parameter.IsApplied = true
+		DB.Save(&parameter)
 	}
 	latency := time.Since(startTime)
 	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)

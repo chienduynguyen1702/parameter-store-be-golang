@@ -204,6 +204,7 @@ func CreateParameter(c *gin.Context) {
 		EnvironmentID: findingEnvironment.ID,
 		Stage:         findingStage,
 		Environment:   findingEnvironment,
+		IsApplied:     project.AutoUpdate,
 	}
 
 	// Append the new parameter to the latest version's Parameters slice
@@ -218,28 +219,37 @@ func CreateParameter(c *gin.Context) {
 		return
 	}
 
-	// rerun github actions workflow
-	// Get project by ID to get agent workflow name
-	responseStatusCode, latency, message, err := rerunCICDWorkflow(newParameter.ProjectID, newParameter.StageID, newParameter.EnvironmentID)
-	if responseStatusCode == 403 {
-		responseStatusCode = http.StatusCreated
+	// rerun github actions workflow if project.AutoUpdate is true
+	if project.AutoUpdate {
+		// Get project by ID to get agent workflow name
+		responseStatusCode, latency, message, err := rerunCICDWorkflow(newParameter.ProjectID, newParameter.StageID, newParameter.EnvironmentID)
+		if responseStatusCode == 403 {
+			responseStatusCode = http.StatusCreated
+			c.JSON(http.StatusCreated, gin.H{
+				"status":  http.StatusCreated,
+				"latency": latency,
+				"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			})
+			return
+		}
+		if err != nil {
+			projectLogByUser(newParameter.ProjectID, "Create Parameter", "Failed to create parameter", responseStatusCode, latency, u.ID)
+			c.JSON(responseStatusCode, gin.H{"error": message})
+			return
+		}
+	} else {
+		projectLogByUser(newParameter.ProjectID, "Create Parameter", fmt.Sprint("Created parameter ", newParameter.Name), http.StatusCreated, 0, u.ID)
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
-			"latency": latency,
-			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			"message": "Parameter created",
 		})
 		return
 	}
-	if err != nil {
-		projectLogByUser(newParameter.ProjectID, "Create Parameter", "Failed to create parameter", responseStatusCode, latency, u.ID)
-		c.JSON(responseStatusCode, gin.H{"error": message})
-		return
-	}
-	projectLogByUser(newParameter.ProjectID, "Create Parameter", fmt.Sprint("Created parameter ", newParameter.Name), responseStatusCode, latency, u.ID)
-	c.JSON(responseStatusCode, gin.H{
-		"status":  responseStatusCode,
-		"latency": latency,
-		"message": message})
+	// projectLogByUser(newParameter.ProjectID, "Create Parameter", fmt.Sprint("Created parameter ", newParameter.Name), responseStatusCode, latency, u.ID)
+	// c.JSON(responseStatusCode, gin.H{
+	// 	"status":  responseStatusCode,
+	// 	"latency": latency,
+	// 	"message": message})
 }
 
 // GetArchivedParameters godoc
@@ -286,6 +296,12 @@ func ArchiveParameter(c *gin.Context) {
 	projectID := c.Param("project_id")
 	parameterID := c.Param("parameter_id")
 
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+
 	var parameter models.Parameter
 	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter"})
@@ -294,25 +310,35 @@ func ArchiveParameter(c *gin.Context) {
 	parameter.IsArchived = true
 	parameter.ArchivedBy = u.Username
 	parameter.ArchivedAt = time.Now()
+	parameter.IsApplied = project.AutoUpdate
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive parameter"})
 		return
 	}
 	// rerun github actions workflow
-	// Get project by ID to get agent workflow name
-	responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
-	projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, latency, u.ID)
-	if responseStatusCode == 403 {
+	if project.AutoUpdate {
+
+		// Get project by ID to get agent workflow name
+		responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+		projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, latency, u.ID)
+		if responseStatusCode == 403 {
+			c.JSON(http.StatusCreated, gin.H{
+				"status":  http.StatusCreated,
+				"latency": latency,
+				"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			})
+			return
+		}
+		if err != nil {
+			c.JSON(responseStatusCode, gin.H{"error": message})
+			return
+		}
+	} else {
+		projectLogByUser(parameter.ProjectID, "Archive Parameter", fmt.Sprint("Archived parameter ", parameter.Name), http.StatusCreated, 0, u.ID)
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
-			"latency": latency,
-			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			"message": "Parameter archived",
 		})
-		return
-	}
-	if err != nil {
-		c.JSON(responseStatusCode, gin.H{"error": message})
-		return
 	}
 }
 
@@ -329,9 +355,21 @@ func ArchiveParameter(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to unarchive parameter"}"
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive [put]
 func UnarchiveParameter(c *gin.Context) {
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract user ID
+	u := user.(models.User)
 	projectID := c.Param("project_id")
 	parameterID := c.Param("parameter_id")
 
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
 	var parameter models.Parameter
 	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter"})
@@ -340,29 +378,39 @@ func UnarchiveParameter(c *gin.Context) {
 	parameter.IsArchived = false
 	parameter.ArchivedBy = ""
 	parameter.ArchivedAt = time.Time{}
+	parameter.IsApplied = project.AutoUpdate
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive parameter"})
 		return
 	}
 	// rerun github actions workflow
-	// Get project by ID to get agent workflow name
-	responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
-	if responseStatusCode == 403 {
+	if project.AutoUpdate {
+
+		// Get project by ID to get agent workflow name
+		responseStatusCode, latency, message, err := rerunCICDWorkflow(parameter.ProjectID, parameter.StageID, parameter.EnvironmentID)
+		if responseStatusCode == 403 {
+			c.JSON(http.StatusCreated, gin.H{
+				"status":  http.StatusCreated,
+				"latency": latency,
+				"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			})
+		}
+		if err != nil {
+			c.JSON(responseStatusCode, gin.H{"error": message})
+			return
+		}
+	} else {
+		projectLogByUser(parameter.ProjectID, "Unarchive Parameter", fmt.Sprint("Unarchived parameter ", parameter.Name), http.StatusCreated, 0, u.ID)
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
-			"latency": latency,
-			"message": "Parameter updated, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+			"message": "Parameter unarchived",
 		})
 	}
-	if err != nil {
-		c.JSON(responseStatusCode, gin.H{"error": message})
-		return
-	}
-	projectLogByUser(parameter.ProjectID, "Unarchive Parameter", fmt.Sprint("Unarchived parameter ", parameter.Name), http.StatusCreated, latency, 0)
-	c.JSON(responseStatusCode, gin.H{
-		"status":  responseStatusCode,
-		"latency": latency,
-		"message": message})
+	// projectLogByUser(parameter.ProjectID, "Unarchive Parameter", fmt.Sprint("Unarchived parameter ", parameter.Name), http.StatusCreated, latency, 0)
+	// c.JSON(responseStatusCode, gin.H{
+	// 	"status":  responseStatusCode,
+	// 	"latency": latency,
+	// 	"message": message})
 }
 
 // UpdateParameter godoc
@@ -454,13 +502,20 @@ func UpdateParameter(c *gin.Context) {
 	if updateParameterBody.Environment != "" {
 		parameter.EnvironmentID = findingEnvironment.ID
 	}
-
+	parameter.IsApplied = project.AutoUpdate
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
 		return
 	}
 	// debug currentParameter and parameter
-
+	if !project.AutoUpdate {
+		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, 0, u.ID)
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"message": "Parameter updated",
+		})
+		return
+	}
 	// If parameter is updated at Name or Value or Stage or Environment
 	// then rerun github actions workflow
 	var l time.Duration
