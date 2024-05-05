@@ -14,7 +14,7 @@ func ScheduleWorkflowCheck() {
 		log.Println("Checking for workflows...")
 		DB.
 			Preload("Workflows", "is_updated_lastest = ?", false).
-			Preload("Workflows.Logs","state != ?", "completed").
+			Preload("Workflows.Logs", "state != ?", "completed").
 			Find(&projects)
 
 		for _, project := range projects {
@@ -28,7 +28,7 @@ func ScheduleWorkflowCheck() {
 			}
 
 			for _, workflow := range project.Workflows {
-				log.Println("workflow Name : ", workflow.Name,"has logs :", len(workflow.Logs))
+				log.Println("workflow Name : ", workflow.Name, "has logs :", len(workflow.Logs))
 				log.Println("workflow Logs : ", workflow.Logs)
 				for _, logg := range workflow.Logs {
 					log.Println("workflow log : ", logg)
@@ -39,13 +39,14 @@ func ScheduleWorkflowCheck() {
 
 					// print all this repo.Owner, repo.Name, project.RepoApiToken, workflow.WorkflowID, workflow.AttemptNumber
 					// log.Println(repo.Owner, repo.Name, project.RepoApiToken, logg.WorkflowRunId, workflow.AttemptNumber)
-					duration, err := github.GetLastAttemptInformationOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, int(logg.WorkflowRunId), workflow.AttemptNumber)
+					started_at, duration, err := github.GetLastAttemptInformationOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, int(logg.WorkflowRunId), workflow.AttemptNumber)
 					if err != nil {
 						log.Println(err.Error())
 						continue
 					} else {
 						logg.State = "completed"
 						logg.Duration = int(duration.Milliseconds())
+						logg.StartedAt = started_at
 						DB.Save(&logg)
 						workflow.IsUpdatedLastest = true
 						log.Println(duration)

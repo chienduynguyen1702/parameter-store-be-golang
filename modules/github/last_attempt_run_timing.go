@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 )
@@ -83,31 +84,31 @@ func GetLastAttemptNumberOfWorkflowRun(repoOwner string, repoName string, apiTok
 	return latestWorkflowRunID, response.StatusCode, run.RunAttempt, nil
 }
 
-func GetLastAttemptInformationOfWorkflowRun(repoOwner string, repoName string, apiToken string, workflowRunID int, attemptNumber int) (time.Duration, error) {
+func GetLastAttemptInformationOfWorkflowRun(repoOwner string, repoName string, apiToken string, workflowRunID int, attemptNumber int) (time.Time, time.Duration, error) {
 	client := &http.Client{}
 	req, err := makeGetWorkflowRunWithAttempt(repoOwner, repoName, workflowRunID, attemptNumber, apiToken)
 	if err != nil {
-		return time.Duration(0), fmt.Errorf("error creating request: %v", err)
+		return time.Time{}, time.Duration(0), fmt.Errorf("error creating request: %v", err)
 	}
 	response, err := client.Do(req)
 	if err != nil {
-		return time.Duration(0), fmt.Errorf("error sending request: %v", err)
+		return time.Time{}, time.Duration(0), fmt.Errorf("error sending request: %v", err)
 	}
 	defer response.Body.Close()
 	responseBody, err := io.ReadAll(response.Body)
 	if err != nil {
-		return time.Duration(0), fmt.Errorf("error reading response: %v", err)
+		return time.Time{}, time.Duration(0), fmt.Errorf("error reading response: %v", err)
 	}
-	// log.Println(string(responseBody))
+	log.Println(string(responseBody))
 	var run WorkflowRunAttempt
 	if err := json.Unmarshal(responseBody, &run); err != nil {
-		return time.Duration(0), fmt.Errorf("error unmarshalling response: %v", err)
+		return time.Time{}, time.Duration(0), fmt.Errorf("error unmarshalling response: %v", err)
 	}
 	// log.Println(run)
 	if run.Status != "completed" {
-		return time.Duration(0), fmt.Errorf("workflow run is not completed")
+		return time.Time{}, time.Duration(0), fmt.Errorf("workflow run is not completed")
 	}
 	// return subtract of run.UpdateAt - run.RunStartedAt
-	return run.UpdatedAt.Sub(run.RunStartedAt), nil
+	return run.RunStartedAt, run.UpdatedAt.Sub(run.RunStartedAt), nil
 
 }
