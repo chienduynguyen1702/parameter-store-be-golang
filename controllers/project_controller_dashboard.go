@@ -217,66 +217,31 @@ func GetProjectDashboardLogs(c *gin.Context) {
 }
 
 func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projectID string) string {
+	if startDate == "" {
+		switch granularity {
+		case "day":
+			startDate = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
+		case "week":
+			startDate = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
+		case "month", "quarter", "year":
+			startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
+		}
+	}
+
+	dateTrunc, interval := "", ""
 	switch granularity {
-	case "day": // get logs by day
-		return queryBuilderForLogsByGranularityDay(startDate, workflowID, projectID)
-	case "week": // get logs by week
-		return queryBuilderForLogsByGranularityWeek(startDate, workflowID, projectID)
-	case "month": // get logs by month
-		return queryBuilderForLogsByGranularityMonth(startDate, workflowID, projectID)
-	case "quarter": // get logs by quarter
-		return queryBuilderForLogsByGranularityQuarter(startDate, workflowID, projectID)
-	case "year": // get logs by year
-		return queryBuilderForLogsByGranularityYear(startDate, workflowID, projectID)
-	default:
-		return queryBuilderForLogsByGranularityDay(startDate, workflowID, projectID)
+	case "day":
+		dateTrunc, interval = "day", "1 day"
+	case "week":
+		dateTrunc, interval = "week", "1 week"
+	case "month":
+		dateTrunc, interval = "month", "1 month"
+	case "quarter":
+		dateTrunc, interval = "quarter", "3 month"
+	case "year":
+		dateTrunc, interval = "year", "1 year"
 	}
-}
 
-func queryBuilderForLogsByGranularityDay(startDate, workflowID, projectID string) string {
-
-	if startDate == "" {
-		// firstDayOfMonth := get1stDayOfMonth(time.Now()).Format("2006-01-02")
-		// startDate = firstDayOfMonth
-
-		startDate = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
-	}
-	return fmt.Sprintf(`
-        SELECT
-            to_char(date, 'YYYY-MM-DD') AS Period,
-            COUNT(workflow_logs.workflow_id) AS Count,
-            AVG(duration) AS Avg_Duration
-        FROM
-            generate_series(
-            date_trunc('day', '%s'::date),
-            date_trunc('day', NOW()),
-            interval '1 day'
-        ) AS date
-        LEFT JOIN
-            workflow_logs ON date_trunc('day', workflow_logs.created_at)::date = date::date
-            AND workflow_logs.state = 'completed'
-            AND workflow_logs.project_id = %s
-            %s
-        GROUP BY
-            date
-        ORDER BY
-            date;
-    `,
-		startDate,
-		projectID,
-		func() string {
-			if workflowID != "" {
-				return fmt.Sprintf("AND workflow_logs.workflow_id = '%s'", workflowID)
-			}
-			return ""
-		}(),
-	)
-}
-
-func queryBuilderForLogsByGranularityWeek(startDate, workflowID, projectID string) string {
-	if startDate == "" {
-		startDate = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
-	}
 	return fmt.Sprintf(`
 		SELECT
 			to_char(date, 'YYYY-MM-DD') AS Period,
@@ -284,12 +249,12 @@ func queryBuilderForLogsByGranularityWeek(startDate, workflowID, projectID strin
 			AVG(duration) AS Avg_Duration
 		FROM
 			generate_series(
-			date_trunc('week', '%s'::date),
-			date_trunc('week', NOW()),
-			interval '1 week'
+			date_trunc('%s', '%s'::date),
+			date_trunc('%s', NOW()),
+			interval '%s'
 		) AS date
 		LEFT JOIN
-			workflow_logs ON date_trunc('week', workflow_logs.created_at)::date = date::date
+			workflow_logs ON date_trunc('%s', workflow_logs.created_at)::date = date::date
 			AND workflow_logs.state = 'completed'
 			AND workflow_logs.project_id = %s
 			%s
@@ -298,113 +263,8 @@ func queryBuilderForLogsByGranularityWeek(startDate, workflowID, projectID strin
 		ORDER BY
 			date;
 	`,
-		startDate,
-		projectID,
-		func() string {
-			if workflowID != "" {
-				return fmt.Sprintf("AND workflow_logs.workflow_id = '%s'", workflowID)
-			}
-			return ""
-		}(),
-	)
-
-}
-func queryBuilderForLogsByGranularityMonth(startDate, workflowID, projectID string) string {
-	if startDate == "" {
-		startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
-	}
-	return fmt.Sprintf(`
-		SELECT
-			to_char(date, 'YYYY-MM-DD') AS Period,
-			COUNT(workflow_logs.workflow_id) AS Count,
-			AVG(duration) AS Avg_Duration
-		FROM
-			generate_series(
-			date_trunc('month', '%s'::date),
-			date_trunc('month', NOW()),
-			interval '1 month'
-		) AS date
-		LEFT JOIN
-			workflow_logs ON date_trunc('month', workflow_logs.created_at)::date = date::date
-			AND workflow_logs.state = 'completed'
-			AND workflow_logs.project_id = %s
-			%s
-		GROUP BY
-			date
-		ORDER BY
-			date;
-	`,
-		startDate,
-		projectID,
-		func() string {
-			if workflowID != "" {
-				return fmt.Sprintf("AND workflow_logs.workflow_id = '%s'", workflowID)
-			}
-			return ""
-		}(),
-	)
-}
-func queryBuilderForLogsByGranularityQuarter(startDate, workflowID, projectID string) string {
-	if startDate == "" {
-		startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
-	}
-	return fmt.Sprintf(`
-		SELECT
-			to_char(date, 'YYYY-MM-DD') AS Period,
-			COUNT(workflow_logs.workflow_id) AS Count,
-			AVG(duration) AS Avg_Duration
-		FROM
-			generate_series(
-			date_trunc('quarter', '%s'::date),
-			date_trunc('quarter', NOW()),
-			interval '3 month'
-		) AS date
-		LEFT JOIN
-			workflow_logs ON date_trunc('quarter', workflow_logs.created_at)::date = date::date
-			AND workflow_logs.state = 'completed'
-			AND workflow_logs.project_id = %s
-			%s
-		GROUP BY
-			date
-		ORDER BY
-			date;
-	`,
-		startDate,
-		projectID,
-		func() string {
-			if workflowID != "" {
-				return fmt.Sprintf("AND workflow_logs.workflow_id = '%s'", workflowID)
-			}
-			return ""
-		}(),
-	)
-}
-func queryBuilderForLogsByGranularityYear(startDate, workflowID, projectID string) string {
-	if startDate == "" {
-		startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
-	}
-	return fmt.Sprintf(`
-		SELECT
-			to_char(date, 'YYYY-MM-DD') AS Period,
-			COUNT(workflow_logs.workflow_id) AS Count,
-			AVG(duration) AS Avg_Duration
-		FROM
-			generate_series(
-			date_trunc('year', '%s'::date),
-			date_trunc('year', NOW()),
-			interval '1 year'
-		) AS date
-		LEFT JOIN
-			workflow_logs ON date_trunc('year', workflow_logs.created_at)::date = date::date
-			AND workflow_logs.state = 'completed'
-			AND workflow_logs.project_id = %s
-			%s
-		GROUP BY
-			date
-		ORDER BY
-			date;
-	`,
-		startDate,
+		dateTrunc, startDate, dateTrunc, interval,
+		dateTrunc,
 		projectID,
 		func() string {
 			if workflowID != "" {
