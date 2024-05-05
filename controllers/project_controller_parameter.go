@@ -651,3 +651,88 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 // 	}
 // 	return http.StatusCreated, latency, fmt.Sprintf("Parameter updated. Started rerun cicd. Check github actions at %s/actions", project.RepoURL), nil
 // }
+
+// ApplyParametersInProject godoc
+// @Summary Apply parameters in project
+// @Description Apply parameters in project
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Success 200 string {string} json "{"message": "Parameters applied"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to apply parameters"}"
+// @Router /api/v1/projects/{project_id}/parameters/apply [post]
+func ApplyParametersInProject(c *gin.Context) {
+	projectID := c.Param("project_id")
+	// parse project ID to uint
+	projectIDUint64, err := strconv.ParseUint(projectID, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse project ID to uint"})
+		return
+	}
+	projectIDUint := uint(projectIDUint64)
+
+	var project models.Project
+	if err := DB.
+		Preload("LatestVersion").
+		Preload("LatestVersion.Parameters").
+		First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	latestVersion := project.LatestVersion
+	// Get all parameters of the latest version
+	parameters := latestVersion.Parameters
+	// Apply all parameters
+	for _, parameter := range parameters {
+		parameter.IsApplied = true
+	}
+
+	// find workflow ID of agent which is matched with stage and environment of un-IsApplied parameter
+	var usedAgent models.Agent
+	for _, parameter := range parameters {
+		if !parameter.IsApplied {
+			if err := DB.
+				Preload("Workflow").
+				Preload("Stage").
+				Preload("Environment").
+				Where("stage_id = ? AND environment_id = ?", parameter.StageID, parameter.EnvironmentID).
+				First(&usedAgent).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agent"})
+				return
+			}
+			break
+		}
+	}
+	// startTime := time.Now()
+	responseStatusCode, latency, message, err := rerunCICDWorkflow(projectIDUint, usedAgent.StageID, usedAgent.EnvironmentID)
+	// latency := time.Since(startTime)
+	if responseStatusCode == 403 {
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"latency": latency,
+			"message": "Parameters applied, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.",
+		})
+		return
+	}
+	if err != nil {
+		c.JSON(responseStatusCode, gin.H{"error": message})
+		return
+	}
+
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
+	projectLogByUser(project.ID, "Apply Parameters", "Parameters applied", http.StatusCreated, latency, u.ID)
+	c.JSON(http.StatusCreated, gin.H{
+		"status":  http.StatusCreated,
+		"latency": latency,
+		"message": "Parameters applied. Started rerun cicd. Check github actions of the project's repo.",
+	})
+}

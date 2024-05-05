@@ -19,6 +19,7 @@ type Parameter struct {
 	ArchivedAt    time.Time `gorm:"type:timestamp;" json:"archived_at"`
 	IsApplied     bool      `gorm:"default:false" json:"is_applied"`
 
+	// UpdatedBy   User		`gorm:"foreignKey:UpdatedBy" json:"updated_by"` // foreign key to user model
 	Stage       Stage       `gorm:"foreignKey:StageID" json:"stage"`
 	Environment Environment `gorm:"foreignKey:EnvironmentID" json:"environment"`
 }
