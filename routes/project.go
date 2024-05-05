@@ -11,6 +11,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 	projectGroup := r.Group("/projects/:project_id", middleware.RequiredAuth, middleware.RequiredBelongToProject)
 	{
 		projectGroup.GET("/", controllers.GetProjectAllInfo)
+		projectGroup.POST("/apply-parameters", middleware.RequiredIsAdmin, controllers.ApplyParametersInProject)
 		overviewGroup := projectGroup.Group("/overview")
 		{
 			overviewGroup.GET("/", controllers.GetProjectOverView)

@@ -214,6 +214,9 @@ func UpdateProjectInformation(c *gin.Context) {
 	project.Description = requestBody.Description
 	project.CurrentSprint = requestBody.CurrentSprint
 	project.RepoURL = requestBody.RepoURL
+	project.AutoUpdate = requestBody.AutoUpdate
+	project.RepoApiToken = requestBody.RepoApiToken
+	
 	if err := github.ValidateGithubRepo(project.RepoURL, project.RepoApiToken); err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
