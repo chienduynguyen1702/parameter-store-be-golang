@@ -87,6 +87,7 @@ func workflowLog(workflowID uint, workflowRunId uint, attemptNumber int) {
 		WorkflowID:    workflowID,
 		WorkflowRunId: workflowRunId,
 		AttemptNumber: attemptNumber,
+		ProjectID:     workflow.ProjectID,
 	}
 	DB.Create(&log)
 }

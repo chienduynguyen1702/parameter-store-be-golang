@@ -30,8 +30,8 @@ func GetProjectDashboardTotals(c *gin.Context) {
 	startOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	endOfMonth := startOfMonth.AddDate(0, 1, 0)
 	// count updated logs within current month
-	countMonthParamUpdate := countMonthParamUpdate(c, projectID, startOfMonth, endOfMonth)
-	if countMonthParamUpdate < 0 {
+	countMonthUpdate := countMonthUpdate(c, projectID, startOfMonth, endOfMonth)
+	if countMonthUpdate < 0 {
 		return
 	}
 	// count agent actions within current month
@@ -39,15 +39,24 @@ func GetProjectDashboardTotals(c *gin.Context) {
 	if countMonthAgentActions < 0 {
 		return
 	}
-
+	// count total updated logs
+	countTotalUpdate := coutnTotalUpdate(c, projectID)
+	if countTotalUpdate < 0 {
+		return
+	}
+	// count total agent actions
+	countTotalAgentActions := countTotalAgentActions(c, projectID)
+	if countTotalAgentActions < 0 {
+		return
+	}
 	// Get current week
 	startOfWeek := getDateTimeOfMondayOfWeek(now)
 	endOfWeek := startOfWeek.AddDate(0, 0, 7)
 	// log.Println(startOfWeek, endOfWeek)
 
 	// count updated logs within current week
-	countWeekParamUpdate := countWeekParamUpdate(c, projectID, startOfWeek, endOfWeek)
-	if countWeekParamUpdate < 0 {
+	countWeekUpdate := countWeekUpdate(c, projectID, startOfWeek, endOfWeek)
+	if countWeekUpdate < 0 {
 		return
 	}
 	// Get count of agent logs within current week
@@ -75,12 +84,14 @@ func GetProjectDashboardTotals(c *gin.Context) {
 	roundedDuration := int(math.Round(avgDurationAllWorkflows))
 	// Return the result
 	c.JSON(http.StatusOK, gin.H{
-		"count_updated_this_month":                countMonthParamUpdate,
+		"avg_duration_of_workflows_current_month": roundedDuration,
+		"count_total_updated":                     countTotalUpdate,
+		"count_total_agent_actions":               countTotalAgentActions,
+		"count_updated_this_month":                countMonthUpdate,
 		"count_agent_actions_this_month":          countMonthAgentActions,
 		"count_workflows":                         len(p.Workflows),
-		"count_updated_this_week":                 countWeekParamUpdate,
+		"count_updated_this_week":                 countWeekUpdate,
 		"count_agent_actions_this_week":           countWeekAgentActions,
-		"avg_duration_of_workflows_current_month": roundedDuration,
 	})
 }
 func getQueryParams(c *gin.Context) (string, string, string, string) {
@@ -94,7 +105,7 @@ func getQueryParams(c *gin.Context) (string, string, string, string) {
 	// fmt.Println("workflow_id: ", workflow_id)
 	return granularity, start_date, end_date, workflow_id
 }
-func countMonthParamUpdate(c *gin.Context, projectID string, startOfMonth time.Time, endOfMonth time.Time) int64 {
+func countMonthUpdate(c *gin.Context, projectID string, startOfMonth time.Time, endOfMonth time.Time) int64 {
 	var countMonthUpdate int64
 	if err := DB.Model(&models.ProjectLog{}).Where("project_id = ? AND created_at BETWEEN ? AND ?", projectID, startOfMonth, endOfMonth).
 		Count(&countMonthUpdate).Error; err != nil {
@@ -112,7 +123,7 @@ func countMonthAgentActions(c *gin.Context, projectID string, startOfMonth time.
 	}
 	return countMonthAgentActions
 }
-func countWeekParamUpdate(c *gin.Context, projectID string, startOfWeek time.Time, endOfWeek time.Time) int64 {
+func countWeekUpdate(c *gin.Context, projectID string, startOfWeek time.Time, endOfWeek time.Time) int64 {
 	var countWeekUpdate int64
 	if err := DB.Model(&models.ProjectLog{}).Where("project_id = ? AND created_at BETWEEN ? AND ?", projectID, startOfWeek, endOfWeek).
 		Count(&countWeekUpdate).Error; err != nil {
@@ -129,6 +140,22 @@ func countWeekAgentActions(c *gin.Context, projectID string, startOfWeek time.Ti
 		return -1
 	}
 	return countWeekAgentActions
+}
+func coutnTotalUpdate(c *gin.Context, projectID string) int64 {
+	var countTotalUpdate int64
+	if err := DB.Model(&models.ProjectLog{}).Where("project_id = ?", projectID).Count(&countTotalUpdate).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count project logs"})
+		return -1
+	}
+	return countTotalUpdate
+}
+func countTotalAgentActions(c *gin.Context, projectID string) int64 {
+	var countTotalAgentActions int64
+	if err := DB.Model(&models.AgentLog{}).Where("project_id = ?", projectID).Count(&countTotalAgentActions).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to count agent logs"})
+		return -1
+	}
+	return countTotalAgentActions
 }
 
 // GetProjectDashboardLogs godoc
@@ -162,12 +189,6 @@ func GetProjectDashboardLogs(c *gin.Context) {
 		granularity = "day"
 	}
 
-	// type WorkflowRerunDuration struct {
-	// 	WorkflowID      uint
-	// 	WorkflowName    string
-	// 	AverageDuration int
-	// 	UnitTime        string `default:"ms"`
-	// }
 	type logsByGranularity struct {
 		AvgDuration float64 `json:"avg_duration_in_period"`
 		Count       int     `json:"count"`
@@ -175,8 +196,8 @@ func GetProjectDashboardLogs(c *gin.Context) {
 		// WorkflowID  uint
 	}
 	// Build query
-	query := queryBuilderForLogsByGranularity(granularity, startDate, workflowID)
-	// fmt.Println("query: ", query)
+	query := queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projectID)
+	fmt.Println("query: ", query)
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
@@ -189,42 +210,16 @@ func GetProjectDashboardLogs(c *gin.Context) {
 	}
 	// fmt.Println("logsGranularity: ", logsGranularity)
 
-	// Get duration of workflow logs within current month
-	// var p models.Project
-	// if err := DB.Preload("Workflows").Preload("Workflows.Logs").First(&p, projectID).Error; err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
-	// 	return
-	// }
-	// var wrds []WorkflowRerunDuration
-	// var workflowLogInThisProject []models.WorkflowLog
-	// // get average duration of workflow logs
-	// for _, workflow := range p.Workflows {
-
-	// 	// log.Println("Workflow: ", workflow)
-	// 	var avgDuration float64
-	// 	DB.Model(&models.WorkflowLog{}).Where("workflow_id = ?", workflow.WorkflowID).Select("AVG(duration)").Row().Scan(&avgDuration)
-
-	// 	roundedDuration := int(math.Round(avgDuration))
-	// 	// fmt.Printf("WorkflowID: %d, Average Duration: %d\n", workflow.WorkflowID, roundedDuration)
-
-	// 	wrds = append(wrds, WorkflowRerunDuration{
-	// 		WorkflowID:      workflow.WorkflowID,
-	// 		WorkflowName:    workflow.Name,
-	// 		AverageDuration: roundedDuration,
-	// 		UnitTime:        "ms",
-	// 	})
-	// 	workflowLogInThisProject = append(workflowLogInThisProject, workflow.Logs...)
-	// }
 	c.JSON(http.StatusOK, gin.H{
 		"logs_with_granularity": logsGranularity,
 		"granularity":           granularity,
 	})
 }
 
-func queryBuilderForLogsByGranularity(granularity, startDate, workflowID string) string {
+func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projectID string) string {
 	switch granularity {
 	case "day": // get logs by day
-		return queryBuilderForLogsByGranularityDay(startDate, workflowID)
+		return queryBuilderForLogsByGranularityDay(startDate, workflowID, projectID)
 	case "week": // get logs by week
 
 	case "month": // get logs by month
@@ -237,11 +232,13 @@ func queryBuilderForLogsByGranularity(granularity, startDate, workflowID string)
 	return ""
 }
 
-func queryBuilderForLogsByGranularityDay(startDate, workflowID string) string {
+func queryBuilderForLogsByGranularityDay(startDate, workflowID, projectID string) string {
 
 	if startDate == "" {
-		firstDayOfMonth := get1stDayOfMonth(time.Now()).Format("2006-01-02")
-		startDate = firstDayOfMonth
+		// firstDayOfMonth := get1stDayOfMonth(time.Now()).Format("2006-01-02")
+		// startDate = firstDayOfMonth
+
+		startDate = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
 	}
 	return fmt.Sprintf(`
         SELECT
@@ -256,14 +253,16 @@ func queryBuilderForLogsByGranularityDay(startDate, workflowID string) string {
         ) AS date
         LEFT JOIN
             workflow_logs ON date_trunc('day', workflow_logs.created_at)::date = date::date
-                         AND workflow_logs.state = 'completed'
-                         %s
+            AND workflow_logs.state = 'completed'
+            AND workflow_logs.project_id = %s
+            %s
         GROUP BY
             date
         ORDER BY
             date;
     `,
 		startDate,
+		projectID,
 		func() string {
 			if workflowID != "" {
 				return fmt.Sprintf("AND workflow_logs.workflow_id = '%s'", workflowID)

@@ -14,6 +14,7 @@ type WorkflowLog struct {
 	State         string    `json:"state"`
 	StartedAt     time.Time `json:"started_at"`
 	Duration      int       `json:"duration"`
+	ProjectID     uint      `json:"project_id"`
 	// ProjectLogID  uint       `json:"project_log_id"`
 	// ProjectLog    ProjectLog `gorm:"foreignKey:ProjectLogID" json:"project_log"`
 }
