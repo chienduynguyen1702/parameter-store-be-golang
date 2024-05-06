@@ -14,7 +14,7 @@ show_help() {
 }
 
 output_file="parameters.txt"
-log_file="get-parameters.log"
+log_file="./get-parameters.log"
 
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -41,12 +41,18 @@ if [ -z "$PARAMETER_STORE_TOKEN" ]; then
     exit 1
 fi
 
-response=$(curl -s -X POST https://parameter-store-be-golang.up.railway.app/api/v1/agents/auth-parameters \
+response=$(curl -s -X POST https://param-store-be.datn.live/api/v1/agents/auth-parameters \
     -H "Content-Type: application/json" \
     -d "{\"api_token\":\"$PARAMETER_STORE_TOKEN\"}")
 
-if [ $? -ne 0 ]; then
-    echo "Error executing curl command."
+timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+status_code=$(echo "$response" | jq -r '.status')
+message="$(echo "$response" | jq -r '.message')"
+
+echo "$timestamp $status_code $message" >> "$log_file"
+
+if [ "$status_code" != "200" ]; then
+    echo "Failed to get parameters: $message. Check $log_file for more details."
     exit 1
 fi
 parameters=$(echo "$response" | jq -r '.parameters[] | "\(.name)=\(.value)"')

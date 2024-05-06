@@ -1,0 +1,2 @@
+#!/bin/bash
+export PARAMETER_STORE_TOKEN=123123
