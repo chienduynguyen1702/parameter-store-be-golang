@@ -419,7 +419,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	var agent models.Agent
 	result := DB.Where("api_token = ?", reqBody.ApiToken).First(&agent)
 	if result.Error != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get agent by API token"})
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  http.StatusUnauthorized,
+			"message": "Failed to authorized agent by API token, please check $PARAMETER_STORE_TOKEN",
+		})
 		return
 	}
 	agent.LastUsedAt = time.Now()
@@ -430,11 +433,13 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		Preload("LatestVersion").
 		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
 		First(&project, agent.ProjectID).Error; err != nil {
-		agentLog(agent, project, "Get Parameter", "Failed: Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
+
+		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
-			"message": "Failed to get project by agent, unauthorized access",
+			"message": "Failed to get project by agent",
 		})
+
 		return
 	}
 	for _, parameter := range project.LatestVersion.Parameters {
