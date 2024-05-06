@@ -121,6 +121,17 @@ func CreateEnvironmentInProject(c *gin.Context) {
 		return
 	}
 
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	uID := user.(models.User).ID
+
+	projectLogByUser(newEnvironment.ProjectID, "Updated Environment", "Environment is updated", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusCreated, gin.H{
 		"message":     "Environment created successfully",
 		"environment": newEnvironment,
@@ -168,6 +179,17 @@ func UpdateEnvironmentInProject(c *gin.Context) {
 		return
 	}
 
+	// get username from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract username
+	uID := user.(models.User).ID
+
+	projectLogByUser(environment.ProjectID, "Updated Environment", "Environment is updated", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message":     "Environment updated successfully",
 		"environment": environment,
@@ -260,7 +282,7 @@ func ArchiveEnvironmentInProject(c *gin.Context) {
 		return
 	}
 	// log to project log
-	projectLogByUser(uint(uint64ProjectID), "ARCHIVE_ENVIRONMENT", "Environment archived", 200, time.Since(time.Now()), uID)
+	projectLogByUser(uint(uint64ProjectID), "Archived Environment", "Environment is archived", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Environment archived successfully",
 	})
@@ -312,7 +334,7 @@ func UnarchiveEnvironmentInProject(c *gin.Context) {
 	// Type assertion to extract username
 	uID := user.(models.User).ID
 	// log to project log
-	projectLogByUser(environment.ProjectID, "UNARCHIVE_ENVIRONMENT", "Environment unarchived", 200, time.Since(time.Now()), uID)
+	projectLogByUser(environment.ProjectID, "Unarchived Environment", "Environment is unarchived", 200, time.Since(time.Now()), uID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Environment unarchived successfully",
 	})

@@ -121,14 +121,11 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
 		return
 	}
-	var responseLogedInUser struct {
-		Username       string `json:"username"`
-		Email          string `json:"email"`
-		OrganizationID uint   `json:"organization_id"`
-	}
+
 	responseLogedInUser.Username = user.Username
 	responseLogedInUser.Email = user.Email
 	responseLogedInUser.OrganizationID = user.OrganizationID
+	responseLogedInUser.IsOrganizationAdmin = user.IsOrganizationAdmin
 	// Generate a JWT token
 	jwtToken, err := generateJWTToken(user)
 	if err != nil {
@@ -153,6 +150,13 @@ func Login(c *gin.Context) {
 
 }
 
+var responseLogedInUser struct {
+	Username            string `json:"username"`
+	Email               string `json:"email"`
+	OrganizationID      uint   `json:"organization_id"`
+	IsOrganizationAdmin bool   `json:"is_organization_admin"`
+}
+
 // Validate validates a user by cookie
 // Validate godoc
 // @Summary Validate a user
@@ -174,14 +178,10 @@ func Validate(c *gin.Context) {
 	// set login time
 	validatedUser := user.(models.User)
 
-	var responseLogedInUser struct {
-		Username       string `json:"username"`
-		Email          string `json:"email"`
-		OrganizationID uint   `json:"organization_id"`
-	}
 	responseLogedInUser.Username = validatedUser.Username
 	responseLogedInUser.Email = validatedUser.Email
 	responseLogedInUser.OrganizationID = validatedUser.OrganizationID
+	responseLogedInUser.IsOrganizationAdmin = validatedUser.IsOrganizationAdmin
 
 	// log.Println("user: %v", validatedUser)
 	// if err := DB.First(&validatedUser, validatedUser.ID).Error; err != nil {

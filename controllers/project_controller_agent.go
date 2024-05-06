@@ -431,7 +431,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
 		First(&project, agent.ProjectID).Error; err != nil {
 		agentLog(agent, project, "Get Parameter", "Failed: Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
-		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project by agent"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Failed to get project by agent, unauthorized access",
+		})
 		return
 	}
 	for _, parameter := range project.LatestVersion.Parameters {
@@ -440,7 +443,11 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	}
 	latency := time.Since(startTime)
 	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)
-	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
+	c.JSON(http.StatusOK, gin.H{
+		"status":     http.StatusOK,
+		"message":    "Parameter retrieved",
+		"parameters": project.LatestVersion.Parameters,
+	})
 }
 
 // RerunWorkFlowByAgent godoc
