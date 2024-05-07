@@ -34,7 +34,7 @@ func ListProjects(c *gin.Context) {
 	if user.IsOrganizationAdmin {
 		DB.Where("organization_id = ? AND is_archived != ? ", user.OrganizationID, true).Find(&projects)
 	} else {
-		DB.Joins("JOIN user_project_roles ON projects.id = user_project_roles.project_id").Where("user_project_roles.user_id = ? AND projects.is_archived != ? ", user.ID, true).Find(&projects)
+		DB.Joins("JOIN user_role_projects ON projects.id = user_role_projects.project_id").Where("user_role_projects.user_id = ? AND projects.is_archived != ? ", user.ID, true).Find(&projects)
 	}
 
 	type projectListResponse struct {
@@ -175,7 +175,7 @@ func ListArchivedProjects(c *gin.Context) {
 	if user.IsOrganizationAdmin {
 		DB.Where("organization_id = ? AND is_archived = ?", user.OrganizationID, true).Find(&projects)
 	} else {
-		DB.Joins("JOIN user_project_roles ON projects.id = user_project_roles.project_id").Where("user_project_roles.user_id = ? AND projects.is_archived = ?", user.ID, true).Find(&projects)
+		DB.Joins("JOIN user_role_projects ON projects.id = user_role_projects.project_id").Where("user_role_projects.user_id = ? AND projects.is_archived = ?", user.ID, true).Find(&projects)
 	}
 
 	type archivedProjectListResponse struct {

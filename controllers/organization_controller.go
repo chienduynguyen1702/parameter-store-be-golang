@@ -130,3 +130,58 @@ func UpdateOrganizationInformation(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"organization": organization})
 }
+
+// GetOrganizationDashboardTotals godoc
+// @Summary Get organization dashboard totals
+// @Description Get organization dashboard totals
+// @Tags Organization
+// @Accept json
+// @Produce json
+// @Success 200 string {string} json "{"organizations": "organizations"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get organization"}"
+// @Router /api/v1/organizations/dashboard/totals [get]
+func GetOrganizationDashboardTotals(c *gin.Context) {
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+
+	userOrganizationID := user.(models.User).OrganizationID
+	if userOrganizationID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+		return
+	}
+
+	var projectsCount int64
+	DB.Model(&models.Project{}).Where("organization_id = ?", userOrganizationID).Count(&projectsCount)
+
+	var activeProjectsCount int64
+	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived != ?", userOrganizationID, true).Count(&activeProjectsCount)
+
+	var pendingProjectsCount int64
+	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived = ?", userOrganizationID, true).Count(&pendingProjectsCount)
+
+	var usersCount int64
+	DB.Model(&models.User{}).Where("organization_id = ?", userOrganizationID).Count(&usersCount)
+
+	// count workflow in project in organization
+	var totalWorkflowCount int64
+	DB.Model(&models.Workflow{}).Joins("JOIN projects ON projects.id = workflows.project_id").Where("projects.organization_id = ?", userOrganizationID).Count(&totalWorkflowCount)
+	fmt.Println(totalWorkflowCount)
+	// retrive all workflow in project in organization
+	var w []models.Workflow
+	DB.Preload("Project").Find(&w)
+	fmt.Println(w)
+
+	organizationTotals := gin.H{
+		"project_count":          projectsCount,
+		"active_projects_count":  activeProjectsCount,
+		"pending_projects_count": pendingProjectsCount,
+		"user_count":             usersCount,
+		"workflow_count":         totalWorkflowCount,
+	}
+
+	c.JSON(http.StatusOK, organizationTotals)
+}
