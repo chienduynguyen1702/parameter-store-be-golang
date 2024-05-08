@@ -338,6 +338,102 @@
                 }
             }
         },
+        "/api/v1/organizations/dashboard/logs": {
+            "get": {
+                "description": "Get organization dashboard logs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get organization dashboard logs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Granularity: day, week, month, quarter, year, default is day",
+                        "name": "granularity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start Date format dd-mm-yyyy",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date format dd-mm-yyyy",
+                        "name": "end_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workflow ID specified, if not specified, get all workflows",
+                        "name": "workflow_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"organizations\": \"organizations\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get organization\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/organizations/dashboard/totals": {
+            "get": {
+                "description": "Get organization dashboard totals",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Organization"
+                ],
+                "summary": "Get organization dashboard totals",
+                "responses": {
+                    "200": {
+                        "description": "{\"organizations\": \"organizations\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get organization\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organizations/{organization_id}": {
             "put": {
                 "description": "Update organization information",
@@ -1060,7 +1156,7 @@
                     },
                     {
                         "type": "string",
-                        "description": "Granularity: day, week, month, quarter, year",
+                        "description": "Granularity: day, week, month, quarter, year, default is day",
                         "name": "granularity",
                         "in": "query"
                     },
@@ -1947,6 +2043,50 @@
                     },
                     "500": {
                         "description": "{\"error\": \"Failed to get latest parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/projects/{project_id}/parameters/apply": {
+            "post": {
+                "description": "Apply parameters in project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Apply parameters in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameters applied\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to apply parameters\"}",
                         "schema": {
                             "type": "string"
                         }
@@ -3521,18 +3661,16 @@
                     "type": "integer"
                 },
                 "stage": {
-                    "description": "Workflow    Workflow",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/models.Stage"
-                        }
-                    ]
+                    "$ref": "#/definitions/models.Stage"
                 },
                 "stage_id": {
                     "type": "integer"
                 },
                 "updatedAt": {
                     "type": "string"
+                },
+                "workflow": {
+                    "$ref": "#/definitions/models.Workflow"
                 },
                 "workflow_id": {
                     "type": "integer"
@@ -3608,6 +3746,9 @@
                 "id": {
                     "type": "integer"
                 },
+                "is_applied": {
+                    "type": "boolean"
+                },
                 "is_archived": {
                     "type": "boolean"
                 },
@@ -3618,7 +3759,12 @@
                     "type": "integer"
                 },
                 "stage": {
-                    "$ref": "#/definitions/models.Stage"
+                    "description": "UpdatedBy   User\t\t`gorm:\"foreignKey:UpdatedBy\" json:\"updated_by\"` // foreign key to user model",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Stage"
+                        }
+                    ]
                 },
                 "stage_id": {
                     "type": "integer"
@@ -3701,6 +3847,78 @@
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "models.Workflow": {
+            "type": "object",
+            "properties": {
+                "attempt_number": {
+                    "type": "integer"
+                },
+                "is_updated_lastest": {
+                    "type": "boolean"
+                },
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.WorkflowLog"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "project_id": {
+                    "description": "IsActivated      bool          `gorm:\"default:false\" json:\"is_activated\"`",
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "workflow_id": {
+                    "description": "gorm.Model\nID            uint   `gorm:\"primaryKey\" json:\"id\"`",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.WorkflowLog": {
+            "type": "object",
+            "properties": {
+                "attempt_number": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "started_at": {
+                    "type": "string"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "workflow_id": {
+                    "type": "integer"
+                },
+                "workflow_run_id": {
+                    "type": "integer"
                 }
             }
         }

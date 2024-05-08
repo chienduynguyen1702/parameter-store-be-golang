@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	"os"
 	"parameter-store-be/models"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -63,3 +65,12 @@ func generateJWTToken(user models.User) (string, error) {
 // 	}
 // 	return nil, jwt.ErrSignatureInvalid
 // }
+
+// getUserFromContext retrieves the user from the context
+func getUserFromContext(c *gin.Context) (models.User, error) {
+	user, exists := c.Get("user")
+	if !exists {
+		return models.User{}, errors.New("Failed to get user from context")
+	}
+	return user.(models.User), nil
+}
