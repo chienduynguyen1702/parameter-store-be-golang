@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"parameter-store-be/models"
 	"strconv"
@@ -153,7 +154,7 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-
+	//=======================================================
 	var projectsCount int64
 	DB.Model(&models.Project{}).Where("organization_id = ?", userOrganizationID).Count(&projectsCount)
 
@@ -169,19 +170,67 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 	// count workflow in project in organization
 	var totalWorkflowCount int64
 	DB.Model(&models.Workflow{}).Joins("JOIN projects ON projects.id = workflows.project_id").Where("projects.organization_id = ?", userOrganizationID).Count(&totalWorkflowCount)
-	fmt.Println(totalWorkflowCount)
-	// retrive all workflow in project in organization
-	var w []models.Workflow
-	DB.Preload("Project").Find(&w)
-	fmt.Println(w)
+	//=======================================================
+	var avgDurationAllWorkflowsInOrganization float64
+	q := getAverageDurationByOrganizationIdQueryBuilder(userOrganizationID)
+	DB.Raw(q).Row().Scan(&avgDurationAllWorkflowsInOrganization)
+	roundedDuration := int(math.Round(avgDurationAllWorkflowsInOrganization))
+	/*
+		select count(*) from project_logs
+		left join projects on project_logs.project_id = projects.id
+		left join organizations on projects.organization_id = organizations.id
+		where organizations.id =1
+	*/
+	var totalUpdatedWithinOrganization int64
+	DB.Model(&models.ProjectLog{}).
+		Joins("JOIN projects ON project_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ?", userOrganizationID).
+		Count(&totalUpdatedWithinOrganization)
 
+	var totalAgentActionsWithinOrganization int64
+	DB.Model(&models.AgentLog{}).
+		Joins("JOIN projects ON agent_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ?", userOrganizationID).
+		Count(&totalAgentActionsWithinOrganization)
+	firstDayOfThisMonth := get1stDayOfMonth(time.Now())
+	var totalUpdatedWithinOrganizationThisMonth int64
+	DB.Debug().Model(&models.ProjectLog{}).
+		Joins("JOIN projects ON project_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ? AND project_logs.created_at BETWEEN ? AND ?", userOrganizationID, firstDayOfThisMonth, time.Now()).
+		Count(&totalUpdatedWithinOrganizationThisMonth)
+
+	var totalAgentActionsWithinOrganizationThisMonth int64
+	DB.Model(&models.AgentLog{}).
+		Joins("JOIN projects ON agent_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ? AND project_logs.created_at BETWEEN ? AND ?", userOrganizationID, firstDayOfThisMonth, time.Now()).
+		Count(&totalAgentActionsWithinOrganizationThisMonth)
+
+	// summary data
 	organizationTotals := gin.H{
 		"project_count":          projectsCount,
 		"active_projects_count":  activeProjectsCount,
 		"pending_projects_count": pendingProjectsCount,
 		"user_count":             usersCount,
 		"workflow_count":         totalWorkflowCount,
+
+		"avg_duration":                   roundedDuration,
+		"total_updated":                  totalUpdatedWithinOrganization,
+		"total_updated_this_month":       totalUpdatedWithinOrganizationThisMonth,
+		"total_agent_actions":            totalAgentActionsWithinOrganization,
+		"total_agent_actions_this_month": totalAgentActionsWithinOrganizationThisMonth,
 	}
 
 	c.JSON(http.StatusOK, organizationTotals)
+}
+
+func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string {
+	return fmt.Sprintf(`
+		SELECT AVG(duration) FROM workflow_logs
+		JOIN projects ON projects.id = workflow_logs.project_id
+		WHERE projects.organization_id = %d
+	`, organizationID)
 }
