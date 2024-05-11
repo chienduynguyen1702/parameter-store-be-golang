@@ -138,13 +138,13 @@ func GetProjectOverView(c *gin.Context) {
 }
 
 type projectBody struct {
-	Name          string `binding:"required" json:"name" `
-	StartAt       string `binding:"required" json:"start_at" `
-	Description   string `binding:"required" json:"description" `
-	CurrentSprint string `binding:"required" json:"current_sprint" `
+	Name          string `json:"name" `
+	StartAt       string `json:"start_at" `
+	Description   string `json:"description" `
+	CurrentSprint string `json:"current_sprint" `
 	AutoUpdate    bool   `json:"auto_update" `
-	RepoURL       string `binding:"required" json:"repo_url" `
-	RepoApiToken  string `binding:"required" json:"repo_api_token" `
+	RepoURL       string `json:"repo_url" `
+	RepoApiToken  string `json:"repo_api_token" `
 }
 
 func (pb projectBody) Print() {
@@ -216,7 +216,7 @@ func UpdateProjectInformation(c *gin.Context) {
 	project.RepoURL = requestBody.RepoURL
 	project.AutoUpdate = requestBody.AutoUpdate
 	project.RepoApiToken = requestBody.RepoApiToken
-	
+
 	if err := github.ValidateGithubRepo(project.RepoURL, project.RepoApiToken); err != nil {
 		log.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
