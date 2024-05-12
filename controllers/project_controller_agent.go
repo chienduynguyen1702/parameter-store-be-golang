@@ -46,24 +46,43 @@ func GetAgents(c *gin.Context) {
 	var agents []models.Agent
 	DB.Preload("Stage").Preload("Environment").Preload("Workflow").
 		Where("project_id = ? AND is_archived != ?", projectID, true).Find(&agents)
+	totalAgents := len(agents)
+	page := c.Query("page")
+	limit := c.Query("limit")
 
-	// Convert to response
 	var agentsResponse []agentResponse
-	for _, agent := range agents {
-		agentsResponse = append(agentsResponse, agentResponse{
-			ID:            agent.ID,
-			ProjectID:     agent.ProjectID,
-			Name:          agent.Name,
-			StageID:       agent.StageID,
-			Stage:         agent.Stage,
-			Description:   agent.Description,
-			EnvironmentID: agent.EnvironmentID,
-			Environment:   agent.Environment,
-			WorkflowName:  agent.Workflow.Name,
-			LastUsedAt:    agent.LastUsedAt,
-		})
+	if page != "" && limit != "" {
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+			return
+		}
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit number"})
+			return
+		}
+		paginatedAgents := paginationDataAgent(agents, pageInt, limitInt)
+		for _, agent := range paginatedAgents {
+			agentsResponse = append(agentsResponse, agentResponse{
+				ID:            agent.ID,
+				ProjectID:     agent.ProjectID,
+				Name:          agent.Name,
+				StageID:       agent.StageID,
+				Stage:         agent.Stage,
+				Description:   agent.Description,
+				EnvironmentID: agent.EnvironmentID,
+				Environment:   agent.Environment,
+				WorkflowName:  agent.Workflow.Name,
+				LastUsedAt:    agent.LastUsedAt,
+			})
+		}
 	}
-	c.JSON(http.StatusOK, gin.H{"agents": agentsResponse})
+	// Convert to response
+	c.JSON(http.StatusOK, gin.H{
+		"agents": agentsResponse,
+		"total":  totalAgents,
+	})
 }
 
 // GetAgentDetail godoc

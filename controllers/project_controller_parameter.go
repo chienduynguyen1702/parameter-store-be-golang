@@ -37,7 +37,9 @@ type parameterResponse struct {
 // @Router /api/v1/projects/{project_id}/parameters [get]
 func GetProjectParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
-
+	page := c.Query("page")
+	limit := c.Query("limit")
+	// Convert query parameters to int
 	// Get project by ID
 	var project models.Project
 	if err := DB.
@@ -50,7 +52,25 @@ func GetProjectParameters(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"parameters": project.LatestVersion.Parameters})
+	totalParam := len(project.LatestVersion.Parameters)
+	var paginatedListParams []models.Parameter
+	if page != "" && limit != "" {
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+			return
+		}
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit number"})
+			return
+		}
+		paginatedListParams = paginationDataParam(project.LatestVersion.Parameters, pageInt, limitInt)
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"parameters": paginatedListParams,
+		"total":      totalParam,
+	})
 }
 
 // GetParameterByID godoc

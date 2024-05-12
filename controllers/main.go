@@ -92,3 +92,26 @@ func getUserFromContext(c *gin.Context) (models.User, error) {
 	}
 	return user.(models.User), nil
 }
+
+func paginationDataParam(paramList []models.Parameter, page, limit int) []models.Parameter {
+	start := (page - 1) * limit
+	end := page * limit
+	if start > len(paramList) {
+		start = len(paramList)
+	}
+	if end > len(paramList) {
+		end = len(paramList)
+	}
+	return paramList[start:end]
+}
+func paginationDataAgent(agentList []models.Agent, page, limit int) []models.Agent {
+	start := (page - 1) * limit
+	end := page * limit
+	if start > len(agentList) {
+		start = len(agentList)
+	}
+	if end > len(agentList) {
+		end = len(agentList)
+	}
+	return agentList[start:end]
+}
