@@ -135,8 +135,19 @@ func getWorkflowRunID(repoOwner string, repoName string, workflowName string, ap
 
 	// get the total workflow runs, then check if total workflow runs is bigger than MAX_PAGE_SIZE
 	totalWorkflowRuns := workflowRunsResponse.TotalCount
+	// check if first workflow run list is contain the workflow name
+	for _, workflowRun := range workflowRunsResponse.WorkflowRuns {
+
+		if workflowRun.Name == workflowName {
+			// fmt.Printf("Matched workflow ID: \"%d\"\n", workflowRun.ID)
+			// fmt.Printf("Matched workflow Name: \"%s\"\n", workflowRun.Name)
+			idMatchedWorkflow = fmt.Sprintf("%d", workflowRun.ID)
+			workflowIsFound = true
+			break
+		}
+	}
 	listWorkflowRuns := make([]WorkflowRuns, 0)
-	if totalWorkflowRuns > MAX_PAGE_SIZE {
+	if totalWorkflowRuns > MAX_PAGE_SIZE && !workflowIsFound {
 		// Allocate memory for WorkflowRuns slice of struct with totalWorkflowRuns
 
 		// Calculate total pages
@@ -145,7 +156,7 @@ func getWorkflowRunID(repoOwner string, repoName string, workflowName string, ap
 		// Create a new HTTP client
 		client := &http.Client{}
 
-		for page := 1; page <= totalPages; page++ {
+		for page := 2; page <= totalPages; page++ {
 			listWorkflowRequest, err := makeListWorkflowRunRequestWithPage(repoOwner, repoName, apiToken, page)
 			if err != nil {
 				return "", http.StatusInternalServerError, fmt.Errorf("error creating request to get workflow ID: %v", err)

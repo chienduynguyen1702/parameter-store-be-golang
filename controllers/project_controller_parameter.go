@@ -204,7 +204,7 @@ func CreateParameter(c *gin.Context) {
 		EnvironmentID: findingEnvironment.ID,
 		Stage:         findingStage,
 		Environment:   findingEnvironment,
-		IsApplied:     project.AutoUpdate,
+		IsApplied:     false,
 		Description:   newParameterBody.Description,
 	}
 
@@ -311,7 +311,7 @@ func ArchiveParameter(c *gin.Context) {
 	parameter.IsArchived = true
 	parameter.ArchivedBy = u.Username
 	parameter.ArchivedAt = time.Now()
-	parameter.IsApplied = project.AutoUpdate
+	parameter.IsApplied = false
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to archive parameter"})
 		return
@@ -379,7 +379,6 @@ func UnarchiveParameter(c *gin.Context) {
 	parameter.IsArchived = false
 	parameter.ArchivedBy = ""
 	parameter.ArchivedAt = time.Time{}
-	parameter.IsApplied = project.AutoUpdate
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unarchive parameter"})
 		return
@@ -504,7 +503,7 @@ func UpdateParameter(c *gin.Context) {
 	if updateParameterBody.Environment != "" {
 		parameter.EnvironmentID = findingEnvironment.ID
 	}
-	// parameter.IsApplied = project.AutoUpdate
+	parameter.IsApplied = false
 	// if err := DB.Save(&parameter).Error; err != nil {
 	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
 	// 	return
@@ -689,9 +688,9 @@ func ApplyParametersInProject(c *gin.Context) {
 	// Get all parameters of the latest version
 	parameters := latestVersion.Parameters
 	// Apply all parameters
-	for _, parameter := range parameters {
-		parameter.IsApplied = true
-	}
+	// for _, parameter := range parameters {
+	// 	parameter.IsApplied = true
+	// }
 
 	// find workflow ID of agent which is matched with stage and environment of un-IsApplied parameter
 	var usedAgent models.Agent
