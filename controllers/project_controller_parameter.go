@@ -471,7 +471,7 @@ func UpdateParameter(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("Debug updateParameterBody", updateParameterBody)
+	// fmt.Println("Debug updateParameterBody", updateParameterBody)
 
 	var parameter models.Parameter
 	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
