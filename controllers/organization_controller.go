@@ -161,8 +161,11 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 	var activeProjectsCount int64
 	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived != ?", userOrganizationID, true).Count(&activeProjectsCount)
 
-	var pendingProjectsCount int64
-	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived = ?", userOrganizationID, true).Count(&pendingProjectsCount)
+	var runningAgent int64
+	DB.Model(&models.Agent{}).
+		Joins("LEFT JOIN projects ON projects.id = agents.project_id").
+		Where("projects.organization_id = ? AND agents.is_archived = ?", userOrganizationID, false).
+		Count(&runningAgent)
 
 	var usersCount int64
 	DB.Model(&models.User{}).Where("organization_id = ?", userOrganizationID).Count(&usersCount)
@@ -206,11 +209,11 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 
 	// summary data
 	organizationTotals := gin.H{
-		"project_count":          projectsCount,
-		"active_projects_count":  activeProjectsCount,
-		"pending_projects_count": pendingProjectsCount,
-		"user_count":             usersCount,
-		"workflow_count":         totalWorkflowCount,
+		"project_count":         projectsCount,
+		"active_projects_count": activeProjectsCount,
+		"active_agent":          runningAgent,
+		"user_count":            usersCount,
+		"workflow_count":        totalWorkflowCount,
 
 		"avg_duration":                   roundedDuration,
 		"total_updated":                  totalUpdatedWithinOrganization,
