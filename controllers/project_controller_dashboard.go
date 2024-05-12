@@ -97,13 +97,13 @@ func GetProjectDashboardTotals(c *gin.Context) {
 func getQueryParams(c *gin.Context) (string, string, string, string) {
 	granularity := c.Query("granularity")
 	// fmt.Println("granularity: ", granularity) // granularity shoule be day, week, month, quarter, year
-	start_date := c.Query("start_date")
-	// fmt.Println("start_date: ", start_date)
-	end_date := c.Query("end_date")
-	// fmt.Println("end_date: ", end_date)
+	from := c.Query("from")
+	// fmt.Println("from: ", from)
+	to := c.Query("to")
+	// fmt.Println("to: ", to)
 	workflow_id := c.Query("workflow_id")
 	// fmt.Println("workflow_id: ", workflow_id)
-	return granularity, start_date, end_date, workflow_id
+	return granularity, from, to, workflow_id
 }
 func countMonthUpdate(c *gin.Context, projectID string, startOfMonth time.Time, endOfMonth time.Time) int64 {
 	var countMonthUpdate int64
@@ -166,8 +166,8 @@ func countTotalAgentActions(c *gin.Context, projectID string) int64 {
 // @Produce json
 // @Param project_id 	path 	string true "Project ID"
 // @Param granularity 	query 	string false "Granularity: day, week, month, quarter, year, default is day"
-// @Param start_date 	query 	string false "Start Date format dd-mm-yyyy"
-// @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
+// @Param from 	query 	string false "Start Date format dd-mm-yyyy"
+// @Param to 		query 	string false "End Date format dd-mm-yyyy"
 // @Param workflow_id 	query 	string false "Workflow ID specified, if not specified, get all workflows"
 // @Success 200 string {string} json "{"logs": "logs"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
@@ -176,14 +176,14 @@ func countTotalAgentActions(c *gin.Context, projectID string) int64 {
 func GetProjectDashboardLogs(c *gin.Context) {
 	//get project_id
 	projectID := c.Param("project_id")
-	fmt.Println("projectID: ", projectID)
+	// fmt.Println("projectID: ", projectID)
 
 	// Get param query
-	granularity, startDate, endDate, workflowID := getQueryParams(c)
-	fmt.Println("granularity : ", granularity) // granularity shoule be day, week, month, quarter, year
-	fmt.Println("startDate   : ", startDate)
-	fmt.Println("endDate     : ", endDate)
-	fmt.Println("workflowID  : ", workflowID)
+	granularity, from, to, _ := getQueryParams(c)
+	// fmt.Println("granularity : ", granularity) // granularity shoule be day, week, month, quarter, year
+	// fmt.Println("from   : ", from)
+	// fmt.Println("to     : ", to)
+	// fmt.Println("workflowID  : ", workflowID)
 
 	if granularity == "" {
 		granularity = "day"
@@ -196,7 +196,7 @@ func GetProjectDashboardLogs(c *gin.Context) {
 		// WorkflowID  uint
 	}
 	// Build query
-	query := queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowID, projectID)
+	query := queryBuilderForLogsByGranularity(granularity, from, to, "", projectID)
 	// fmt.Println("query: ", query)
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
@@ -216,21 +216,21 @@ func GetProjectDashboardLogs(c *gin.Context) {
 	})
 }
 
-func queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowID, projectID string) string {
-	if startDate == "" {
+func queryBuilderForLogsByGranularity(granularity, from, to, workflowID, projectID string) string {
+	if from == "" {
 		switch granularity {
 		case "day":
-			startDate = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
+			from = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
 		case "week":
-			startDate = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
+			from = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
 		case "month", "quarter", "year":
-			startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
+			from = get1stDayOfYear(time.Now()).Format("2006-01-02")
 		}
 	}
-	if endDate == "" {
-		endDate = time.Now().Format("2006-01-02")
+	if to == "" {
+		to = time.Now().Format("2006-01-02")
 	}
-	// fmt.Println("startDate: ", startDate)
+	// fmt.Println("from: ", from)
 	dateTrunc, interval := "", ""
 	switch granularity {
 	case "day":
@@ -266,7 +266,7 @@ func queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowI
 		ORDER BY
 			date;
 	`,
-		dateTrunc, startDate, dateTrunc, endDate, interval,
+		dateTrunc, from, dateTrunc, to, interval,
 		dateTrunc,
 		projectID,
 		func() string {

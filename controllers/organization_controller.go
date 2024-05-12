@@ -256,15 +256,14 @@ func GetOrganizationDashboardLogs(c *gin.Context) {
 	userOrganizationID := strconv.Itoa(int(userinContext.OrganizationID))
 
 	// Get param query
-	granularity, startDate, endDate, workflowID := getQueryParams(c)
-	fmt.Println("granularity : ", granularity) // granularity shoule be day, week, month, quarter, year
-	fmt.Println("startDate   : ", startDate)
-	fmt.Println("endDate     : ", endDate)
-	fmt.Println("workflowID  : ", workflowID)
+	granularity, from, to, _ := getQueryParams(c)
+	// fmt.Println("granularity : ", granularity) // granularity shoule be day, week, month, quarter, year
+	// fmt.Println("from   : ", from)
+	// fmt.Println("to     : ", to)
+	// fmt.Println("workflowID  : ", workflowID)
 	if granularity == "" {
 		granularity = "day"
 	}
-
 	type logsByGranularity struct {
 		AvgDuration float64 `json:"avg_duration_in_period"`
 		Count       int     `json:"count"`
@@ -272,7 +271,7 @@ func GetOrganizationDashboardLogs(c *gin.Context) {
 		// WorkflowID  uint
 	}
 	// Build query
-	query := queryBuilderForLogsByGranularityOfOrganization(granularity, startDate, workflowID, userOrganizationID)
+	query := queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, "", userOrganizationID)
 	// fmt.Println("query: ", query)
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
@@ -293,16 +292,19 @@ func GetOrganizationDashboardLogs(c *gin.Context) {
 
 }
 
-func queryBuilderForLogsByGranularityOfOrganization(granularity, startDate, workflowID, organizationID string) string {
-	if startDate == "" {
+func queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, workflowID, organizationID string) string {
+	if from == "" {
 		switch granularity {
 		case "day":
-			startDate = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
+			from = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
 		case "week":
-			startDate = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
+			from = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
 		case "month", "quarter", "year":
-			startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
+			from = get1stDayOfYear(time.Now()).Format("2006-01-02")
 		}
+	}
+	if to == "" {
+		to = time.Now().Format("2006-01-02")
 	}
 
 	dateTrunc, interval := "", ""
@@ -327,7 +329,7 @@ func queryBuilderForLogsByGranularityOfOrganization(granularity, startDate, work
 		FROM
 			generate_series(
 			date_trunc('%s', '%s'::date),
-			date_trunc('%s', NOW()),
+			date_trunc('%s', '%s'::date),
 			interval '%s'
 		) AS date
 		LEFT JOIN
@@ -346,8 +348,8 @@ func queryBuilderForLogsByGranularityOfOrganization(granularity, startDate, work
 		ORDER BY
 			date;
 	`,
-		dateTrunc, startDate,
-		dateTrunc,
+		dateTrunc, from,
+		dateTrunc, to,
 		interval,
 		dateTrunc,
 		organizationID,
