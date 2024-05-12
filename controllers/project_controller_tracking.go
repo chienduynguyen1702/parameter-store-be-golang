@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"parameter-store-be/models"
@@ -43,13 +44,24 @@ func GetProjectTracking(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve project"})
 		return
 	}
-
+	from := c.Query("from")
+	to := c.Query("to")
 	// Retrieve tracking from the database using the project ID
 	var agentLogs []models.AgentLog
-	DB.Preload("Agent").Where("project_id = ?", projectID).Find(&agentLogs)
 	var projectLogs []models.ProjectLog
-	DB.Preload("User").Where("project_id = ?", projectID).Find(&projectLogs)
+	if from != "" && to != "" {
 
+		from := startOfDay(c.Query("from"))
+		to := endOfDay(c.Query("to"))
+
+		DB.Preload("Agent").Where("project_id = ? AND created_at BETWEEN ? AND ?", projectID, from, to).Find(&agentLogs)
+		DB.Preload("User").Where("project_id = ? AND created_at BETWEEN ? AND ?", projectID, from, to).Find(&projectLogs)
+	} else {
+		DB.Preload("Agent").Where("project_id = ?", projectID).Find(&agentLogs)
+		DB.Preload("User").Where("project_id = ?", projectID).Find(&projectLogs)
+	}
+	fmt.Println(agentLogs)
+	fmt.Println(projectLogs)
 	// Combine agentLogs and projectLogs
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
@@ -57,4 +69,11 @@ func GetProjectTracking(c *gin.Context) {
 			"project_logs": projectLogs,
 		},
 	})
+}
+
+func startOfDay(from string) string {
+	return from + " 00:00:00"
+}
+func endOfDay(to string) string {
+	return to + " 23:59:59"
 }

@@ -62,7 +62,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 		}
 		trackingGroup := projectGroup.Group("/tracking")
 		{
-			trackingGroup.GET("/", controllers.GetProjectTracking)
+			trackingGroup.GET("/logs", controllers.GetProjectTracking)
 			// trackingGroup.POST("/", controllers.CreateNewTracking)
 			// trackingGroup.PUT("/:tracking_id", controllers.UpdateTracking)
 			// trackingGroup.DELETE("/:tracking_id", controllers.DeleteTracking)
