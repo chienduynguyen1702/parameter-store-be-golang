@@ -80,7 +80,7 @@ func GetLastAttemptNumberOfWorkflowRun(repoOwner string, repoName string, apiTok
 	if err := json.Unmarshal(responseBody, &run); err != nil {
 		return "", http.StatusInternalServerError, 0, fmt.Errorf("error unmarshalling response: %v", err)
 	}
-	// log.Println(run)
+	// log.Println("response.StatusCode: ", response.StatusCode)
 	return latestWorkflowRunID, response.StatusCode, run.RunAttempt, nil
 }
 

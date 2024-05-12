@@ -10,16 +10,20 @@ import (
 
 const (
 	GitHubAPIEndpoint = "https://api.github.com"
+	MAX_PAGE_SIZE     = 100
+	DEFAULT_PAGE_SIZE = 30
 )
 
 type WorkflowRunsResponse struct {
-	TotalCount   int `json:"total_count"`
-	WorkflowRuns []struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-
-		RunAttempt int `json:"run_attempt"`
-	} `json:"workflow_runs"`
+	TotalCount   int            `json:"total_count"`
+	WorkflowRuns []WorkflowRuns `json:"workflow_runs"`
+}
+type WorkflowRuns struct {
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	RunAttempt   int    `json:"run_attempt"`
+	DisplayTitle string `json:"display_title"`
+	CreatedAt    string `json:"created_at"`
 }
 
 /*
@@ -125,21 +129,79 @@ func getWorkflowRunID(repoOwner string, repoName string, workflowName string, ap
 		return "", http.StatusInternalServerError, fmt.Errorf("error unmarshalling response get workflow ID: %v", err)
 	}
 
-	// debug
-	// fmt.Println("List workflow: ", workflowRunsResponse)
-
 	// Find the workflow ID matching the workflow name
 	var idMatchedWorkflow string
 	workflowIsFound := false
-	for _, workflowRun := range workflowRunsResponse.WorkflowRuns {
-		if workflowRun.Name == workflowName {
-			// fmt.Printf("Matched workflow ID: \"%d\"\n", workflowRun.ID)
-			// fmt.Printf("Matched workflow Name: \"%s\"\n", workflowRun.Name)
-			idMatchedWorkflow = fmt.Sprintf("%d", workflowRun.ID)
-			workflowIsFound = true
-			break
+
+	// get the total workflow runs, then check if total workflow runs is bigger than MAX_PAGE_SIZE
+	totalWorkflowRuns := workflowRunsResponse.TotalCount
+	listWorkflowRuns := make([]WorkflowRuns, 0)
+	if totalWorkflowRuns > MAX_PAGE_SIZE {
+		// Allocate memory for WorkflowRuns slice of struct with totalWorkflowRuns
+
+		// Calculate total pages
+		totalPages := (totalWorkflowRuns-1)/MAX_PAGE_SIZE + 1
+
+		// Create a new HTTP client
+		client := &http.Client{}
+
+		for page := 1; page <= totalPages; page++ {
+			listWorkflowRequest, err := makeListWorkflowRunRequestWithPage(repoOwner, repoName, apiToken, page)
+			if err != nil {
+				return "", http.StatusInternalServerError, fmt.Errorf("error creating request to get workflow ID: %v", err)
+			}
+
+			// Send the GET request
+			response, err := client.Do(listWorkflowRequest)
+			if err != nil {
+				fmt.Println("Error sending request to get workflow ID:", err)
+				return "", response.StatusCode, fmt.Errorf("error sending request to get workflow ID: %v", err)
+			}
+			defer response.Body.Close()
+
+			if response.StatusCode == http.StatusUnauthorized {
+				// fmt.Println("Error response get workflow ID:", response.Status)
+				return "", response.StatusCode, fmt.Errorf("unauthenticated by token to repo github.com/%v/%v", repoOwner, repoName)
+			}
+			if response.StatusCode == http.StatusNotFound {
+				// fmt.Println("Error response get workflow ID:", response.Status)
+				return "", response.StatusCode, fmt.Errorf("error to find repo github.com/%v/%v", repoOwner, repoName)
+			}
+
+			// Read the response body
+			responseBody, err := io.ReadAll(response.Body)
+			if err != nil {
+				// fmt.Println("Error reading response get workflow ID:", err)
+				return "", http.StatusInternalServerError, fmt.Errorf("error reading response get workflow ID: %v", err)
+			}
+
+			var pageWorkflowRuns WorkflowRunsResponse
+			err = json.Unmarshal(responseBody, &pageWorkflowRuns)
+			if err != nil {
+				return "", http.StatusInternalServerError, fmt.Errorf("error unmarshalling response get workflow ID: %v", err)
+			}
+
+			// Append the workflow runs to the list
+			listWorkflowRuns = append(listWorkflowRuns, pageWorkflowRuns.WorkflowRuns...)
+			for _, workflowRun := range listWorkflowRuns {
+				// fmt.Printf("################ %d ##############", i)
+				// fmt.Printf("Workflow ID: \"%d\"\n", workflowRun.ID)
+				// fmt.Printf("Workflow Name: \"%s\"\n", workflowRun.Name)
+				// fmt.Printf("Workflow CreatedAt: \"%s\"\n", workflowRun.CreatedAt)
+				// fmt.Printf("Workflow DisplayTitle: \"%s\"\n", workflowRun.DisplayTitle)
+
+				if workflowRun.Name == workflowName {
+					// fmt.Printf("Matched workflow ID: \"%d\"\n", workflowRun.ID)
+					// fmt.Printf("Matched workflow Name: \"%s\"\n", workflowRun.Name)
+					idMatchedWorkflow = fmt.Sprintf("%d", workflowRun.ID)
+					workflowIsFound = true
+					break
+				}
+			}
 		}
+
 	}
+
 	if !workflowIsFound {
 		return "", http.StatusNotFound, fmt.Errorf("not found workflow name \"%s\" in github.com/%v/%v", workflowName, repoOwner, repoName)
 	}
@@ -150,7 +212,24 @@ func getWorkflowRunID(repoOwner string, repoName string, workflowName string, ap
 func makeListWorkflowRunRequest(repoOwner string, repoName string, apiToken string) (*http.Request, error) {
 
 	// Create a new GET request
-	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs", GitHubAPIEndpoint, repoOwner, repoName)
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d", GitHubAPIEndpoint, repoOwner, repoName, MAX_PAGE_SIZE)
+	// fmt.Println("ListWorkflowRequest URL: ", url)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		// fmt.Println("Error creating request:", err)
+		return nil, fmt.Errorf("error creating list workflow request: %v", err)
+	}
+	request.Header.Set("Accept", "application/vnd.github+json")
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiToken))
+	request.Header.Set("X-GitHub-Api-Version", "2022-11-28")
+	// debug
+	// fmt.Println("ListWorkflowRequest: ", request)
+	return request, nil
+}
+func makeListWorkflowRunRequestWithPage(repoOwner string, repoName string, apiToken string, page int) (*http.Request, error) {
+
+	// Create a new GET request
+	url := fmt.Sprintf("%s/repos/%s/%s/actions/runs?per_page=%d&page=%d", GitHubAPIEndpoint, repoOwner, repoName, MAX_PAGE_SIZE, page)
 	// fmt.Println("ListWorkflowRequest URL: ", url)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -263,7 +342,7 @@ func GetWorkflows(RepoURL string, apiToken string) (WorkflowsResponse, error) {
 		// fmt.Println("Error unmarshalling response get workflow ID:", err)
 		return WorkflowsResponse{}, fmt.Errorf("error unmarshalling response get workflow ID: %v", err)
 	}
-	workflowsResponse.Print()
+	// workflowsResponse.Print()
 	// Remove the dynamic workflow file
 	workflowsResponse.removeDynamicWorkflowfile()
 	// debug
