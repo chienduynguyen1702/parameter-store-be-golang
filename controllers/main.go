@@ -1,7 +1,11 @@
 package controllers
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"errors"
+	"fmt"
+	"log"
 	"os"
 	"parameter-store-be/models"
 	"time"
@@ -43,6 +47,20 @@ func generateJWTToken(user models.User) (string, error) {
 		return "", err
 	}
 	return tokenstring, nil
+}
+
+// gen Token for agents, by agentID and orgID
+func GenerateTokenForAgent(agentID, orgID string) string {
+	plainText := agentID + orgID
+	hash, err := bcrypt.GenerateFromPassword([]byte(plainText), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Hash to store:", string(hash))
+
+	hasher := md5.New()
+	hasher.Write(hash)
+	return hex.EncodeToString(hasher.Sum(nil))
 }
 
 // func parseJWTTokenFromCookie(c *gin.Context) (jwt.MapClaims, error) {

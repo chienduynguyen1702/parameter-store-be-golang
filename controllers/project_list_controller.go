@@ -90,7 +90,7 @@ func CreateNewProject(c *gin.Context) {
 		return
 	}
 
-	// Create a new project
+	// Create a new project3
 	project := models.Project{
 		OrganizationID: userOrganizationID,
 		Name:           requestBody.Name,
@@ -100,9 +100,56 @@ func CreateNewProject(c *gin.Context) {
 		CurrentSprint:  "1",
 		RepoURL:        "github.com/OWNER/REPO",
 	}
-
 	// Save the new project to the database
 	DB.Create(&project)
+
+	newStages := []models.Stage{
+		{
+			Name:        "Build",
+			Description: "Build stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Test",
+			Description: "Test stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Release",
+			Description: "Release stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+			ProjectID:   project.ID,
+		},
+	}
+	for _, stage := range newStages {
+		DB.Create(&stage)
+	}
+
+	newEnvironment := []models.Environment{
+		{
+
+			Name:        "Development",
+			Description: "Development environment",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Staging",
+			Description: "Staging environment",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+			ProjectID:   project.ID,
+		},
+	}
+	for _, environment := range newEnvironment {
+		DB.Create(&environment)
+	}
 
 	c.JSON(http.StatusOK, gin.H{"project": project})
 }

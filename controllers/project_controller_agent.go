@@ -296,7 +296,6 @@ func CreateNewAgent(c *gin.Context) {
 			break
 		}
 	}
-
 	// create new agent
 	newAgent := models.Agent{
 		ProjectID:     uint(projectID),
@@ -309,13 +308,15 @@ func CreateNewAgent(c *gin.Context) {
 		IsArchived:    false,
 		ArchivedBy:    "",
 		ArchivedAt:    time.Time{},
-		APIToken:      "123123",
-		// APIToken: 	models.GenerateAPIToken(),
+		// APIToken:      ApiTokenForAgent,
 	}
 	if err := DB.Create(&newAgent).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create agent"})
 		return
 	}
+	ApiTokenForAgent := GenerateTokenForAgent(strconv.Itoa(int(newAgent.ID)), strconv.Itoa(int(project.OrganizationID)))
+	newAgent.APIToken = ApiTokenForAgent
+	DB.Save(&newAgent)
 	projectLogByUser(uint(projectID), "Create Agent", "Succeed: Agent created", http.StatusCreated, time.Since(time.Now()), 0)
 	c.JSON(http.StatusOK, gin.H{
 		"message":   "Agent created",
