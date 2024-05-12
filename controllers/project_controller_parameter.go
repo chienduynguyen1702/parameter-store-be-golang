@@ -504,6 +504,7 @@ func UpdateParameter(c *gin.Context) {
 		parameter.EnvironmentID = findingEnvironment.ID
 	}
 	parameter.IsApplied = false
+	parameter.EditedAt = time.Now()
 	// if err := DB.Save(&parameter).Error; err != nil {
 	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
 	// 	return
