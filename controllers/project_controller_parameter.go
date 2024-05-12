@@ -39,7 +39,9 @@ func GetProjectParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
 	page := c.Query("page")
 	limit := c.Query("limit")
-	// Convert query parameters to int
+	stages := c.QueryArray("stages")
+	environments := c.QueryArray("environments")
+
 	// Get project by ID
 	var project models.Project
 	if err := DB.
@@ -52,6 +54,31 @@ func GetProjectParameters(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
 	}
+	// Filter parameters by stages
+	if len(stages) > 0 {
+		var filteredParameters []models.Parameter
+		for _, stage := range stages {
+			for _, parameter := range project.LatestVersion.Parameters {
+				if parameter.Stage.Name == stage {
+					filteredParameters = append(filteredParameters, parameter)
+				}
+			}
+		}
+		project.LatestVersion.Parameters = filteredParameters
+	}
+	// Filter parameters by environments
+	if len(environments) > 0 {
+		var filteredParameters []models.Parameter
+		for _, environment := range environments {
+			for _, parameter := range project.LatestVersion.Parameters {
+				if parameter.Environment.Name == environment {
+					filteredParameters = append(filteredParameters, parameter)
+				}
+			}
+		}
+		project.LatestVersion.Parameters = filteredParameters
+	}
+
 	totalParam := len(project.LatestVersion.Parameters)
 	var paginatedListParams []models.Parameter
 	if page != "" && limit != "" {
