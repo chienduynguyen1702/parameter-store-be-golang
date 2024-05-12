@@ -427,6 +427,7 @@ func UnarchiveParameter(c *gin.Context) {
 // @Failure 500 string {string} json "{"error": "Failed to update parameter"}"
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id} [put]
 func UpdateParameter(c *gin.Context) {
+	startTime := time.Now()
 	projectID := c.Param("project_id")
 	parameterID := c.Param("parameter_id")
 
@@ -504,7 +505,7 @@ func UpdateParameter(c *gin.Context) {
 		parameter.EnvironmentID = findingEnvironment.ID
 	}
 	parameter.IsApplied = false
-	parameter.EditedAt = time.Now()
+	parameter.EditedAt = time.Now().UTC()
 	if err := DB.Save(&parameter).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
 		return
@@ -513,7 +514,8 @@ func UpdateParameter(c *gin.Context) {
 
 	// debug currentParameter and parameter
 	if !project.AutoUpdate {
-		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, 0, u.ID)
+		latency := time.Since(startTime)
+		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, latency, u.ID)
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
 			"message": "Parameter updated",
