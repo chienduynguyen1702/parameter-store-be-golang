@@ -205,6 +205,7 @@ func CreateParameter(c *gin.Context) {
 		Stage:         findingStage,
 		Environment:   findingEnvironment,
 		IsApplied:     project.AutoUpdate,
+		Description:   newParameterBody.Description,
 	}
 
 	// Append the new parameter to the latest version's Parameters slice
@@ -450,6 +451,7 @@ func UpdateParameter(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("Debug updateParameterBody", updateParameterBody)
 
 	var parameter models.Parameter
 	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
@@ -502,11 +504,13 @@ func UpdateParameter(c *gin.Context) {
 	if updateParameterBody.Environment != "" {
 		parameter.EnvironmentID = findingEnvironment.ID
 	}
-	parameter.IsApplied = project.AutoUpdate
-	if err := DB.Save(&parameter).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
-		return
-	}
+	// parameter.IsApplied = project.AutoUpdate
+	// if err := DB.Save(&parameter).Error; err != nil {
+	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
+	// 	return
+	// }
+	fmt.Println("Debug AutoUpdate", project.AutoUpdate)
+	DB.Save(&parameter)
 	// debug currentParameter and parameter
 	if !project.AutoUpdate {
 		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, 0, u.ID)
@@ -563,13 +567,13 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 		First(&project, updatedProjectID).Error; err != nil {
 		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
 	}
-	if project.Agents == nil {
-		return http.StatusInternalServerError, 0, "Failed to get agent to rerun cicd", nil
+	if len(project.Agents) == 0 {
+		return http.StatusBadRequest, 0, "Failed to get agents to rerun CICD: no agents available", nil
 	} else {
 		usedAgent = project.Agents[0]
 		// log.Println("Agents of project", project.Agents)
 		if usedAgent.WorkflowName == "" {
-			return http.StatusInternalServerError, 0, "Failed to get agent workflow name to rerun cicd", nil
+			return http.StatusBadRequest, 0, "Failed to get agent workflow name to rerun cicd", nil
 		}
 	}
 	if project.RepoApiToken == "" {

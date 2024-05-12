@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 const (
@@ -192,6 +193,16 @@ type WorkflowsResponse struct {
 	} `json:"workflows"`
 }
 
+func (w WorkflowsResponse) Print() {
+	fmt.Printf("TotalCount: %d\n\n", w.TotalCount)
+	for _, workflow := range w.Workflows {
+		fmt.Printf("ID: %d\n", workflow.ID)
+		fmt.Printf("Name: %s\n", workflow.Name)
+		fmt.Printf("Path: %s\n", workflow.Path)
+		fmt.Printf("State: %s\n", workflow.State)
+	}
+}
+
 func makeListWorkflowsRequest(repoOwner string, repoName string, apiToken string) (*http.Request, error) {
 
 	// Create a new GET request
@@ -252,9 +263,40 @@ func GetWorkflows(RepoURL string, apiToken string) (WorkflowsResponse, error) {
 		// fmt.Println("Error unmarshalling response get workflow ID:", err)
 		return WorkflowsResponse{}, fmt.Errorf("error unmarshalling response get workflow ID: %v", err)
 	}
-
+	workflowsResponse.Print()
+	// Remove the dynamic workflow file
+	workflowsResponse.removeDynamicWorkflowfile()
 	// debug
 	// fmt.Println("List workflow: ", workflowsResponse)
 
 	return workflowsResponse, nil
+}
+
+func (w *WorkflowsResponse) removeDynamicWorkflowfile() {
+	// if path is dynamic/pages/pages-build-deployment
+	// in the path, the first pages is dynamic
+	// then remove this workflow
+	for i, workflow := range w.Workflows {
+		if isDynamicWorkflow(workflow.Path) {
+			w.Workflows = append(w.Workflows[:i], w.Workflows[i+1:]...)
+			break
+		}
+	}
+}
+
+func isDynamicWorkflow(workflowPath string) bool {
+	// tokenize the path  by "/"
+	// if first token is "dynamic"
+	// then it is dynamic workflow dynamic/pages/pages-build-deployment
+	workflowPathParts := splitWorkflowPath(workflowPath)
+	if len(workflowPathParts) > 0 && workflowPathParts[0] == "dynamic" {
+		return true
+	}
+	return false
+}
+
+func splitWorkflowPath(workflowPath string) []string {
+	workflowPathParts := strings.Split(workflowPath, "/")
+	// split the path by "/"
+	return workflowPathParts
 }

@@ -26,13 +26,13 @@ func GetProjectWorkflows(c *gin.Context) {
 	result := DB.First(&project, projectID)
 	if result.Error != nil {
 		log.Println(result.Error)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
 		return
 	}
 	listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
 	if err != nil {
 		log.Println(err.Error())
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get workflows"})
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get workflows"})
 		return
 	}
 	// debug
@@ -42,7 +42,7 @@ func GetProjectWorkflows(c *gin.Context) {
 		repo, err := github.ParseRepoURL(project.RepoURL)
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse repository URL"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repository URL"})
 			return
 		}
 
@@ -50,7 +50,7 @@ func GetProjectWorkflows(c *gin.Context) {
 
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get last attempt number"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get last attempt number"})
 			return
 		}
 		// log.Println("Last attempt number: ", lastAttemptNumber)

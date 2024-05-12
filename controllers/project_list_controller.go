@@ -150,6 +150,12 @@ func CreateNewProject(c *gin.Context) {
 	for _, environment := range newEnvironment {
 		DB.Create(&environment)
 	}
+	newVersion := models.Version{
+		Number:      "1.0.0",
+		ProjectID:   project.ID,
+		Description: "Initial version",
+	}
+	DB.Create(&newVersion)
 
 	c.JSON(http.StatusOK, gin.H{"project": project})
 }
