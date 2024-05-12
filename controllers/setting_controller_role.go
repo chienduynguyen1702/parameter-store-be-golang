@@ -59,8 +59,8 @@ func ListRole(c *gin.Context) {
 		// count Project Admin and Developer
 		var userCount int64
 		if err := DB.Model(&models.UserRoleProject{}).
-			Joins("left join projects on user_project_roles.project_id = projects.id").
-			Where("user_project_roles.role_id = ? AND projects.organization_id = ? ", role.ID, org_id).
+			Joins("left join projects on user_role_projects.project_id = projects.id").
+			Where("user_role_projects.role_id = ? AND projects.organization_id = ? ", role.ID, org_id).
 			Distinct("user_id").
 			Count(&userCount).Error; err != nil {
 			log.Printf("failed to count users with %v role", role.Name)
