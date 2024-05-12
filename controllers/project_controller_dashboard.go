@@ -196,8 +196,8 @@ func GetProjectDashboardLogs(c *gin.Context) {
 		// WorkflowID  uint
 	}
 	// Build query
-	query := queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projectID)
-	// fmt.Println("query: ", query)
+	query := queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowID, projectID)
+	fmt.Println("query: ", query)
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
@@ -216,7 +216,7 @@ func GetProjectDashboardLogs(c *gin.Context) {
 	})
 }
 
-func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projectID string) string {
+func queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowID, projectID string) string {
 	if startDate == "" {
 		switch granularity {
 		case "day":
@@ -227,7 +227,10 @@ func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projec
 			startDate = get1stDayOfYear(time.Now()).Format("2006-01-02")
 		}
 	}
-
+	if endDate == "" {
+		endDate = time.Now().Format("2006-01-02")
+	}
+	fmt.Println("startDate: ", startDate)
 	dateTrunc, interval := "", ""
 	switch granularity {
 	case "day":
@@ -250,7 +253,7 @@ func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projec
 		FROM
 			generate_series(
 			date_trunc('%s', '%s'::date),
-			date_trunc('%s', NOW()),
+			date_trunc('%s', '%s'::date),
 			interval '%s'
 		) AS date
 		LEFT JOIN
@@ -263,7 +266,7 @@ func queryBuilderForLogsByGranularity(granularity, startDate, workflowID, projec
 		ORDER BY
 			date;
 	`,
-		dateTrunc, startDate, dateTrunc, interval,
+		dateTrunc, startDate, dateTrunc, endDate, interval,
 		dateTrunc,
 		projectID,
 		func() string {
