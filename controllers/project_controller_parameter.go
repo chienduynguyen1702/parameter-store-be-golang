@@ -668,6 +668,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 // @Failure 500 string {string} json "{"error": "Failed to apply parameters"}"
 // @Router /api/v1/projects/{project_id}/parameters/apply [post]
 func ApplyParametersInProject(c *gin.Context) {
+	startTime := time.Now()
 	projectID := c.Param("project_id")
 	// parse project ID to uint
 	projectIDUint64, err := strconv.ParseUint(projectID, 10, 64)
@@ -709,9 +710,8 @@ func ApplyParametersInProject(c *gin.Context) {
 			break
 		}
 	}
-	// startTime := time.Now()
 	responseStatusCode, latency, message, err := rerunCICDWorkflow(projectIDUint, usedAgent.StageID, usedAgent.EnvironmentID)
-	// latency := time.Since(startTime)
+	latency = time.Since(startTime)
 	if responseStatusCode == 403 {
 		c.JSON(http.StatusCreated, gin.H{
 			"status":  http.StatusCreated,
