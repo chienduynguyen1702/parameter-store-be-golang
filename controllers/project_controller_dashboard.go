@@ -197,7 +197,7 @@ func GetProjectDashboardLogs(c *gin.Context) {
 	}
 	// Build query
 	query := queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowID, projectID)
-	fmt.Println("query: ", query)
+	// fmt.Println("query: ", query)
 	if query == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
 		return
@@ -230,7 +230,7 @@ func queryBuilderForLogsByGranularity(granularity, startDate, endDate, workflowI
 	if endDate == "" {
 		endDate = time.Now().Format("2006-01-02")
 	}
-	fmt.Println("startDate: ", startDate)
+	// fmt.Println("startDate: ", startDate)
 	dateTrunc, interval := "", ""
 	switch granularity {
 	case "day":
