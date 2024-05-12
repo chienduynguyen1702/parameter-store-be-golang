@@ -115,3 +115,15 @@ func paginationDataAgent(agentList []models.Agent, page, limit int) []models.Age
 	}
 	return agentList[start:end]
 }
+
+func paginationDataUser(userList []models.User, page, limit int) []models.User {
+	start := (page - 1) * limit
+	end := page * limit
+	if start > len(userList) {
+		start = len(userList)
+	}
+	if end > len(userList) {
+		end = len(userList)
+	}
+	return userList[start:end]
+}

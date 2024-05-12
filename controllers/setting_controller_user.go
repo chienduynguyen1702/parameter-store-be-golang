@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"parameter-store-be/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func ListUser(c *gin.Context) {
 	}
 	var users []models.User
 	DB.Where("organization_id = ? AND is_archived != ? ", org_id, true).Find(&users)
-
+	totalUsers := len(users)
 	var usersResponse []userResponse
 	for _, user := range users {
 		usersResponse = append(usersResponse, userResponse{
@@ -39,10 +40,37 @@ func ListUser(c *gin.Context) {
 			IsOrganizationAdmin: user.IsOrganizationAdmin,
 		})
 	}
+	page := c.Query("page")
+	limit := c.Query("limit")
 
+	var paginatedUsers []userResponse
+	if page != "" && limit != "" {
+		pageInt, err := strconv.Atoi(page)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page number"})
+			return
+		}
+		limitInt, err := strconv.Atoi(limit)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit number"})
+			return
+		}
+		p := paginationDataUser(users, pageInt, limitInt)
+		for _, user := range p {
+			paginatedUsers = append(paginatedUsers, userResponse{
+				ID:                  user.ID,
+				Email:               user.Email,
+				Username:            user.Username,
+				Phone:               user.Phone,
+				AvatarURL:           user.AvatarURL,
+				IsOrganizationAdmin: user.IsOrganizationAdmin,
+			})
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
-			"users": usersResponse,
+			"users": paginatedUsers,
+			"total": totalUsers,
 		},
 	})
 }
