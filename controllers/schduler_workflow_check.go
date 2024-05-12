@@ -15,6 +15,7 @@ func ScheduleWorkflowCheck() {
 		DB.
 			Preload("Workflows", "is_updated_lastest = ?", false).
 			Preload("Workflows.Logs", "state != ?", "completed").
+			Where("projects.is_archived = ?", false).
 			Find(&projects)
 
 		for _, project := range projects {
