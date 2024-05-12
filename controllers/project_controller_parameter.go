@@ -505,12 +505,12 @@ func UpdateParameter(c *gin.Context) {
 	}
 	parameter.IsApplied = false
 	parameter.EditedAt = time.Now()
-	// if err := DB.Save(&parameter).Error; err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
-	// 	return
-	// }
-	fmt.Println("Debug AutoUpdate", project.AutoUpdate)
-	DB.Save(&parameter)
+	if err := DB.Save(&parameter).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update parameter"})
+		return
+	}
+	// DB.Save(&parameter)
+
 	// debug currentParameter and parameter
 	if !project.AutoUpdate {
 		projectLogByUser(parameter.ProjectID, "Update Parameter", fmt.Sprint("Updated parameter ", currentParameter.Name), http.StatusCreated, 0, u.ID)
