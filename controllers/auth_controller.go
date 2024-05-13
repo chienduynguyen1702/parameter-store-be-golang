@@ -146,7 +146,13 @@ func Login(c *gin.Context) {
 		true,
 		true,
 	)
-	c.JSON(http.StatusOK, gin.H{"message": "User logged in successfully", "status:": "success", "user": responseLogedInUser})
+	c.Header("Authorization", jwtToken)
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User logged in successfully",
+		"status:": "success",
+		"token":   jwtToken,
+		"user":    responseLogedInUser,
+	})
 
 }
 

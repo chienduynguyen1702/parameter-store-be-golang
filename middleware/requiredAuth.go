@@ -16,6 +16,7 @@ import (
 func RequiredAuth(c *gin.Context) {
 	tokenString, err := c.Cookie("Authorization")
 	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
