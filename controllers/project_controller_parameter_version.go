@@ -25,8 +25,9 @@ func GetProjectVersions(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid project ID"})
 		return
 	}
-	var versions []models.Version
-	DB.Preload("Parameters").Where("project_id = ?", projectID).Find(&versions)
+	var versions []models.Version // order by number desc
+	DB.Order("number desc").Preload("Parameters").Where("project_id = ?", projectID).Find(&versions)
+	// DB.Preload("Parameters").Where("project_id = ?", projectID).Find(&versions)
 	c.JSON(http.StatusOK, gin.H{"versions": versions})
 }
 
@@ -44,7 +45,8 @@ func GetProjectVersions(c *gin.Context) {
 // @Router /api/v1/projects/{project_id}/versions [post]
 func CreateNewVersion(c *gin.Context) {
 	type versionName struct {
-		Name string `json:"name" binding:"required"`
+		Number      string `json:"release_version"`
+		Description string `json:"description"`
 	}
 	var v versionName
 	projectID, err := strconv.Atoi(c.Param("project_id"))
@@ -60,7 +62,7 @@ func CreateNewVersion(c *gin.Context) {
 	}
 	// check unique name
 	var count int64
-	DB.Model(&models.Version{}).Where("project_id = ? AND name = ?", projectID, v.Name).Count(&count)
+	DB.Model(&models.Version{}).Where("project_id = ? AND number = ?", projectID, v.Number).Count(&count)
 	if count > 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Version name already exists"})
 		return
@@ -74,9 +76,9 @@ func CreateNewVersion(c *gin.Context) {
 	// copy latest version to new version, except name
 	newVersion := models.Version{
 		ProjectID:   uintProjectID,
-		Name:        v.Name,
-		Description: project.LatestVersion.Description,
-		Number:      project.LatestVersion.Number,
+		Number:      v.Number,
+		Description: v.Description,
+		Name:        v.Number,
 	}
 
 	// Create association records for parameters
