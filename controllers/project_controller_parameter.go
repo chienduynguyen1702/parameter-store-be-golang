@@ -41,10 +41,21 @@ func GetProjectParameters(c *gin.Context) {
 	limit := c.Query("limit")
 	stages := c.QueryArray("stages")
 	environments := c.QueryArray("environments")
-
+	version := c.Query("version")
+	// fmt.Println("Debug version", version)
 	// Get project by ID
 	var project models.Project
-	if err := DB.
+	if version != "" {
+		if err := DB.Preload("LatestVersion", "number = ?", version).
+			// where parameter is not archived
+			Preload("LatestVersion.Parameters", "is_archived = ?", false).
+			Preload("LatestVersion.Parameters.Stage").
+			Preload("LatestVersion.Parameters.Environment").
+			First(&project, projectID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+	} else if err := DB.
 		Preload("LatestVersion").
 		// where parameter is not archived
 		Preload("LatestVersion.Parameters", "is_archived = ?", false).
