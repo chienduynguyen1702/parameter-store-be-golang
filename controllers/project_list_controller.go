@@ -152,6 +152,7 @@ func CreateNewProject(c *gin.Context) {
 	}
 	newVersion := models.Version{
 		Number:      "1.0.0",
+		Name:        "1.0.0",
 		ProjectID:   project.ID,
 		Description: "Initial version",
 	}
