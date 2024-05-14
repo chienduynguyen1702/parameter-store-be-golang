@@ -14,12 +14,19 @@ import (
 )
 
 func RequiredAuth(c *gin.Context) {
-	tokenString, err := c.Cookie("Authorization")
-	if err != nil {
+	// tokenString, err := c.Cookie("Authorization")
+	// if err != nil {
+	// 	c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
+	// 	c.AbortWithStatus(http.StatusUnauthorized)
+	// 	return
+	// }
+	tokenString := c.GetHeader("Authorization")
+	// log.Printf("debug: tokenString \"%s\"", tokenString)
+	if tokenString == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
-		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -30,7 +37,8 @@ func RequiredAuth(c *gin.Context) {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 	if err != nil {
-		log.Fatal(err)
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse token"})
+		return
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
