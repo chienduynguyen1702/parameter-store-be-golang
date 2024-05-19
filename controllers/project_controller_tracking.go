@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 
 	"parameter-store-be/models"
@@ -60,8 +59,8 @@ func GetProjectTracking(c *gin.Context) {
 		DB.Preload("Agent").Where("project_id = ?", projectID).Find(&agentLogs)
 		DB.Preload("User").Where("project_id = ?", projectID).Find(&projectLogs)
 	}
-	fmt.Println(agentLogs)
-	fmt.Println(projectLogs)
+	// fmt.Println(agentLogs)
+	// fmt.Println(projectLogs)
 	// Combine agentLogs and projectLogs
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
