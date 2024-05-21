@@ -23,55 +23,57 @@ import (
 func GetProjectWorkflows(c *gin.Context) {
 	projectID := c.Param("project_id")
 	var project models.Project
-	result := DB.First(&project, projectID)
+	result := DB.Preload("Workflows").First(&project, projectID)
 	if result.Error != nil {
 		log.Println(result.Error)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
 		return
 	}
-	listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
-	if err != nil {
-		log.Println(err.Error())
-		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get workflows"})
-		return
-	}
-	// debug
-	// fmt.Println("List workflows in GetProjectWorkflows : ", listWorkflows, "\n")
-	// Save the listWorkflows of project back to the database
-	for _, workflow := range listWorkflows.Workflows {
-		repo, err := github.ParseRepoURL(project.RepoURL)
+	go func() {
+		listWorkflows, err := github.GetWorkflows(project.RepoURL, project.RepoApiToken)
 		if err != nil {
 			log.Println(err.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repository URL"})
+			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get workflows"})
 			return
 		}
-
-		_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
-
-		if err != nil {
-			log.Println(err.Error())
-			c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get last attempt number"})
-			return
-		}
-		// log.Println("Last attempt number: ", lastAttemptNumber)
-		var wf models.Workflow
-		result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
-		if result.RowsAffected == 0 {
-			// log.Println("Workflow id: ", workflow.ID)
-			wf = models.Workflow{
-				WorkflowID:    uint(workflow.ID),
-				Name:          workflow.Name,
-				Path:          workflow.Path,
-				ProjectID:     project.ID,
-				State:         workflow.State,
-				AttemptNumber: lastAttemptNumber,
+		// debug
+		// fmt.Println("List workflows in GetProjectWorkflows : ", listWorkflows, "\n")
+		// Save the listWorkflows of project back to the database
+		for _, workflow := range listWorkflows.Workflows {
+			repo, err := github.ParseRepoURL(project.RepoURL)
+			if err != nil {
+				log.Println(err.Error())
+				c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repository URL"})
+				return
 			}
-			DB.Create(&wf)
-		} else {
-			wf.AttemptNumber = lastAttemptNumber
-			DB.Save(&wf)
+
+			_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
+
+			if err != nil {
+				log.Println(err.Error())
+				c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get last attempt number"})
+				return
+			}
+			// log.Println("Last attempt number: ", lastAttemptNumber)
+			var wf models.Workflow
+			result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
+			if result.RowsAffected == 0 {
+				// log.Println("Workflow id: ", workflow.ID)
+				wf = models.Workflow{
+					WorkflowID:    uint(workflow.ID),
+					Name:          workflow.Name,
+					Path:          workflow.Path,
+					ProjectID:     project.ID,
+					State:         workflow.State,
+					AttemptNumber: lastAttemptNumber,
+				}
+				DB.Create(&wf)
+			} else {
+				wf.AttemptNumber = lastAttemptNumber
+				DB.Save(&wf)
+			}
 		}
-	}
+	}()
 	// preload workflows from the database using the project ID
 	DB.Model(&project).Preload("Workflows").Find(&project)
 	c.JSON(http.StatusOK, gin.H{
