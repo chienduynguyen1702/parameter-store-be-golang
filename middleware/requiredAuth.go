@@ -23,7 +23,7 @@ func RequiredAuth(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	// log.Printf("debug: tokenString \"%s\"", tokenString)
 	if tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
 		return
 	}
 
@@ -37,14 +37,15 @@ func RequiredAuth(c *gin.Context) {
 		return []byte(os.Getenv("SECRET_KEY")), nil
 	})
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse token"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse token"})
 		return
 	}
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		// check if the token is expired
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token is expired"})
+			return
 		}
 
 		// Find the user in the database
@@ -52,11 +53,11 @@ func RequiredAuth(c *gin.Context) {
 		controllers.DB.First(&user, claims["user_id"])
 
 		if user.ID == 0 {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to find user"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
 			return
 		}
 		if user.IsArchived {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "User is archived"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "User is archived"})
 			return
 		}
 		// Set the user and their organization_id in the context
@@ -64,6 +65,9 @@ func RequiredAuth(c *gin.Context) {
 		orgID, ok := claims["org_id"].(float64)
 		if !ok {
 			log.Fatal("Failed to parse org_id as float64")
+
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to parse org_id as float64"})
+			return
 		}
 
 		// Convert float64 to uint
