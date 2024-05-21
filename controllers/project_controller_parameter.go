@@ -655,8 +655,8 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	if errAttempt != nil {
 		log.Println("Failed to get last attempt number of workflow run")
 	}
-	log.Println("lastAttemptNumber in rerunCICDWorkflow", lastAttemptNumber)
-	log.Println("lastWorkflowRunID in rerunCICDWorkflow", lastWorkflowRunID)
+	// log.Println("lastAttemptNumber in rerunCICDWorkflow", lastAttemptNumber)
+	// log.Println("lastWorkflowRunID in rerunCICDWorkflow", lastWorkflowRunID)
 	//parse lastWorkflowRunID to uint
 	lastWorkflowRunIDUint64, errParse := strconv.ParseUint(lastWorkflowRunID, 10, 64)
 	if errParse != nil {
