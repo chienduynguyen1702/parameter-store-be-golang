@@ -80,6 +80,7 @@ func workflowLog(workflowID uint, workflowRunId uint, attemptNumber int) {
 	DB.Where("workflow_id = ?", workflowID).First(&workflow)
 	workflow.IsUpdatedLastest = false
 	workflow.AttemptNumber = attemptNumber
+	workflow.LastWorkflowRunID = int(workflowRunId)
 	DB.Save(&workflow)
 
 	// create workflow log
