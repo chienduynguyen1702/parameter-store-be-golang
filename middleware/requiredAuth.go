@@ -23,7 +23,7 @@ func RequiredAuth(c *gin.Context) {
 	tokenString := c.GetHeader("Authorization")
 	// log.Printf("debug: tokenString \"%s\"", tokenString)
 	if tokenString == "" {
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token"})
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Failed to get token in header"})
 		return
 	}
 
