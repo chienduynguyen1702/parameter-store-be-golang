@@ -25,6 +25,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 		workflowGroup := projectGroup.Group("/workflows")
 		{
 			workflowGroup.GET("/", controllers.GetProjectWorkflows)
+			workflowGroup.GET("/:workflow_id/run", controllers.GetWorkflowProcess)
 		}
 		dashboardGrop := projectGroup.Group("/dashboard")
 		{

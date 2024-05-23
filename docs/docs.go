@@ -1174,13 +1174,13 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Start Date format dd-mm-yyyy",
-                        "name": "start_date",
+                        "name": "from",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "End Date format dd-mm-yyyy",
-                        "name": "end_date",
+                        "name": "to",
                         "in": "query"
                     },
                     {
@@ -2899,6 +2899,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/workflows/{workflow_id}/run": {
+            "get": {
+                "description": "Get workflow process",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Workflows"
+                ],
+                "summary": "Get workflow process",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workflow ID",
+                        "name": "workflow_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"workflow\": \"workflow\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get workflow process\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/settings/roles": {
             "get": {
                 "description": "List roles and its permissions",
@@ -3312,11 +3363,11 @@ const docTemplate = `{
     "definitions": {
         "controllers.CreateNewVersion.versionName": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
-                "name": {
+                "description": {
+                    "type": "string"
+                },
+                "release_version": {
                     "type": "string"
                 }
             }
@@ -3530,14 +3581,6 @@ const docTemplate = `{
         },
         "controllers.projectBody": {
             "type": "object",
-            "required": [
-                "current_sprint",
-                "description",
-                "name",
-                "repo_api_token",
-                "repo_url",
-                "start_at"
-            ],
             "properties": {
                 "auto_update": {
                     "type": "boolean"
@@ -3748,6 +3791,9 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
+                "edited_at": {
+                    "type": "string"
+                },
                 "environment": {
                     "$ref": "#/definitions/models.Environment"
                 },
@@ -3869,6 +3915,9 @@ const docTemplate = `{
                 },
                 "is_updated_lastest": {
                     "type": "boolean"
+                },
+                "last_workflow_run_id": {
+                    "type": "integer"
                 },
                 "logs": {
                     "type": "array",
