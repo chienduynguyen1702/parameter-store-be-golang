@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,29 +48,38 @@ func GetProjectWorkflows(c *gin.Context) {
 				return
 			}
 
-			_, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
+			lastestWorkflowRunIDString, _, lastAttemptNumber, err := github.GetLastAttemptNumberOfWorkflowRun(repo.Owner, repo.Name, project.RepoApiToken, workflow.Name)
 
 			if err != nil {
 				log.Println(err.Error())
 				c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get last attempt number"})
 				return
 			}
+			// parse lastestWorkflowRunID to int
+			lastestWorkflowRunID, err := strconv.Atoi(lastestWorkflowRunIDString)
+			if err != nil {
+				log.Println(err.Error())
+				c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse lastestWorkflowRunID to int"})
+			}
+
 			// log.Println("Last attempt number: ", lastAttemptNumber)
 			var wf models.Workflow
 			result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
 			if result.RowsAffected == 0 {
 				// log.Println("Workflow id: ", workflow.ID)
 				wf = models.Workflow{
-					WorkflowID:    uint(workflow.ID),
-					Name:          workflow.Name,
-					Path:          workflow.Path,
-					ProjectID:     project.ID,
-					State:         workflow.State,
-					AttemptNumber: lastAttemptNumber,
+					WorkflowID:        uint(workflow.ID),
+					Name:              workflow.Name,
+					Path:              workflow.Path,
+					ProjectID:         project.ID,
+					State:             workflow.State,
+					AttemptNumber:     lastAttemptNumber,
+					LastWorkflowRunID: lastestWorkflowRunID,
 				}
 				DB.Create(&wf)
 			} else {
 				wf.AttemptNumber = lastAttemptNumber
+				wf.LastWorkflowRunID = lastestWorkflowRunID
 				DB.Save(&wf)
 			}
 		}
