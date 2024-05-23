@@ -127,3 +127,11 @@ func paginationDataUser(userList []models.User, page, limit int) []models.User {
 	}
 	return userList[start:end]
 }
+
+type DashboardCard struct {
+	Icon    string `json:"icon"`
+	Value   int    `json:"value"`
+	Name    string `json:"name"`
+	Title   string `json:"title"`
+	Tooltip string `json:"tooltip"`
+}

@@ -206,23 +206,80 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		Joins("JOIN organizations ON projects.organization_id = organizations.id").
 		Where("organizations.id = ? AND agent_logs.created_at BETWEEN ? AND ?", userOrganizationID, firstDayOfThisMonth, time.Now()).
 		Count(&totalAgentActionsWithinOrganizationThisMonth)
+	var cards []DashboardCard
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(projectsCount),
+		Title:   "Projects Count",
+		Name:    "project_count",
+		Tooltip: "Includes all projects in organization",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(activeProjectsCount),
+		Title:   "Active Projects Count",
+		Name:    "active_projects_count",
+		Tooltip: "Number of running projects",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(runningAgent),
+		Title:   "Active Agent",
+		Name:    "active_agent",
+		Tooltip: "Number of running agents",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-blue",
+		Value:   int(usersCount),
+		Title:   "User Count",
+		Name:    "user_count",
+		Tooltip: "Total active users",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(totalWorkflowCount),
+		Title:   "Workflow Count",
+		Name:    "workflow_count",
+		Tooltip: "Total active workflows in all projects",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-info-green",
+		Value:   roundedDuration,
+		Title:   "Average Duration",
+		Name:    "avg_duration",
+		Tooltip: "Average duration all CICD workflows in organization",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-shopping-carts-purple",
+		Value:   int(totalUpdatedWithinOrganization),
+		Title:   "Total Updated",
+		Name:    "total_updated",
+		Tooltip: "Number of updates",
+	})
+	// cards = append(cards, DashboardCard{
+	// 	Icon:    "dashboard-shopping-carts-purple",
+	// 	Value:   int(totalUpdatedWithinOrganizationThisMonth),
+	// 	Title:   "Total Updated This Month",
+	// 	Name:    "total_updated_this_month",
+	// 	Tooltip: "Number of updates this month",
+	// })
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-shopping-carts-purple",
+		Value:   int(totalAgentActionsWithinOrganization),
+		Title:   "Total Agent Actions",
+		Name:    "total_agent_actions",
+		Tooltip: "Number of agent pull parameter",
+	})
+	// cards = append(cards, DashboardCard{
+	// 	Icon:    "dashboard-shopping-carts-purple",
+	// 	Value:   int(totalAgentActionsWithinOrganizationThisMonth),
+	// 	Title:   "Total Agent Actions This Month",
+	// 	Name:    "total_agent_actions_this_month",
+	// 	Tooltip: "Number of agent pull parameter this month",
+	// })
+	// fmt.Println("cards: ", cards)
 
-	// summary data
-	organizationTotals := gin.H{
-		"project_count":         projectsCount,
-		"active_projects_count": activeProjectsCount,
-		"active_agent":          runningAgent,
-		"user_count":            usersCount,
-		"workflow_count":        totalWorkflowCount,
-
-		"avg_duration":                   roundedDuration,
-		"total_updated":                  totalUpdatedWithinOrganization,
-		"total_updated_this_month":       totalUpdatedWithinOrganizationThisMonth,
-		"total_agent_actions":            totalAgentActionsWithinOrganization,
-		"total_agent_actions_this_month": totalAgentActionsWithinOrganizationThisMonth,
-	}
-
-	c.JSON(http.StatusOK, organizationTotals)
+	c.JSON(http.StatusOK, cards)
 }
 
 func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string {
