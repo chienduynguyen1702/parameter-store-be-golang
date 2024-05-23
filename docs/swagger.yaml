@@ -687,13 +687,13 @@ paths:
         in: query
         name: start_date
         type: string
+      - description: Project Name specified, if not specified, get all projects
+        in: query
+        name: project
+        type: string
       - description: End Date format dd-mm-yyyy
         in: query
         name: end_date
-        type: string
-      - description: Workflow ID specified, if not specified, get all workflows
-        in: query
-        name: workflow_id
         type: string
       produces:
       - application/json
@@ -718,6 +718,19 @@ paths:
       consumes:
       - application/json
       description: Get organization dashboard totals
+      parameters:
+      - description: Start Date format dd-mm-yyyy
+        in: query
+        name: start_date
+        type: string
+      - description: Project Name specified, if not specified, get all projects
+        in: query
+        name: project
+        type: string
+      - description: End Date format dd-mm-yyyy
+        in: query
+        name: end_date
+        type: string
       produces:
       - application/json
       responses:

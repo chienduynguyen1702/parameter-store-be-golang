@@ -138,6 +138,9 @@ func UpdateOrganizationInformation(c *gin.Context) {
 // @Tags Organization
 // @Accept json
 // @Produce json
+// @Param start_date 	query 	string false "Start Date format dd-mm-yyyy"
+// @Param project	 	query 	string false "Project Name specified, if not specified, get all projects"
+// @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
@@ -300,7 +303,6 @@ func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string 
 // @Param start_date 	query 	string false "Start Date format dd-mm-yyyy"
 // @Param project	 	query 	string false "Project Name specified, if not specified, get all projects"
 // @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
-// @Param workflow_id 	query 	string false "Workflow ID specified, if not specified, get all workflows"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"

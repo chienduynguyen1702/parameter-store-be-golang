@@ -377,14 +377,14 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "End Date format dd-mm-yyyy",
-                        "name": "end_date",
+                        "description": "Project Name specified, if not specified, get all projects",
+                        "name": "project",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Workflow ID specified, if not specified, get all workflows",
-                        "name": "workflow_id",
+                        "description": "End Date format dd-mm-yyyy",
+                        "name": "end_date",
                         "in": "query"
                     }
                 ],
@@ -423,6 +423,26 @@ const docTemplate = `{
                     "Organization"
                 ],
                 "summary": "Get organization dashboard totals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Start Date format dd-mm-yyyy",
+                        "name": "start_date",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Project Name specified, if not specified, get all projects",
+                        "name": "project",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End Date format dd-mm-yyyy",
+                        "name": "end_date",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "{\"organizations\": \"organizations\"}",
