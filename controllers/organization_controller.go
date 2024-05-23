@@ -298,6 +298,7 @@ func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string 
 // @Produce json
 // @Param granularity 	query 	string false "Granularity: day, week, month, quarter, year, default is day"
 // @Param start_date 	query 	string false "Start Date format dd-mm-yyyy"
+// @Param project	 	query 	string false "Project Name specified, if not specified, get all projects"
 // @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
 // @Param workflow_id 	query 	string false "Workflow ID specified, if not specified, get all workflows"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
@@ -330,12 +331,32 @@ func GetOrganizationDashboardLogs(c *gin.Context) {
 		Period      string  `json:"period_start"`
 		// WorkflowID  uint
 	}
-	// Build query
-	query := queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, "", userOrganizationID)
-	// fmt.Println("query: ", query)
-	if query == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
-		return
+	// Get project name from param query
+	projectName := c.Query("project")
+	var query string
+	if projectName != "" {
+		var project models.Project
+		result := DB.Where("name = ? AND organization_id = ?", projectName, userOrganizationID).First(&project)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+		// fmt.Println("project: ", project)
+		// Parse project ID to string
+		projectID := strconv.Itoa(int(project.ID))
+		query = queryBuilderForLogsByGranularityOfProject(granularity, from, to, projectID)
+		if query == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+			return
+		}
+	} else {
+		// Build query
+		query = queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, userOrganizationID)
+		// fmt.Println("query: ", query)
+		if query == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Bad request"})
+			return
+		}
 	}
 	// Execute query and get rows bind to struct
 	var logsGranularity []logsByGranularity
@@ -352,7 +373,7 @@ func GetOrganizationDashboardLogs(c *gin.Context) {
 
 }
 
-func queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, workflowID, organizationID string) string {
+func queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, organizationID string) string {
 	if from == "" {
 		switch granularity {
 		case "day":
@@ -413,5 +434,62 @@ func queryBuilderForLogsByGranularityOfOrganization(granularity, from, to, workf
 		interval,
 		dateTrunc,
 		organizationID,
+	)
+}
+
+func queryBuilderForLogsByGranularityOfProject(granularity, from, to, projectID string) string {
+	if from == "" {
+		switch granularity {
+		case "day":
+			from = time.Now().AddDate(0, 0, -14).Format("2006-01-02")
+		case "week":
+			from = getDateTimeOfMondayOfWeek(time.Now().AddDate(0, 0, -42)).Format("2006-01-02")
+		case "month", "quarter", "year":
+			from = get1stDayOfYear(time.Now()).Format("2006-01-02")
+		}
+	}
+	if to == "" {
+		to = time.Now().Format("2006-01-02")
+	}
+
+	dateTrunc, interval := "", ""
+	switch granularity {
+	case "day":
+		dateTrunc, interval = "day", "1 day"
+	case "week":
+		dateTrunc, interval = "week", "1 week"
+	case "month":
+		dateTrunc, interval = "month", "1 month"
+	case "quarter":
+		dateTrunc, interval = "quarter", "3 month"
+	case "year":
+		dateTrunc, interval = "year", "1 year"
+	}
+
+	return fmt.Sprintf(`
+		SELECT
+			to_char(date, 'YYYY-MM-DD') AS Period,
+			COUNT(workflow_logs.workflow_id) AS Count,
+			AVG(duration) AS Avg_Duration
+		FROM
+			generate_series(
+			date_trunc('%s', '%s'::date),
+			date_trunc('%s', '%s'::date),
+			interval '%s'
+		) AS date
+		LEFT JOIN
+			workflow_logs ON date_trunc('%s', workflow_logs.created_at)::date = date::date
+			AND workflow_logs.state = 'completed'
+			AND workflow_logs.project_id = %s
+		GROUP BY
+			date
+		ORDER BY
+			date;
+	`,
+		dateTrunc, from,
+		dateTrunc, to,
+		interval,
+		dateTrunc,
+		projectID,
 	)
 }
