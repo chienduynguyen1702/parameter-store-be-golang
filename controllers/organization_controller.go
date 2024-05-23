@@ -157,28 +157,48 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
 		return
 	}
-	//=======================================================
+	// Get project name from param query
+	projectName := c.Query("project")
+	var cards []DashboardCard
+	if projectName != "" {
+		var project models.Project
+		result := DB.Where("name = ? AND organization_id = ?", projectName, userOrganizationID).First(&project)
+		if result.Error != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+		// fmt.Println("project: ", project)
+		// Parse project ID to string
+		projectID := project.ID
+		cards = getSummaryCardsByProjectIdQueryBuilder(userOrganizationID, projectID)
+	} else {
+		cards = getSummaryCardsByOrganizationIdQueryBuilder(userOrganizationID)
+	}
+	c.JSON(http.StatusOK, cards)
+}
+func getSummaryCardsByOrganizationIdQueryBuilder(organizationID uint) []DashboardCard {
+	// =======================================================
 	var projectsCount int64
-	DB.Model(&models.Project{}).Where("organization_id = ?", userOrganizationID).Count(&projectsCount)
+	DB.Model(&models.Project{}).Where("organization_id = ?", organizationID).Count(&projectsCount)
 
 	var activeProjectsCount int64
-	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived != ?", userOrganizationID, true).Count(&activeProjectsCount)
+	DB.Model(&models.Project{}).Where("organization_id = ? AND is_archived != ?", organizationID, true).Count(&activeProjectsCount)
 
 	var runningAgent int64
 	DB.Model(&models.Agent{}).
 		Joins("LEFT JOIN projects ON projects.id = agents.project_id").
-		Where("projects.organization_id = ? AND agents.is_archived = ?", userOrganizationID, false).
+		Where("projects.organization_id = ? AND agents.is_archived = ?", organizationID, false).
 		Count(&runningAgent)
 
 	var usersCount int64
-	DB.Model(&models.User{}).Where("organization_id = ?", userOrganizationID).Count(&usersCount)
+	DB.Model(&models.User{}).Where("organization_id = ?", organizationID).Count(&usersCount)
 
 	// count workflow in project in organization
 	var totalWorkflowCount int64
-	DB.Model(&models.Workflow{}).Joins("JOIN projects ON projects.id = workflows.project_id").Where("projects.organization_id = ?", userOrganizationID).Count(&totalWorkflowCount)
-	//=======================================================
+	DB.Model(&models.Workflow{}).Joins("JOIN projects ON projects.id = workflows.project_id").Where("projects.organization_id = ?", organizationID).Count(&totalWorkflowCount)
+	// =======================================================
 	var avgDurationAllWorkflowsInOrganization float64
-	q := getAverageDurationByOrganizationIdQueryBuilder(userOrganizationID)
+	q := getAverageDurationByOrganizationIdQueryBuilder(organizationID)
 	DB.Raw(q).Row().Scan(&avgDurationAllWorkflowsInOrganization)
 	roundedDuration := int(math.Round(avgDurationAllWorkflowsInOrganization))
 
@@ -186,29 +206,16 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 	DB.Model(&models.ProjectLog{}).
 		Joins("JOIN projects ON project_logs.project_id = projects.id").
 		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ?", userOrganizationID).
+		Where("organizations.id = ?", organizationID).
 		Count(&totalUpdatedWithinOrganization)
 
 	var totalAgentActionsWithinOrganization int64
 	DB.Model(&models.AgentLog{}).
 		Joins("JOIN projects ON agent_logs.project_id = projects.id").
 		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ?", userOrganizationID).
+		Where("organizations.id = ?", organizationID).
 		Count(&totalAgentActionsWithinOrganization)
-	firstDayOfThisMonth := get1stDayOfMonth(time.Now())
-	var totalUpdatedWithinOrganizationThisMonth int64
-	DB.Model(&models.ProjectLog{}).
-		Joins("JOIN projects ON project_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ? AND project_logs.created_at BETWEEN ? AND ?", userOrganizationID, firstDayOfThisMonth, time.Now()).
-		Count(&totalUpdatedWithinOrganizationThisMonth)
 
-	var totalAgentActionsWithinOrganizationThisMonth int64
-	DB.Model(&models.AgentLog{}).
-		Joins("JOIN projects ON agent_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ? AND agent_logs.created_at BETWEEN ? AND ?", userOrganizationID, firstDayOfThisMonth, time.Now()).
-		Count(&totalAgentActionsWithinOrganizationThisMonth)
 	var cards []DashboardCard
 	cards = append(cards, DashboardCard{
 		Icon:    "dashboard-eye-red",
@@ -259,13 +266,13 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		Name:    "total_updated",
 		Tooltip: "Number of updates",
 	})
-	// cards = append(cards, DashboardCard{
-	// 	Icon:    "dashboard-shopping-carts-purple",
-	// 	Value:   int(totalUpdatedWithinOrganizationThisMonth),
-	// 	Title:   "Total Updated This Month",
-	// 	Name:    "total_updated_this_month",
-	// 	Tooltip: "Number of updates this month",
-	// })
+	//	cards = append(cards, DashboardCard{
+	//		Icon:    "dashboard-shopping-carts-purple",
+	//		Value:   int(totalUpdatedWithinOrganizationThisMonth),
+	//		Title:   "Total Updated This Month",
+	//		Name:    "total_updated_this_month",
+	//		Tooltip: "Number of updates this month",
+	//	})
 	cards = append(cards, DashboardCard{
 		Icon:    "dashboard-shopping-carts-purple",
 		Value:   int(totalAgentActionsWithinOrganization),
@@ -273,16 +280,93 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		Name:    "total_agent_actions",
 		Tooltip: "Number of agent pull parameter",
 	})
-	// cards = append(cards, DashboardCard{
-	// 	Icon:    "dashboard-shopping-carts-purple",
-	// 	Value:   int(totalAgentActionsWithinOrganizationThisMonth),
-	// 	Title:   "Total Agent Actions This Month",
-	// 	Name:    "total_agent_actions_this_month",
-	// 	Tooltip: "Number of agent pull parameter this month",
-	// })
-	// fmt.Println("cards: ", cards)
+	return cards
+}
 
-	c.JSON(http.StatusOK, cards)
+func getSummaryCardsByProjectIdQueryBuilder(organizationID, projectID uint) []DashboardCard {
+	// =======================================================
+	var runningAgent int64
+	DB.Model(&models.Agent{}).
+		Joins("LEFT JOIN projects ON projects.id = agents.project_id").
+		Where("projects.organization_id = ? AND projects.id = ? AND agents.is_archived = ?", organizationID, projectID, false).
+		Count(&runningAgent)
+
+	var usersCount int64
+	DB.Model(&models.UserRoleProject{}).Where("project_id = ?", projectID).Count(&usersCount)
+
+	// count workflow in project in organization
+	var totalWorkflowCount int64
+	DB.Model(&models.Workflow{}).Joins("JOIN projects ON projects.id = workflows.project_id").Where("projects.id = ?", projectID).Count(&totalWorkflowCount)
+	// =======================================================
+	var avgDurationAllWorkflowsInOrganization float64
+	// q := getAverageDurationByOrganizationIdQueryBuilder(organizationID)
+	DB.
+		Select("AVG(duration)").
+		Table("workflow_logs").
+		Joins("JOIN projects ON projects.id = workflow_logs.project_id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+		Row().Scan(&avgDurationAllWorkflowsInOrganization)
+	roundedDuration := int(math.Round(avgDurationAllWorkflowsInOrganization))
+
+	var totalUpdatedWithinOrganization int64
+	DB.Model(&models.ProjectLog{}).
+		Joins("JOIN projects ON project_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+		Count(&totalUpdatedWithinOrganization)
+
+	var totalAgentActionsWithinOrganization int64
+	DB.Model(&models.AgentLog{}).
+		Joins("JOIN projects ON agent_logs.project_id = projects.id").
+		Joins("JOIN organizations ON projects.organization_id = organizations.id").
+		Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+		Count(&totalAgentActionsWithinOrganization)
+
+	var cards []DashboardCard
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(runningAgent),
+		Title:   "Active Agent",
+		Name:    "active_agent",
+		Tooltip: "Number of running agents",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-blue",
+		Value:   int(usersCount),
+		Title:   "User Count",
+		Name:    "user_count",
+		Tooltip: "Total active users",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-eye-red",
+		Value:   int(totalWorkflowCount),
+		Title:   "Workflow Count",
+		Name:    "workflow_count",
+		Tooltip: "Total active workflows in all projects",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-info-green",
+		Value:   roundedDuration,
+		Title:   "Average Duration",
+		Name:    "avg_duration",
+		Tooltip: "Average duration all CICD workflows in organization",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-shopping-carts-purple",
+		Value:   int(totalUpdatedWithinOrganization),
+		Title:   "Total Updated",
+		Name:    "total_updated",
+		Tooltip: "Number of updates",
+	})
+	cards = append(cards, DashboardCard{
+		Icon:    "dashboard-shopping-carts-purple",
+		Value:   int(totalAgentActionsWithinOrganization),
+		Title:   "Total Agent Actions",
+		Name:    "total_agent_actions",
+		Tooltip: "Number of agent pull parameter",
+	})
+	return cards
 }
 
 func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string {
