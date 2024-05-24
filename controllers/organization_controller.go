@@ -159,6 +159,8 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 	}
 	// Get project name from param query
 	projectName := c.Query("project")
+	fromDateString := c.Query("from")
+	toDateString := c.Query("to")
 	var cards []DashboardCard
 	if projectName != "" {
 		var project models.Project
@@ -170,13 +172,22 @@ func GetOrganizationDashboardTotals(c *gin.Context) {
 		// fmt.Println("project: ", project)
 		// Parse project ID to string
 		projectID := project.ID
-		cards = getSummaryCardsByProjectIdQueryBuilder(userOrganizationID, projectID)
+		cards = getSummaryCardsByProjectIdQueryBuilder(userOrganizationID, projectID, fromDateString, toDateString)
 	} else {
-		cards = getSummaryCardsByOrganizationIdQueryBuilder(userOrganizationID)
+		cards = getSummaryCardsByOrganizationIdQueryBuilder(userOrganizationID, fromDateString, toDateString)
 	}
 	c.JSON(http.StatusOK, cards)
 }
-func getSummaryCardsByOrganizationIdQueryBuilder(organizationID uint) []DashboardCard {
+func getSummaryCardsByOrganizationIdQueryBuilder(organizationID uint, fromDateString, toDateString string) []DashboardCard {
+	var startDate, endDate time.Time
+	if fromDateString != "" {
+		startDate = parseStringToDate(fromDateString)
+		fmt.Print("startDate: ", startDate)
+	}
+	if toDateString != "" {
+		endDate = parseStringToDate(toDateString)
+		fmt.Print("endDate: ", endDate)
+	}
 	// =======================================================
 	var projectsCount int64
 	DB.Model(&models.Project{}).Where("organization_id = ?", organizationID).Count(&projectsCount)
@@ -203,18 +214,34 @@ func getSummaryCardsByOrganizationIdQueryBuilder(organizationID uint) []Dashboar
 	roundedDuration := int(math.Round(avgDurationAllWorkflowsInOrganization))
 
 	var totalUpdatedWithinOrganization int64
-	DB.Model(&models.ProjectLog{}).
-		Joins("JOIN projects ON project_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ?", organizationID).
-		Count(&totalUpdatedWithinOrganization)
-
+	if fromDateString != "" && toDateString != "" {
+		DB.Model(&models.ProjectLog{}).
+			Joins("JOIN projects ON project_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ? AND project_logs.created_at BETWEEN ? AND ?", organizationID, startDate, endDate).
+			Count(&totalUpdatedWithinOrganization)
+	} else {
+		DB.Model(&models.ProjectLog{}).
+			Joins("JOIN projects ON project_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ?", organizationID).
+			Count(&totalUpdatedWithinOrganization)
+	}
 	var totalAgentActionsWithinOrganization int64
-	DB.Model(&models.AgentLog{}).
-		Joins("JOIN projects ON agent_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ?", organizationID).
-		Count(&totalAgentActionsWithinOrganization)
+	if fromDateString != "" && toDateString != "" {
+		DB.Model(&models.AgentLog{}).
+			Joins("JOIN projects ON agent_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ?", organizationID).
+			Where("agent_logs.created_at BETWEEN ? AND ?", startDate, endDate).
+			Count(&totalAgentActionsWithinOrganization)
+	} else {
+		DB.Model(&models.AgentLog{}).
+			Joins("JOIN projects ON agent_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ?", organizationID).
+			Count(&totalAgentActionsWithinOrganization)
+	}
 
 	var cards []DashboardCard
 	cards = append(cards, DashboardCard{
@@ -283,7 +310,15 @@ func getSummaryCardsByOrganizationIdQueryBuilder(organizationID uint) []Dashboar
 	return cards
 }
 
-func getSummaryCardsByProjectIdQueryBuilder(organizationID, projectID uint) []DashboardCard {
+func getSummaryCardsByProjectIdQueryBuilder(organizationID, projectID uint, fromDateString, toDateString string) []DashboardCard {
+
+	var startDate, endDate time.Time
+	if fromDateString != "" {
+		startDate = parseStringToDate(fromDateString)
+	}
+	if toDateString != "" {
+		endDate = parseStringToDate(toDateString)
+	}
 	// =======================================================
 	var runningAgent int64
 	DB.Model(&models.Agent{}).
@@ -310,18 +345,36 @@ func getSummaryCardsByProjectIdQueryBuilder(organizationID, projectID uint) []Da
 	roundedDuration := int(math.Round(avgDurationAllWorkflowsInOrganization))
 
 	var totalUpdatedWithinOrganization int64
-	DB.Model(&models.ProjectLog{}).
-		Joins("JOIN projects ON project_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
-		Count(&totalUpdatedWithinOrganization)
+	if fromDateString != "" && toDateString != "" {
+		DB.Model(&models.ProjectLog{}).
+			Joins("JOIN projects ON project_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+			Where("project_logs.created_at BETWEEN ? AND ?", startDate, endDate).
+			Count(&totalUpdatedWithinOrganization)
+	} else {
+		DB.Model(&models.ProjectLog{}).
+			Joins("JOIN projects ON project_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+			Count(&totalUpdatedWithinOrganization)
+	}
 
 	var totalAgentActionsWithinOrganization int64
-	DB.Model(&models.AgentLog{}).
-		Joins("JOIN projects ON agent_logs.project_id = projects.id").
-		Joins("JOIN organizations ON projects.organization_id = organizations.id").
-		Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
-		Count(&totalAgentActionsWithinOrganization)
+	if fromDateString != "" && toDateString != "" {
+		DB.Model(&models.AgentLog{}).
+			Joins("JOIN projects ON agent_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+			Where("agent_logs.created_at BETWEEN ? AND ?", startDate, endDate).
+			Count(&totalAgentActionsWithinOrganization)
+	} else {
+		DB.Model(&models.AgentLog{}).
+			Joins("JOIN projects ON agent_logs.project_id = projects.id").
+			Joins("JOIN organizations ON projects.organization_id = organizations.id").
+			Where("organizations.id = ? AND projects.id = ? ", organizationID, projectID).
+			Count(&totalAgentActionsWithinOrganization)
+	}
 
 	var cards []DashboardCard
 	cards = append(cards, DashboardCard{

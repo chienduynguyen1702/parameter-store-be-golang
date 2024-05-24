@@ -135,3 +135,10 @@ type DashboardCard struct {
 	Title   string `json:"title"`
 	Tooltip string `json:"tooltip"`
 }
+
+func parseStringToDate(date string) time.Time {
+	layout := "2006-01-02"
+	t, _ := time.Parse(layout, date)
+
+	return t
+}
