@@ -20,9 +20,9 @@ type agentResponse struct {
 	Stage         models.Stage
 	EnvironmentID uint `gorm:"foreignKey:EnvironmentID;not null" json:"environment_id"`
 	Environment   models.Environment
-	WorkflowName  string `gorm:"type:varchar(100);not null" json:"workflow_name"`
-	Description   string `gorm:"type:varchar(100);not null" json:"description"`
-	LastUsedAt    time.Time
+	WorkflowName  string    `gorm:"type:varchar(100);not null" json:"workflow_name"`
+	Description   string    `gorm:"type:varchar(100);not null" json:"description"`
+	LastUsedAt    time.Time `json:"last_used_at"`
 	ArchivedAt    time.Time `json:"archived_at"`
 	ArchivedBy    string    `json:"archived_by"`
 }
@@ -269,13 +269,14 @@ func RestoreAgent(c *gin.Context) {
 }
 
 type agentRequestBody struct {
-	Name          string `json:"name" binding:"required"`
-	Stage         string `json:"stage"  binding:"required"`
-	StageID       uint   `json:"stage_id"`
-	Environment   string `json:"environment"  binding:"required"`
-	EnvironmentID uint   `json:"environment_id"`
-	WorkflowName  string `json:"workflow_name" binding:"required"`
-	Description   string `json:"description" binding:"required"`
+	Name          string    `json:"name" binding:"required"`
+	Stage         string    `json:"stage"  binding:"required"`
+	StageID       uint      `json:"stage_id"`
+	Environment   string    `json:"environment"  binding:"required"`
+	EnvironmentID uint      `json:"environment_id"`
+	WorkflowName  string    `json:"workflow_name" binding:"required"`
+	Description   string    `json:"description" binding:"required"`
+	LastUsedAt    time.Time `json:"last_used_at"`
 }
 
 // CreateNewAgent godoc
