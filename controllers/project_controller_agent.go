@@ -490,6 +490,14 @@ func GetParameterByAuthAgent(c *gin.Context) {
 
 		return
 	}
+	if len(project.LatestVersion.Parameters) == 0 {
+		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent", http.StatusNotFound, time.Since(startTime))
+		c.JSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Failed to get parameter by agent",
+		})
+		return
+	}
 	for _, parameter := range project.LatestVersion.Parameters {
 		parameter.IsApplied = true
 		DB.Save(&parameter)
