@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"parameter-store-be/models"
@@ -117,7 +118,22 @@ func GetAgentDetail(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Agent does not belong to project"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"agent": agent})
+	agentResponse := agentResponse{
+		ID:            agent.ID,
+		ProjectID:     agent.ProjectID,
+		Name:          agent.Name,
+		StageID:       agent.StageID,
+		Stage:         agent.Stage,
+		EnvironmentID: agent.EnvironmentID,
+		Environment:   agent.Environment,
+		WorkflowName:  agent.WorkflowName,
+		Description:   agent.Description,
+		LastUsedAt:    agent.LastUsedAt,
+		ArchivedAt:    agent.ArchivedAt,
+		ArchivedBy:    agent.ArchivedBy,
+	}
+
+	c.JSON(http.StatusOK, gin.H{"agent": agentResponse})
 }
 
 // GetProjectArchivedAgents godoc
@@ -369,9 +385,10 @@ func UpdateAgent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	fmt.Println("agent", agent)
 	// find stage and environment in project by projectID
 	project := models.Project{}
-	DB.Preload("Stages").Preload("Environments").First(&project, projectID)
+	DB.Preload("Stages").Preload("Environments").Preload("Workflows").First(&project, projectID)
 	// validate workflow name
 	if err := github.ValidateWorkflowName(agent.WorkflowName, project.RepoURL, project.RepoApiToken); err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
@@ -392,6 +409,8 @@ func UpdateAgent(c *gin.Context) {
 	}
 	var findingWorkflowID uint
 	for _, workflow := range project.Workflows {
+		fmt.Println("workflowID", workflow.WorkflowID)
+		fmt.Println("workflow", workflow.Name)
 		if workflow.Name == agent.WorkflowName {
 			findingWorkflowID = uint(workflow.WorkflowID)
 			break
@@ -411,7 +430,15 @@ func UpdateAgent(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent"})
 		return
 	}
-	projectLogByUser(uint(projectID), "Update Agent", "Succeed: Agent updated", http.StatusOK, time.Since(time.Now()), 0)
+	// get user id from context
+	user, exist := c.Get("user")
+	if !exist {
+		log.Println("Failed to get user from context")
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	userID := user.(models.User).ID
+	projectLogByUser(uint(projectID), "Update Agent", "Succeed: Agent updated", http.StatusOK, time.Since(time.Now()), userID)
 	c.JSON(http.StatusOK, gin.H{"message": "Agent updated"})
 }
 
