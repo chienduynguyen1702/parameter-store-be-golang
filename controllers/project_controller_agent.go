@@ -492,8 +492,8 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	}
 	if len(project.LatestVersion.Parameters) == 0 {
 		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent", http.StatusNotFound, time.Since(startTime))
-		c.JSON(http.StatusNotFound, gin.H{
-			"status":  http.StatusNotFound,
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
 			"message": "Failed to get parameter by agent",
 		})
 		return
