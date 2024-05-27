@@ -41,8 +41,8 @@ func GetProjectParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
 	page := c.Query("page")
 	limit := c.Query("limit")
-	stages := c.QueryArray("stages")
-	environments := c.QueryArray("environments")
+	stages := c.QueryArray("stages[]")
+	environments := c.QueryArray("environments[]")
 	version := c.Query("version")
 	// fmt.Println("Debug version", version)
 	// Get project by ID
@@ -208,46 +208,94 @@ func GetLatestParameters(c *gin.Context) {
 // @Router /api/v1/projects/{project_id}/parameters/download [get]
 func DownloadLatestParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
+	queryStages := c.QueryArray("stages[]")
+	queryEnvironments := c.QueryArray("environments[]")
+	version := c.Query("version")
+
 	var project models.Project
-	if err := DB.
-		Preload("LatestVersion").
-		Preload("LatestVersion.Parameters", "is_archived = ? ", false).
-		Preload("LatestVersion.Parameters.Stage").
-		Preload("LatestVersion.Parameters.Environment").
-		Preload("Stages", "is_archived = ? ", false).
-		Preload("Environments", "is_archived = ? ", false).
-		Preload("Workflows").
-		First(&project, projectID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
-		return
+	var selectedVersion models.Version
+	if version != "" {
+		if err := DB.Preload("Versions", "number = ?", version).
+			// where parameter is not archived
+			Preload("Versions.Parameters", "is_archived = ?", false).
+			Preload("Versions.Parameters.Stage", "is_archived = ?", false).
+			Preload("Versions.Parameters.Environment", "is_archived = ?", false).
+			Preload("Stages", "is_archived = ?", false).
+			Preload("Environments", "is_archived = ?", false).
+			First(&project, projectID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+		//debug version of project
+		selectedVersion = project.Versions[0]
+	} else {
+		if err := DB.
+			Preload("LatestVersion").
+			// where parameter is not archived
+			Preload("LatestVersion.Parameters", "is_archived = ?", false).
+			Preload("LatestVersion.Parameters.Stage", "is_archived = ?", false).
+			Preload("LatestVersion.Parameters.Environment", "is_archived = ?", false).
+			Preload("Stages", "is_archived = ?", false).
+			Preload("Environments", "is_archived = ?", false).
+			First(&project, projectID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+		selectedVersion = project.LatestVersion
 	}
-	// fmt.Println("Debug parameters", project.Versions)
-	for index, version := range project.Versions {
-		fmt.Printf("%d %s\n", index, version.Number)
+	// Filter parameters by stages
+	if len(queryStages) > 0 {
+		var filteredParameters []models.Parameter
+		for _, stage := range queryStages {
+			for _, parameter := range selectedVersion.Parameters {
+				if parameter.Stage.Name == stage {
+					filteredParameters = append(filteredParameters, parameter)
+				}
+			}
+		}
+		selectedVersion.Parameters = filteredParameters
 	}
-	latestVersion := project.LatestVersion
-	parameters := latestVersion.Parameters
-	// fmt.Println("Debug parameters", parameters)
+	// Filter parameters by environments
+	if len(queryEnvironments) > 0 {
+		var filteredParameters []models.Parameter
+		for _, environment := range queryEnvironments {
+			for _, parameter := range selectedVersion.Parameters {
+				if parameter.Environment.Name == environment {
+					filteredParameters = append(filteredParameters, parameter)
+				}
+			}
+		}
+		selectedVersion.Parameters = filteredParameters
+	}
+
+	parameters := selectedVersion.Parameters
+
 	// Create a new file
-	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, latestVersion.Number)
+	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, selectedVersion.Number)
 	file, err := os.Create(filepath) // format KEY=VALUE is paramter.Name=parameter.Value
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file"})
 		return
 	}
 	defer file.Close()
-	_, err = file.WriteString(fmt.Sprintf("######## Project: %s\n######## Version: %s \n", project.Name, latestVersion.Number))
+	_, err = file.WriteString(fmt.Sprintf("######## Project: %s\n######## Version: %s \n", project.Name, selectedVersion.Number))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write project Name to file"})
 		return
 	}
 	for _, environment := range project.Environments {
+		if !isIn(queryEnvironments, environment.Name) {
+			continue
+		}
 		_, err := file.WriteString(fmt.Sprintf("\n########## ENVIRONMENT : %s ###########\n", environment.Name))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write environment to file"})
 			return
 		}
 		for _, stage := range project.Stages {
+			if !isIn(queryStages, stage.Name) {
+				continue
+			}
 			_, err := file.WriteString(fmt.Sprintf("\n#### STAGE : %s\n", stage.Name))
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write stage to file"})
@@ -263,7 +311,11 @@ func DownloadLatestParameters(c *gin.Context) {
 				}
 			}
 		}
-		_, err = file.WriteString(fmt.Sprintf("\n##############################################\n"))
+		_, err = file.WriteString("\n##############################################\n")
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write end file"})
+			return
+		}
 	}
 
 	c.Header("Content-Description", "File Transfer")
@@ -275,6 +327,16 @@ func DownloadLatestParameters(c *gin.Context) {
 	if err != nil {
 		log.Println("Failed to remove file")
 	}
+}
+
+// check if value is in array
+func isIn(array []string, value string) bool {
+	for _, v := range array {
+		if v == value {
+			return true
+		}
+	}
+	return false
 }
 
 // CreateParameter godoc
