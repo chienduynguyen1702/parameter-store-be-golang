@@ -266,10 +266,10 @@ func DownloadLatestParameters(c *gin.Context) {
 	c.Header("Content-Type", "application/octet-stream")
 	c.Header("Content-Transfer-Encoding", "binary")
 	c.File(filepath)
-	// err = os.Remove(filepath)
-	// if err != nil {
-	// 	log.Println("Failed to remove file")
-	// }
+	err = os.Remove(filepath)
+	if err != nil {
+		log.Println("Failed to remove file")
+	}
 }
 
 // CreateParameter godoc
