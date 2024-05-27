@@ -86,13 +86,33 @@ func CreateNewVersion(c *gin.Context) {
 	}
 
 	// Create association records for parameters
-	newVersion.Parameters = append(newVersion.Parameters, project.LatestVersion.Parameters...)
+	// newVersion.Parameters = append(newVersion.Parameters, project.LatestVersion.Parameters...)
 
 	if err := DB.Create(&newVersion).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create version"})
 		return
 	}
-	fmt.Println("Debug new version", newVersion)
+	// Clone parameters to new version
+	for _, param := range project.LatestVersion.Parameters {
+		newParam := models.Parameter{
+			StageID:       param.StageID,
+			EnvironmentID: param.EnvironmentID,
+			Name:          param.Name,
+			Value:         param.Value,
+			Description:   param.Description,
+			ProjectID:     param.ProjectID,
+			IsArchived:    param.IsArchived,
+			ArchivedBy:    param.ArchivedBy,
+			ArchivedAt:    param.ArchivedAt,
+			IsApplied:     param.IsApplied,
+			EditedAt:      param.EditedAt,
+		}
+		newVersion.Parameters = append(newVersion.Parameters, newParam)
+	}
+	if err := DB.Save(&newVersion).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to clone parameter to new version"})
+		return
+	}
 	// update project latest version
 	project.LatestVersionID = newVersion.ID
 	if err := DB.Save(&project).Error; err != nil {
