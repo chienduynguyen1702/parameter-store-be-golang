@@ -237,7 +237,7 @@ func DownloadLatestParameters(c *gin.Context) {
 		return
 	}
 	for _, environment := range project.Environments {
-		_, err := file.WriteString(fmt.Sprintf("########## ENVIRONMENT : %s ###########\n", environment.Name))
+		_, err := file.WriteString(fmt.Sprintf("\n########## ENVIRONMENT : %s ###########\n", environment.Name))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write environment to file"})
 			return
