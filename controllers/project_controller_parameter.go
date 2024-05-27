@@ -44,6 +44,10 @@ func GetProjectParameters(c *gin.Context) {
 	stages := c.QueryArray("stages[]")
 	environments := c.QueryArray("environments[]")
 	version := c.Query("version")
+	singleStage := c.Query("stages")
+	singleEnvironment := c.Query("environments")
+	filteredStage := append(stages, singleStage)
+	filteredEnvironment := append(environments, singleEnvironment)
 	// fmt.Println("Debug version", version)
 	// Get project by ID
 	var project models.Project
@@ -74,9 +78,9 @@ func GetProjectParameters(c *gin.Context) {
 		selectedVersion = project.LatestVersion
 	}
 	// Filter parameters by stages
-	if len(stages) > 0 {
+	if len(filteredStage) > 0 {
 		var filteredParameters []models.Parameter
-		for _, stage := range stages {
+		for _, stage := range filteredStage {
 			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Stage.Name == stage {
 					filteredParameters = append(filteredParameters, parameter)
@@ -86,9 +90,9 @@ func GetProjectParameters(c *gin.Context) {
 		selectedVersion.Parameters = filteredParameters
 	}
 	// Filter parameters by environments
-	if len(environments) > 0 {
+	if len(filteredEnvironment) > 0 {
 		var filteredParameters []models.Parameter
-		for _, environment := range environments {
+		for _, environment := range filteredEnvironment {
 			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Environment.Name == environment {
 					filteredParameters = append(filteredParameters, parameter)
