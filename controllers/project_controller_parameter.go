@@ -47,8 +47,22 @@ func GetProjectParameters(c *gin.Context) {
 	// fmt.Println("Debug version", version)
 	// Get project by ID
 	var project models.Project
+	var selectedVersion models.Version
 	if version != "" {
-		if err := DB.Preload("LatestVersion", "number = ?", version).
+		if err := DB.Preload("Versions", "number = ?", version).
+			// where parameter is not archived
+			Preload("Versions.Parameters", "is_archived = ?", false).
+			Preload("Versions.Parameters.Stage").
+			Preload("Versions.Parameters.Environment").
+			First(&project, projectID).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+			return
+		}
+		//debug version of project
+		selectedVersion = project.Versions[0]
+	} else {
+		if err := DB.
+			Preload("LatestVersion").
 			// where parameter is not archived
 			Preload("LatestVersion.Parameters", "is_archived = ?", false).
 			Preload("LatestVersion.Parameters.Stage").
@@ -57,42 +71,34 @@ func GetProjectParameters(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 			return
 		}
-	} else if err := DB.
-		Preload("LatestVersion").
-		// where parameter is not archived
-		Preload("LatestVersion.Parameters", "is_archived = ?", false).
-		Preload("LatestVersion.Parameters.Stage").
-		Preload("LatestVersion.Parameters.Environment").
-		First(&project, projectID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
-		return
+		selectedVersion = project.LatestVersion
 	}
 	// Filter parameters by stages
 	if len(stages) > 0 {
 		var filteredParameters []models.Parameter
 		for _, stage := range stages {
-			for _, parameter := range project.LatestVersion.Parameters {
+			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Stage.Name == stage {
 					filteredParameters = append(filteredParameters, parameter)
 				}
 			}
 		}
-		project.LatestVersion.Parameters = filteredParameters
+		selectedVersion.Parameters = filteredParameters
 	}
 	// Filter parameters by environments
 	if len(environments) > 0 {
 		var filteredParameters []models.Parameter
 		for _, environment := range environments {
-			for _, parameter := range project.LatestVersion.Parameters {
+			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Environment.Name == environment {
 					filteredParameters = append(filteredParameters, parameter)
 				}
 			}
 		}
-		project.LatestVersion.Parameters = filteredParameters
+		selectedVersion.Parameters = filteredParameters
 	}
 
-	totalParam := len(project.LatestVersion.Parameters)
+	totalParam := len(selectedVersion.Parameters)
 	var paginatedListParams []models.Parameter
 	if page != "" && limit != "" {
 		pageInt, err := strconv.Atoi(page)
@@ -105,7 +111,7 @@ func GetProjectParameters(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit number"})
 			return
 		}
-		paginatedListParams = paginationDataParam(project.LatestVersion.Parameters, pageInt, limitInt)
+		paginatedListParams = paginationDataParam(selectedVersion.Parameters, pageInt, limitInt)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"parameters": paginatedListParams,
@@ -175,16 +181,15 @@ func GetLatestParameters(c *gin.Context) {
 
 	var project models.Project
 	if err := DB.
-		Preload("Versions").
-		Preload("Versions.Parameters", "is_archived = ? ", false).
+		Preload("LatestVersion").
+		Preload("LatestVersion.Parameters", "is_archived = ? ", false).
+		Preload("LatestVersion.Parameters.Stage").
+		Preload("LatestVersion.Parameters.Environment").
 		First(&project, projectID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
 	}
-	for index, version := range project.Versions {
-		fmt.Printf("%d %s\n", index, version.Number)
-	}
-	latestVersion := project.Versions[len(project.Versions)-1]
+	latestVersion := project.LatestVersion
 
 	c.JSON(http.StatusOK, gin.H{"parameters": latestVersion.Parameters})
 }

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"parameter-store-be/models"
 	"strconv"
@@ -63,7 +62,6 @@ func CreateNewVersion(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("Debug version info", v)
 	// check unique name
 	var count int64
 	DB.Model(&models.Version{}).Where("project_id = ? AND number = ?", projectID, v.Number).Count(&count)
@@ -94,6 +92,9 @@ func CreateNewVersion(c *gin.Context) {
 	}
 	// Clone parameters to new version
 	for _, param := range project.LatestVersion.Parameters {
+		if param.IsArchived {
+			continue
+		}
 		newParam := models.Parameter{
 			StageID:       param.StageID,
 			EnvironmentID: param.EnvironmentID,
