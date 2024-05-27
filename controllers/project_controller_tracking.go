@@ -18,6 +18,7 @@ import (
 // @Success 200 string {string} json "{"tracking": "tracking"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project tracking"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/tracking [get]
 func GetProjectTracking(c *gin.Context) {
 	// Retrieve user from context

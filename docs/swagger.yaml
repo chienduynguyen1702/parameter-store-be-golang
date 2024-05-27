@@ -76,6 +76,8 @@ definitions:
         type: string
       environment_id:
         type: integer
+      last_used_at:
+        type: string
       name:
         type: string
       stage:
@@ -105,7 +107,7 @@ definitions:
         type: integer
       id:
         type: integer
-      lastUsedAt:
+      last_used_at:
         type: string
       name:
         type: string
@@ -589,6 +591,8 @@ paths:
           description: '{"error": "Internal server error"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Validate a user
       tags:
       - Auth
@@ -635,6 +639,8 @@ paths:
           description: '{"error": "Failed to get organization"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get organization information
       tags:
       - Organization
@@ -670,6 +676,8 @@ paths:
           description: '{"error": "Failed to get organization"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update organization information
       tags:
       - Organization
@@ -710,6 +718,8 @@ paths:
           description: '{"error": "Failed to get organization"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get organization dashboard logs
       tags:
       - Organization
@@ -746,6 +756,8 @@ paths:
           description: '{"error": "Failed to get organization"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get organization dashboard totals
       tags:
       - Organization
@@ -769,6 +781,8 @@ paths:
           description: '{"error": "Failed to list projects"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: List projects
       tags:
       - Project List
@@ -798,6 +812,8 @@ paths:
           description: '{"error": "Failed to create project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create new project
       tags:
       - Project List
@@ -827,6 +843,8 @@ paths:
           description: '{"error": "Failed to delete project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Delete project
       tags:
       - Project List
@@ -856,6 +874,8 @@ paths:
           description: '{"error": "Failed to archive project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive project
       tags:
       - Project List
@@ -885,6 +905,8 @@ paths:
           description: '{"error": "Failed to unarchive project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Unarchive project
       tags:
       - Project List
@@ -908,6 +930,8 @@ paths:
           description: '{"error": "Failed to list archived projects"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: List archived projects
       tags:
       - Project List
@@ -937,6 +961,8 @@ paths:
           description: '{"error": "Failed to get project info"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all project info
       tags:
       - Project
@@ -1989,6 +2015,39 @@ paths:
       summary: Get archived parameters
       tags:
       - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/download:
+    get:
+      consumes:
+      - application/json
+      description: Download lastest parameters in project
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Parameter'
+            type: array
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get latest parameter"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Download lastest parameters in project
+      tags:
+      - Project Detail / Parameters
   /api/v1/projects/{project_id}/stages:
     get:
       consumes:
@@ -2650,4 +2709,9 @@ paths:
       summary: Get all stages
       tags:
       - Stages
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

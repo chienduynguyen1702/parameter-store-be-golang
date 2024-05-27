@@ -16,6 +16,7 @@ import (
 // @Param project_id path string true "Project ID"
 // @Success 200 string {string} json "{"projects": "projects"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get project info"}"
 // @Router /api/v1/projects/{project_id} [get]
 func GetProjectAllInfo(c *gin.Context) {

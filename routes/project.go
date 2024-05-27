@@ -52,6 +52,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 		parameterGroup := projectGroup.Group("/parameters")
 		{
 			parameterGroup.GET("/", controllers.GetProjectParameters)
+			parameterGroup.GET("/download", controllers.DownloadLatestParameters)
 			parameterGroup.POST("/", middleware.RequiredIsAdmin, controllers.CreateParameter)
 			parameterGroup.PUT("/:parameter_id", middleware.RequiredIsAdmin, controllers.UpdateParameter)
 

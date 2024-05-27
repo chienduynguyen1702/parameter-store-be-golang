@@ -18,6 +18,7 @@ import (
 // @Produce json
 // @Success 200 string {string} json "{"users": "users"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to list users"}"
 // @Router /api/v1/settings/users [get]
 func ListUser(c *gin.Context) {
@@ -94,6 +95,7 @@ type userResponse struct {
 // @Success 200 string {string} json "{"user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get user"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users/{user_id} [get]
 func GetUserById(c *gin.Context) {
 	user_id := c.Param("user_id")
@@ -137,6 +139,7 @@ type userRequestBody struct {
 // @Success 201 string {string} json "{"message": "User created successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create user"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users [post]
 func CreateUser(c *gin.Context) {
 	r := userRequestBody{}
@@ -198,6 +201,7 @@ func CreateUser(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User information updated successfully", "user": "user"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update user information"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users/{user_id} [put]
 func UpdateUserInformation(c *gin.Context) {
 	r := userRequestBody{}
@@ -237,6 +241,7 @@ func UpdateUserInformation(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete user"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users/{user_id} [delete]
 func DeleteUser(c *gin.Context) {
 	user_id := c.Param("user_id")
@@ -270,6 +275,7 @@ func DeleteUser(c *gin.Context) {
 // @Success 200 string {string} json "{"users": "users"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list archived users"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users/archived [get]
 func ListArchivedUser(c *gin.Context) {
 	org_id, exist := c.Get("org_id")
@@ -320,6 +326,7 @@ func ListArchivedUser(c *gin.Context) {
 // @Param user_id path int true "User ID"
 // @Success 200 string {string} json "{"message": "User archived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to archive user"}"
 // @Router /api/v1/settings/users/{user_id}/archive [put]
 func ArchiveUser(c *gin.Context) {
@@ -355,6 +362,7 @@ func ArchiveUser(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User restored"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to unarchive user"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/users/{user_id}/restore [put]
 func RestoreUser(c *gin.Context) {
 	user_id := c.Param("user_id")

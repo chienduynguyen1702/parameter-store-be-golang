@@ -240,6 +240,11 @@ const docTemplate = `{
         },
         "/api/v1/auth/validate": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Validate a user",
                 "consumes": [
                     "application/json"
@@ -316,6 +321,11 @@ const docTemplate = `{
         },
         "/api/v1/organizations/": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get organization information",
                 "consumes": [
                     "application/json"
@@ -351,6 +361,11 @@ const docTemplate = `{
         },
         "/api/v1/organizations/dashboard/logs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get organization dashboard logs",
                 "consumes": [
                     "application/json"
@@ -412,6 +427,11 @@ const docTemplate = `{
         },
         "/api/v1/organizations/dashboard/totals": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get organization dashboard totals",
                 "consumes": [
                     "application/json"
@@ -467,6 +487,11 @@ const docTemplate = `{
         },
         "/api/v1/organizations/{organization_id}": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update organization information",
                 "consumes": [
                     "application/json"
@@ -520,6 +545,11 @@ const docTemplate = `{
         },
         "/api/v1/project-list/": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "List projects",
                 "consumes": [
                     "application/json"
@@ -553,6 +583,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create new project for organization",
                 "consumes": [
                     "application/json"
@@ -599,6 +634,11 @@ const docTemplate = `{
         },
         "/api/v1/project-list/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "List archived projects",
                 "consumes": [
                     "application/json"
@@ -634,6 +674,11 @@ const docTemplate = `{
         },
         "/api/v1/project-list/{project_id}": {
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete project",
                 "consumes": [
                     "application/json"
@@ -678,6 +723,11 @@ const docTemplate = `{
         },
         "/api/v1/project-list/{project_id}/archive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive project",
                 "consumes": [
                     "application/json"
@@ -722,6 +772,11 @@ const docTemplate = `{
         },
         "/api/v1/project-list/{project_id}/unarchive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unarchive project",
                 "consumes": [
                     "application/json"
@@ -766,6 +821,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all project info",
                 "consumes": [
                     "application/json"
@@ -2172,6 +2232,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/parameters/download": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Download lastest parameters in project",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Download lastest parameters in project",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Parameter"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get latest parameter\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/parameters/{parameter_id}": {
             "get": {
                 "description": "Get parameter by ID",
@@ -3504,6 +3616,9 @@ const docTemplate = `{
                 "environment_id": {
                     "type": "integer"
                 },
+                "last_used_at": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
@@ -3539,7 +3654,7 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "lastUsedAt": {
+                "last_used_at": {
                     "type": "string"
                 },
                 "name": {
@@ -4001,6 +4116,13 @@ const docTemplate = `{
                     "type": "integer"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

@@ -20,6 +20,7 @@ import (
 // @Success 200 string {string} json "{"stages": "stages"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list stages"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages [get]
 func GetListStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -51,6 +52,7 @@ func GetListStageInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"stage": "stage"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get stage"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages/{stage_id} [get]
 func GetStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -90,6 +92,7 @@ type stageRequestBody struct {
 // @Success 201 string {string} json "{"message": "Stage created successfully", "stage": "stage"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create stage"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages [post]
 func CreateStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -150,6 +153,7 @@ func CreateStageInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Stage updated successfully", "stage": "stage"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update stage"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages/{stage_id} [put]
 func UpdateStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -205,6 +209,7 @@ func UpdateStageInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"stages": "stages"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list archived stages"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages/archived [get]
 func GetListArchivedStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -236,6 +241,7 @@ func GetListArchivedStageInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Stage archived successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to archive stage"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages/{stage_id}/archive [patch]
 func ArchiveStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL
@@ -289,6 +295,7 @@ func ArchiveStageInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Stage unarchived successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to unarchive stage"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/stages/{stage_id}/unarchive [patch]
 func UnarchiveStageInProject(c *gin.Context) {
 	// Retrieve project ID from the URL

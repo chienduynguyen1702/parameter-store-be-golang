@@ -173,6 +173,7 @@ var responseLogedInUser struct {
 // @Success 200 string {string} json "{"message": "User logged in successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 401 string {string} json "{"error": "Failed to validate user"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Internal server error"}"
 // @Router /api/v1/auth/validate [get]
 func Validate(c *gin.Context) {
@@ -209,6 +210,7 @@ func Validate(c *gin.Context) {
 // @Produce json
 // @Success 200 string {string} json "{"message": "User logged out successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to logout user"}"
 // @Router /api/v1/auth/logout [post]
 func Logout(c *gin.Context) {

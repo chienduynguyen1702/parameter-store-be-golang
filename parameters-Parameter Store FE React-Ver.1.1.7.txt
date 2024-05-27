@@ -1,0 +1,26 @@
+######## Project: Parameter Store FE React
+######## Version: 1.1.7 
+########## ENVIRONMENT : Development ###########
+
+#### STAGE : Build
+
+#### STAGE : Test
+
+#### STAGE : Deploy
+
+##############################################
+########## ENVIRONMENT : Production ###########
+
+#### STAGE : Build
+REACT_APP_PROJECT_URL=param-store.datn.live
+REACT_APP_PROJECT_NAME=Parameter Store
+TEST=TestUpdateParameter123
+REACT_APP_PROJECT_BASE_URL=https://param-store-be.datn.live/api/v1/
+
+#### STAGE : Test
+TEST_REQUEST=100
+
+#### STAGE : Deploy
+DEPLOY_MAX_INSTANCE=2
+
+##############################################

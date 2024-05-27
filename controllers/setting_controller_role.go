@@ -17,6 +17,7 @@ import (
 // @Success 200 string {string} json "{"roles": "roles"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list roles"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/settings/roles [get]
 func ListRole(c *gin.Context) {
 	org_id, exist := c.Get("org_id")

@@ -20,6 +20,7 @@ import (
 // @Success 200 string {string} json "{"workflow": "workflow"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project workflows"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/workflows [get]
 func GetProjectWorkflows(c *gin.Context) {
 	projectID := c.Param("project_id")
@@ -105,6 +106,7 @@ func GetProjectWorkflows(c *gin.Context) {
 // @Success 200 string {string} json "{"workflow": "workflow"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get workflow process"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/workflows/{workflow_id}/run [get]
 func GetWorkflowProcess(c *gin.Context) {
 	projectID := c.Param("project_id")

@@ -17,6 +17,7 @@ import (
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
+// @Security ApiKeyAuth
 // @Success 200 string {string} json "{"dashboard": "dashboard"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get dashboard data"}"
@@ -169,6 +170,7 @@ func countTotalAgentActions(c *gin.Context, projectID string) int64 {
 // @Param from 	query 	string false "Start Date format dd-mm-yyyy"
 // @Param to 		query 	string false "End Date format dd-mm-yyyy"
 // @Param workflow_id 	query 	string false "Workflow ID specified, if not specified, get all workflows"
+// @Security ApiKeyAuth
 // @Success 200 string {string} json "{"logs": "logs"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project dashboard logs"}"

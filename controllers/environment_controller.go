@@ -14,6 +14,7 @@ import (
 // @Accept json
 // @Produce json
 // @Success 200 string {string} json "{"environments": "environments"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list environments"}"
 // @Router /api/v1/envs [get]

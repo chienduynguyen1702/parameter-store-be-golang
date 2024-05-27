@@ -19,6 +19,7 @@ import (
 // @Param project_id path string true "Project ID"
 // @Success 200 string {string} json "{"environments": "environments"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to list environments"}"
 // @Router /api/v1/projects/{project_id}/environments [get]
 func GetListEnvironmentInProject(c *gin.Context) {
@@ -49,6 +50,7 @@ func GetListEnvironmentInProject(c *gin.Context) {
 // @Param project_id path string true "Project ID"
 // @Param environment_id path string true "Environment ID"
 // @Success 200 string {string} json "{"environment": "environment"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get environment"}"
 // @Router /api/v1/projects/{project_id}/environments/{environment_id} [get]
@@ -89,6 +91,7 @@ type environmentRequestBody struct {
 // @Param request body controllers.environmentRequestBody true "Environment creation request"
 // @Success 201 string {string} json "{"message": "Environment created successfully", "environment": "environment"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to create environment"}"
 // @Router /api/v1/projects/{project_id}/environments [post]
 func CreateEnvironmentInProject(c *gin.Context) {
@@ -148,6 +151,7 @@ func CreateEnvironmentInProject(c *gin.Context) {
 // @Param environment_id path string true "Environment ID"
 // @Param request body controllers.environmentRequestBody true "Environment update request"
 // @Success 200 string {string} json "{"message": "Environment updated successfully", "environment": "environment"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update environment"}"
 // @Router /api/v1/projects/{project_id}/environments/{environment_id} [put]
@@ -205,6 +209,7 @@ func UpdateEnvironmentInProject(c *gin.Context) {
 // @Param project_id path string true "Project ID"
 // @Success 200 string {string} json "{"environments": "environments"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to list archived environments"}"
 // @Router /api/v1/projects/{project_id}/environments/archived [get]
 func GetListArchivedEnvironmentInProject(c *gin.Context) {
@@ -233,6 +238,7 @@ func GetListArchivedEnvironmentInProject(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
+// @Security ApiKeyAuth
 // @Param environment_id path string true "Environment ID"
 // @Success 200 string {string} json "{"message": "Environment archived successfully"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
@@ -297,6 +303,7 @@ func ArchiveEnvironmentInProject(c *gin.Context) {
 // @Param project_id path string true "Project ID"
 // @Param environment_id path string true "Environment ID"
 // @Success 200 string {string} json "{"message": "Environment unarchived successfully"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to unarchive environment"}"
 // @Router /api/v1/projects/{project_id}/environments/{environment_id}/unarchive [patch]

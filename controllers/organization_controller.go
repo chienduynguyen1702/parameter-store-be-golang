@@ -19,6 +19,7 @@ import (
 // @Produce json
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organizations/ [get]
 func GetOrganizationInformation(c *gin.Context) {
@@ -77,9 +78,11 @@ type organizationBody struct {
 // @Tags Organization
 // @Accept json
 // @Produce json
+// @Security ApiKeyAuth
 // @Param organization_id path int true "Organization ID"
 // @Param Organization body organizationBody true "Organization"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organizations/{organization_id} [put]
@@ -143,6 +146,7 @@ func UpdateOrganizationInformation(c *gin.Context) {
 // @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organizations/dashboard/totals [get]
 func GetOrganizationDashboardTotals(c *gin.Context) {
@@ -442,6 +446,7 @@ func getAverageDurationByOrganizationIdQueryBuilder(organizationID uint) string 
 // @Param end_date 		query 	string false "End Date format dd-mm-yyyy"
 // @Success 200 string {string} json "{"organizations": "organizations"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get organization"}"
 // @Router /api/v1/organizations/dashboard/logs [get]
 func GetOrganizationDashboardLogs(c *gin.Context) {

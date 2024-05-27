@@ -21,6 +21,7 @@ import (
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project detail"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/overview [get]
 func GetProjectOverView(c *gin.Context) {
 	// Retrieve user from context
@@ -168,6 +169,7 @@ func (pb projectBody) Print() {
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/overview [put]
 func UpdateProjectInformation(c *gin.Context) {
 	// Retrieve user from context
@@ -244,6 +246,7 @@ type UserRoleBody struct {
 // @Param UserRoleProject body controllers.UserRoleBody true "UserRoleProject"
 // @Success 200 string {string} json "{"message": "User added to project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to add user to project"}"
 // @Router /api/v1/projects/{project_id}/overview/add-user [post]
 func AddUserToProject(c *gin.Context) {
@@ -315,6 +318,7 @@ func AddUserToProject(c *gin.Context) {
 // @Param user_id path string true "User ID"
 // @Success 200 string {string} json "{"message": "User removed from project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to remove user from project"}"
 // @Router /api/v1/projects/{project_id}/overview/remove-user/{user_id} [delete]
 func RemoveUserFromProject(c *gin.Context) {
@@ -391,6 +395,7 @@ func GetUserInProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "User updated in project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update user in project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/overview/update-user/{user_id} [put]
 func UpdateUserInProject(c *gin.Context) {
 	var urb UserRoleBody

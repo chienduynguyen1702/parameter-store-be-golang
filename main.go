@@ -34,6 +34,11 @@ func init() {
 	controllers.SetDB(db) // set controller use that db *gorm.DB
 	log.Println("Finished init.")
 }
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+
 func main() {
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)

@@ -18,6 +18,7 @@ import (
 // @Param project_id path int true "Project ID"
 // @Success 200 {array} models.Version
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get versions"}"
 // @Router /api/v1/projects/{project_id}/versions [get]
 func GetProjectVersions(c *gin.Context) {
@@ -42,6 +43,7 @@ func GetProjectVersions(c *gin.Context) {
 // @Param versionName body controllers.CreateNewVersion.versionName true "Version name"
 // @Success 200 string {string} json "{"message": "Version created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to create version"}"
 // @Router /api/v1/projects/{project_id}/versions [post]
 func CreateNewVersion(c *gin.Context) {
@@ -88,6 +90,13 @@ func CreateNewVersion(c *gin.Context) {
 
 	if err := DB.Create(&newVersion).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create version"})
+		return
+	}
+	fmt.Println("Debug new version", newVersion)
+	// update project latest version
+	project.LatestVersionID = newVersion.ID
+	if err := DB.Save(&project).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update project latest version"})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "Version created"})

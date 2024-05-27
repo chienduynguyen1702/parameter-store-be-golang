@@ -16,6 +16,7 @@ import (
 // @Produce json
 // @Success 200 string {string} json "{"projects": "projects"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to list projects"}"
 // @Router /api/v1/project-list/ [get]
 func ListProjects(c *gin.Context) {
@@ -68,6 +69,7 @@ func ListProjects(c *gin.Context) {
 // @Success 200 string {string} json "{"project": "project"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/project-list/ [post]
 func CreateNewProject(c *gin.Context) {
 	// Retrieve user from context
@@ -171,6 +173,7 @@ func CreateNewProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Project deleted"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to delete project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/project-list/{project_id} [delete]
 func DeleteProject(c *gin.Context) {
 	// Retrieve user from context
@@ -212,6 +215,7 @@ func DeleteProject(c *gin.Context) {
 // @Success 200 string {string} json "{"projects": "projects"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to list archived projects"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/project-list/archived [get]
 func ListArchivedProjects(c *gin.Context) {
 	userInContext, exists := c.Get("user")
@@ -267,6 +271,7 @@ func ListArchivedProjects(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Project archived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to archive project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/project-list/{project_id}/archive [put]
 func ArchiveProject(c *gin.Context) {
 	// Retrieve user from context
@@ -317,6 +322,7 @@ func ArchiveProject(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Project unarchived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to unarchive project"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/project-list/{project_id}/unarchive [put]
 func UnarchiveProject(c *gin.Context) {
 	// Retrieve user from context

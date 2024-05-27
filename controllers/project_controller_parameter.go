@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
 	"strconv"
@@ -34,6 +35,7 @@ type parameterResponse struct {
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project parameters"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters [get]
 func GetProjectParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
@@ -122,6 +124,7 @@ func GetProjectParameters(c *gin.Context) {
 // @Success 200 {object} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get parameter"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id} [get]
 func GetParameterByID(c *gin.Context) {
 	projectID := c.Param("project_id")
@@ -160,6 +163,7 @@ func GetParameterByID(c *gin.Context) {
 // @Param project_id path string true "Project ID"
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get latest parameter"}"
 // @Router /api/v1/projects/{project_id}/parameters/ [get]
 func GetLatestParameters(c *gin.Context) {
@@ -170,13 +174,102 @@ func GetLatestParameters(c *gin.Context) {
 	}
 
 	var project models.Project
-	if err := DB.First(&project, projectID).Error; err != nil {
+	if err := DB.
+		Preload("Versions").
+		Preload("Versions.Parameters", "is_archived = ? ", false).
+		First(&project, projectID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
 		return
+	}
+	for index, version := range project.Versions {
+		fmt.Printf("%d %s\n", index, version.Number)
 	}
 	latestVersion := project.Versions[len(project.Versions)-1]
 
 	c.JSON(http.StatusOK, gin.H{"parameters": latestVersion.Parameters})
+}
+
+// Download lastest parameters in project, send file to client
+// @Summary Download lastest parameters in project
+// @Description Download lastest parameters in project
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce octet-stream
+// @Param project_id path string true "Project ID"
+// @Success 200 {array} models.Parameter
+// @Security ApiKeyAuth
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get latest parameter"}"
+// @Router /api/v1/projects/{project_id}/parameters/download [get]
+func DownloadLatestParameters(c *gin.Context) {
+	projectID := c.Param("project_id")
+	var project models.Project
+	if err := DB.
+		Preload("LatestVersion").
+		Preload("LatestVersion.Parameters", "is_archived = ? ", false).
+		Preload("LatestVersion.Parameters.Stage").
+		Preload("LatestVersion.Parameters.Environment").
+		Preload("Stages", "is_archived = ? ", false).
+		Preload("Environments", "is_archived = ? ", false).
+		Preload("Workflows").
+		First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	// fmt.Println("Debug parameters", project.Versions)
+	for index, version := range project.Versions {
+		fmt.Printf("%d %s\n", index, version.Number)
+	}
+	latestVersion := project.LatestVersion
+	parameters := latestVersion.Parameters
+	// fmt.Println("Debug parameters", parameters)
+	// Create a new file
+	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, latestVersion.Number)
+	file, err := os.Create(filepath) // format KEY=VALUE is paramter.Name=parameter.Value
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file"})
+		return
+	}
+	defer file.Close()
+	_, err = file.WriteString(fmt.Sprintf("######## Project: %s\n######## Version: %s \n", project.Name, latestVersion.Number))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write project Name to file"})
+		return
+	}
+	for _, environment := range project.Environments {
+		_, err := file.WriteString(fmt.Sprintf("########## ENVIRONMENT : %s ###########\n", environment.Name))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write environment to file"})
+			return
+		}
+		for _, stage := range project.Stages {
+			_, err := file.WriteString(fmt.Sprintf("\n#### STAGE : %s\n", stage.Name))
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write stage to file"})
+				return
+			}
+			for _, parameter := range parameters {
+				if parameter.EnvironmentID == environment.ID && parameter.StageID == stage.ID {
+					_, err = file.WriteString(fmt.Sprintf("%s=%s\n", parameter.Name, parameter.Value))
+					if err != nil {
+						c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file"})
+						return
+					}
+				}
+			}
+		}
+		_, err = file.WriteString(fmt.Sprintf("\n##############################################\n"))
+	}
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename="+filepath)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.File(filepath)
+	// err = os.Remove(filepath)
+	// if err != nil {
+	// 	log.Println("Failed to remove file")
+	// }
 }
 
 // CreateParameter godoc
@@ -190,6 +283,7 @@ func GetLatestParameters(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Parameter created"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create parameter"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters [post]
 func CreateParameter(c *gin.Context) {
 	projectID := c.Param("project_id")
@@ -321,6 +415,7 @@ func CreateParameter(c *gin.Context) {
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get archived parameters"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/archived [get]
 func GetArchivedParameters(c *gin.Context) {
 	projectID := c.Param("project_id")
@@ -342,6 +437,7 @@ func GetArchivedParameters(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Parameter archived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to archive parameter"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id}/archive [put]
 func ArchiveParameter(c *gin.Context) {
 	user, exist := c.Get("user")
@@ -412,6 +508,7 @@ func ArchiveParameter(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Parameter unarchived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to unarchive parameter"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive [put]
 func UnarchiveParameter(c *gin.Context) {
 	user, exist := c.Get("user")
@@ -483,6 +580,7 @@ func UnarchiveParameter(c *gin.Context) {
 // @Success 200 string {string} json "{"message": "Parameter updated"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to update parameter"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/{parameter_id} [put]
 func UpdateParameter(c *gin.Context) {
 	startTime := time.Now()
@@ -726,6 +824,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 // @Success 200 string {string} json "{"message": "Parameters applied"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to apply parameters"}"
+// @Security ApiKeyAuth
 // @Router /api/v1/projects/{project_id}/parameters/apply [post]
 func ApplyParametersInProject(c *gin.Context) {
 	startTime := time.Now()

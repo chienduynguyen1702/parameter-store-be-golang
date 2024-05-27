@@ -35,6 +35,7 @@ type agentResponse struct {
 // @Produce json
 // @Param project_id path int true "Project ID"
 // @Success 200 {array}	 controllers.agentResponse
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
 // @Router /api/v1/projects/{project_id}/agents [get]
@@ -96,6 +97,7 @@ func GetAgents(c *gin.Context) {
 // @Param project_id path int true "Project ID"
 // @Success 200 {object} models.Agent
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get agent by ID"}"
 // @Router /api/v1/projects/{project_id}/agents/{agent_id} [get]
 func GetAgentDetail(c *gin.Context) {
@@ -145,6 +147,7 @@ func GetAgentDetail(c *gin.Context) {
 // @Param project_id path int true "Project ID"
 // @Success 200 {array}	 models.Agent
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to get agents"}"
 // @Router /api/v1/projects/{project_id}/agents/archived [get]
 func GetArchivedAgents(c *gin.Context) {
@@ -186,6 +189,7 @@ func GetArchivedAgents(c *gin.Context) {
 // @Param project_id path int true "Project ID"
 // @Success 200 string {string} json "{"message": "Agent archived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to archive agent"}"
 // @Router /api/v1/projects/{project_id}/agents/{agent_id}/archive [put]
 func ArchiveAgent(c *gin.Context) {
@@ -239,6 +243,7 @@ func ArchiveAgent(c *gin.Context) {
 // @Param project_id path int true "Project ID"
 // @Success 200 string {string} json "{"message": "Agent unarchived"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to unarchive agent"}"
 // @Router /api/v1/projects/{project_id}/agents/{agent_id}/unarchive [put]
 func RestoreAgent(c *gin.Context) {
@@ -288,6 +293,7 @@ type agentRequestBody struct {
 // @Param project_id path int true "Project ID"
 // @Param Agent body controllers.agentRequestBody true "Agent"
 // @Success 200 string {string} json "{"message": "Agent created"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to create agent"}"
 // @Router /api/v1/projects/{project_id}/agents [post]
@@ -371,6 +377,7 @@ func CreateNewAgent(c *gin.Context) {
 // @Param Agent body controllers.agentRequestBody true "Agent"
 // @Success 200 string {string} json "{"message": "Agent updated"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Security ApiKeyAuth
 // @Failure 500 string {string} json "{"error": "Failed to update agent"}"
 // @Router /api/v1/projects/{project_id}/agents/{agent_id} [put]
 func UpdateAgent(c *gin.Context) {
@@ -455,6 +462,7 @@ type requestAuthAgentBody struct {
 // @Produce json
 // @Param requestAuthAgentBody body controllers.requestAuthAgentBody true "Request Auth Agent Body"
 // @Success 200 string {string} json "{"message": "Parameter retrieved"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to retrieve parameter"}"
 // @Router /api/v1/agents/auth-parameters [post]
@@ -519,6 +527,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 // @Produce json
 // @Param agent_id path string true "Agent ID"
 // @Success 200 string {string} json "{"message": "rerun workflow by agent"}"
+// @Security ApiKeyAuth
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to rerun workflow by agent"}"
 // @Router /api/v1/agents/{agent_id}/rerun-workflow [post]
