@@ -215,6 +215,10 @@ func DownloadLatestParameters(c *gin.Context) {
 	queryStages := c.QueryArray("stages[]")
 	queryEnvironments := c.QueryArray("environments[]")
 	version := c.Query("version")
+	singleStage := c.Query("stages")
+	singleEnvironment := c.Query("environments")
+	filteredStage := append(queryStages, singleStage)
+	filteredEnvironment := append(queryEnvironments, singleEnvironment)
 
 	var project models.Project
 	var selectedVersion models.Version
@@ -248,9 +252,9 @@ func DownloadLatestParameters(c *gin.Context) {
 		selectedVersion = project.LatestVersion
 	}
 	// Filter parameters by stages
-	if len(queryStages) > 0 {
+	if len(filteredStage) > 0 {
 		var filteredParameters []models.Parameter
-		for _, stage := range queryStages {
+		for _, stage := range filteredStage {
 			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Stage.Name == stage {
 					filteredParameters = append(filteredParameters, parameter)
@@ -260,9 +264,9 @@ func DownloadLatestParameters(c *gin.Context) {
 		selectedVersion.Parameters = filteredParameters
 	}
 	// Filter parameters by environments
-	if len(queryEnvironments) > 0 {
+	if len(filteredEnvironment) > 0 {
 		var filteredParameters []models.Parameter
-		for _, environment := range queryEnvironments {
+		for _, environment := range filteredEnvironment {
 			for _, parameter := range selectedVersion.Parameters {
 				if parameter.Environment.Name == environment {
 					filteredParameters = append(filteredParameters, parameter)
@@ -288,7 +292,7 @@ func DownloadLatestParameters(c *gin.Context) {
 		return
 	}
 	for _, environment := range project.Environments {
-		if !isIn(queryEnvironments, environment.Name) {
+		if !isIn(filteredEnvironment, environment.Name) {
 			continue
 		}
 		_, err := file.WriteString(fmt.Sprintf("\n########## ENVIRONMENT : %s ###########\n", environment.Name))
@@ -297,7 +301,7 @@ func DownloadLatestParameters(c *gin.Context) {
 			return
 		}
 		for _, stage := range project.Stages {
-			if !isIn(queryStages, stage.Name) {
+			if !isIn(filteredStage, stage.Name) {
 				continue
 			}
 			_, err := file.WriteString(fmt.Sprintf("\n#### STAGE : %s\n", stage.Name))
