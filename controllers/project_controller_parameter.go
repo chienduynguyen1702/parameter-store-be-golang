@@ -52,6 +52,9 @@ func GetProjectParameters(c *gin.Context) {
 	// Get project by ID
 	var project models.Project
 	var selectedVersion models.Version
+	// query := DB.Raw("SELECT * FROM projects WHERE id = ?", projectID).
+	// Joins("LEFT JOIN versions ON projects.id = versions.project_id").
+
 	if version != "" {
 		if err := DB.Preload("Versions", "number = ?", version).
 			// where parameter is not archived
@@ -101,7 +104,7 @@ func GetProjectParameters(c *gin.Context) {
 		}
 		selectedVersion.Parameters = filteredParameters
 	}
-
+	fmt.Print("Debug selectedVersion.Parameters", selectedVersion.Parameters)
 	totalParam := len(selectedVersion.Parameters)
 	var paginatedListParams []models.Parameter
 	if page != "" && limit != "" {

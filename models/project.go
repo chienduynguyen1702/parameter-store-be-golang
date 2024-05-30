@@ -21,7 +21,7 @@ type Project struct {
 	IsArchived      bool              `gorm:"default:false" json:"is_archived"`
 	ArchivedBy      string            `gorm:"foreignKey:ArchivedBy" json:"archived_by"` // foreign key to user model
 	ArchivedAt      time.Time         `gorm:"type:timestamp;" json:"archived_at"`
-	LatestVersionID uint              `json:"latest_version_id"`
+	LatestVersionID uint              `gorm:"foreignKey:LatestVersionID" json:"latest_version_id"`
 	AutoUpdate      bool              `gorm:"default:true" json:"auto_update"`
 	LatestVersion   Version           `gorm:"foreignKey:LatestVersionID" json:"latest_version"`
 	Stages          []Stage           `gorm:"one2many:project_stages;" json:"stages"`
