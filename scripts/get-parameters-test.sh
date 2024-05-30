@@ -54,11 +54,6 @@ status_code=$(echo "$headers" | grep HTTP | awk '{print $2}')
 
 timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
-if [ "$status_code" == "200" ]; then
-    echo "Parameters retrieved successfully."
-    echo "$timestamp $status_code Parameters retrieved successfully." >> "$log_file"
-    exit 1
-fi
 if [ "$status_code" == "401" ]; then
     echo "Unauthorized. Check the API token."
     echo "$timestamp $status_code Unauthorized. Check the API token." >> "$log_file"
@@ -87,5 +82,9 @@ if [ -z "$parameters" ]; then
     exit 1
 fi
 
+if [ "$status_code" == "200" ]; then
+    echo "Parameters retrieved successfully."
+    echo "$timestamp $status_code Parameters retrieved successfully." >> "$log_file"
+fi
 echo "$parameters" > "$output_file"
 echo "Parameters written to $output_file successfully."
