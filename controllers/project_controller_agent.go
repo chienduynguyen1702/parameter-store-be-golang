@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
 	"strconv"
@@ -512,11 +513,37 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	}
 	latency := time.Since(startTime)
 	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)
-	c.JSON(http.StatusOK, gin.H{
-		"status":     http.StatusOK,
-		"message":    "Parameter retrieved",
-		"parameters": project.LatestVersion.Parameters,
-	})
+
+	// Create a new file
+	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, project.LatestVersion.Number)
+	file, err := os.Create(filepath) // format KEY=VALUE is paramter.Name=parameter.Value
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create file"})
+		return
+	}
+	for _, parameter := range project.LatestVersion.Parameters {
+		_, err := file.WriteString(fmt.Sprintf("%s=%s\n", parameter.Name, parameter.Value))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file"})
+			return
+		}
+	}
+
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename="+filepath)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.File(filepath)
+	err = os.Remove(filepath)
+	if err != nil {
+		log.Println("Failed to remove file")
+	}
+
+	// c.JSON(http.StatusOK, gin.H{
+	// 	"status":     http.StatusOK,
+	// 	"message":    "Parameter retrieved",
+	// 	"parameters": project.LatestVersion.Parameters,
+	// })
 }
 
 // RerunWorkFlowByAgent godoc
