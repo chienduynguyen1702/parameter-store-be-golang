@@ -51,61 +51,42 @@ func GetProjectParameters(c *gin.Context) {
 	// fmt.Println("Debug version", version)
 	// Get project by ID
 	var project models.Project
-	var selectedVersion models.Version
-	// query := DB.Raw("SELECT * FROM projects WHERE id = ?", projectID).
-	// Joins("LEFT JOIN versions ON projects.id = versions.project_id").
-
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	var parameters []models.Parameter
+	query := DB.Table("parameters").Select("parameters.*").Preload("Stage").Preload("Environment")
 	if version != "" {
-		if err := DB.Preload("Versions", "number = ?", version).
-			// where parameter is not archived
-			Preload("Versions.Parameters", "is_archived = ?", false).
-			Preload("Versions.Parameters.Stage").
-			Preload("Versions.Parameters.Environment").
-			First(&project, projectID).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
-			return
-		}
-		//debug version of project
-		selectedVersion = project.Versions[0]
+		query = query.
+			Joins("LEFT JOIN version_parameters ON version_parameters.parameter_id = parameters.id").
+			Joins("LEFT JOIN versions ON versions.id = version_parameters.version_id").
+			Where("versions.number = ?", version)
 	} else {
-		if err := DB.
-			Preload("LatestVersion").
-			// where parameter is not archived
-			Preload("LatestVersion.Parameters", "is_archived = ?", false).
-			Preload("LatestVersion.Parameters.Stage").
-			Preload("LatestVersion.Parameters.Environment").
-			First(&project, projectID).Error; err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
-			return
-		}
-		selectedVersion = project.LatestVersion
+		query = query.
+			Joins("LEFT JOIN version_parameters ON version_parameters.parameter_id = parameters.id").
+			Joins("LEFT JOIN versions ON versions.id = version_parameters.version_id").
+			Where("versions.id = ?", project.LatestVersionID)
 	}
-	// Filter parameters by stages
-	if len(filteredStage) > 0 {
-		var filteredParameters []models.Parameter
-		for _, stage := range filteredStage {
-			for _, parameter := range selectedVersion.Parameters {
-				if parameter.Stage.Name == stage {
-					filteredParameters = append(filteredParameters, parameter)
-				}
-			}
-		}
-		selectedVersion.Parameters = filteredParameters
+	if len(filteredStage) > 0 && filteredStage[0] != "" {
+		fmt.Println("Debug filteredStage", filteredStage, len(filteredStage))
+		query = query.
+			Joins("LEFT JOIN stages ON parameters.stage_id = stages.id").
+			Where("stages.name IN (?)", filteredStage)
 	}
-	// Filter parameters by environments
-	if len(filteredEnvironment) > 0 {
-		var filteredParameters []models.Parameter
-		for _, environment := range filteredEnvironment {
-			for _, parameter := range selectedVersion.Parameters {
-				if parameter.Environment.Name == environment {
-					filteredParameters = append(filteredParameters, parameter)
-				}
-			}
-		}
-		selectedVersion.Parameters = filteredParameters
+	if len(filteredEnvironment) > 0 && filteredEnvironment[0] != "" {
+		fmt.Println("Debug filteredEnvironment", filteredEnvironment, len(filteredEnvironment))
+		query = query.
+			Joins("LEFT JOIN environments ON parameters.environment_id = environments.id").
+			Where("environments.name IN (?)", filteredEnvironment)
 	}
-	fmt.Print("Debug selectedVersion.Parameters", selectedVersion.Parameters)
-	totalParam := len(selectedVersion.Parameters)
+	query = query.Where("parameters.is_archived = ? AND parameters.project_id = ?", false, projectID)
+	query.Find(&parameters)
+	// fmt.Println("Debug query parameters", parameters)
+	for _, p := range parameters {
+		fmt.Printf("%s=%s\n", p.Name, p.Value)
+	}
+	totalParam := len(parameters)
 	var paginatedListParams []models.Parameter
 	if page != "" && limit != "" {
 		pageInt, err := strconv.Atoi(page)
@@ -118,7 +99,7 @@ func GetProjectParameters(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid limit number"})
 			return
 		}
-		paginatedListParams = paginationDataParam(selectedVersion.Parameters, pageInt, limitInt)
+		paginatedListParams = paginationDataParam(parameters, pageInt, limitInt)
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"parameters": paginatedListParams,
