@@ -21,4 +21,6 @@ type User struct {
 	ArchivedAt          time.Time `gorm:"type:timestamp;" json:"archived_at"`
 	AvatarURL           string    `gorm:"type:varchar(255);" json:"avatar_url"`
 	LastLogin           time.Time `gorm:"type:timestamp;" json:"last_login"`
+
+	UserRoleProjects []UserRoleProject `gorm:"foreignKey:UserID" json:"user_role_projects"`
 }

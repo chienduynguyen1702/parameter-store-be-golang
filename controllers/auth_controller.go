@@ -98,14 +98,17 @@ func Login(c *gin.Context) {
 
 	// Check if the organization exists in the database
 	if err := DB.Where("name = ?", l.OrganizationName).First(&organization).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to login user"})
 		return
 	}
 
 	var user models.User
 	// Check if the user exists in the database by email and organization_name
-	if err := DB.Where("email = ? AND organization_id = ?", l.Email, organization.ID).First(&user).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
+	if err := DB.
+		Where("email = ? AND organization_id = ?", l.Email, organization.ID).
+		Preload("UserRoleProjects").
+		First(&user).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to login user"})
 		return
 	}
 
@@ -121,11 +124,18 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to login user"})
 		return
 	}
-
+	// find project_id that user is admin of
+	var projectIDs []uint
+	for _, urp := range user.UserRoleProjects {
+		if urp.RoleID == 2 {
+			projectIDs = append(projectIDs, urp.ProjectID)
+		}
+	}
 	responseLogedInUser.Username = user.Username
 	responseLogedInUser.Email = user.Email
 	responseLogedInUser.OrganizationID = user.OrganizationID
 	responseLogedInUser.IsOrganizationAdmin = user.IsOrganizationAdmin
+	responseLogedInUser.IsAdminOfProjects = projectIDs
 	// Generate a JWT token
 	jwtToken, err := generateJWTToken(user)
 	if err != nil {
@@ -161,6 +171,7 @@ var responseLogedInUser struct {
 	Email               string `json:"email"`
 	OrganizationID      uint   `json:"organization_id"`
 	IsOrganizationAdmin bool   `json:"is_organization_admin"`
+	IsAdminOfProjects   []uint `json:"is_admin_of_projects"`
 }
 
 // Validate validates a user by cookie
