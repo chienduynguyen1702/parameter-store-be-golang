@@ -11,5 +11,6 @@ func setupGroupAgent(r *gin.RouterGroup) {
 	{
 		agentGroup.POST("/:agent_id/rerun-workflow", controllers.RerunWorkFlowByAgent)
 		agentGroup.POST("/auth-parameters", controllers.GetParameterByAuthAgent)
+		agentGroup.GET("/download", controllers.DownloadAgentScript)
 	}
 }

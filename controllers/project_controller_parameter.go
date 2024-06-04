@@ -69,13 +69,13 @@ func GetProjectParameters(c *gin.Context) {
 			Where("versions.id = ?", project.LatestVersionID)
 	}
 	if len(filteredStage) > 0 && filteredStage[0] != "" {
-		fmt.Println("Debug filteredStage", filteredStage, len(filteredStage))
+		// fmt.Println("Debug filteredStage", filteredStage, len(filteredStage))
 		query = query.
 			Joins("LEFT JOIN stages ON parameters.stage_id = stages.id").
 			Where("stages.name IN (?)", filteredStage)
 	}
 	if len(filteredEnvironment) > 0 && filteredEnvironment[0] != "" {
-		fmt.Println("Debug filteredEnvironment", filteredEnvironment, len(filteredEnvironment))
+		// fmt.Println("Debug filteredEnvironment", filteredEnvironment, len(filteredEnvironment))
 		query = query.
 			Joins("LEFT JOIN environments ON parameters.environment_id = environments.id").
 			Where("environments.name IN (?)", filteredEnvironment)
@@ -83,9 +83,9 @@ func GetProjectParameters(c *gin.Context) {
 	query = query.Where("parameters.is_archived = ? AND parameters.project_id = ?", false, projectID)
 	query.Find(&parameters)
 	// fmt.Println("Debug query parameters", parameters)
-	for _, p := range parameters {
-		fmt.Printf("%s=%s\n", p.Name, p.Value)
-	}
+	// for _, p := range parameters {
+	// 	fmt.Printf("%s=%s\n", p.Name, p.Value)
+	// }
 	totalParam := len(parameters)
 	var paginatedListParams []models.Parameter
 	if page != "" && limit != "" {

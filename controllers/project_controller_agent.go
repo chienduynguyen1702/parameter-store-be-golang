@@ -611,3 +611,30 @@ func RerunWorkFlowByAgent(c *gin.Context) {
 		"message": responseBodyMessage,
 	})
 }
+
+// DownloadAgentScript godoc
+// @Summary Download agent script
+// @Description Download agent script
+// @Tags Agents
+// @Accept json
+// @Produce json
+// @Success 200 string {string} json "{"message": "Agent script downloaded"}"
+// @Security ApiKeyAuth
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to download agent script"}"
+// @Router /api/v1/agents/download [get]
+func DownloadAgentScript(c *gin.Context) {
+	// Read the file from ./scripts/get-parameters.sh then return it to the client
+	filepath := "scripts/get-parameters-datn-server.sh"
+	// check if file exists
+	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+		c.JSON(http.StatusNotFound, gin.H{"error": "File not found in server"})
+		return
+	}
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename=get-parameters-datn-server.sh")
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+
+	c.File(filepath)
+}

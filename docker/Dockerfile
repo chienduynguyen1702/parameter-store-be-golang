@@ -26,6 +26,7 @@ WORKDIR /root/
 # Copy the binary from the builder stage to the current stage
 COPY --from=builder /app/main ./main
 
+COPY scripts/ scripts/
 # Expose port 8080 to the outside world
 EXPOSE 8080
 
