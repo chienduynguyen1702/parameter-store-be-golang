@@ -91,19 +91,29 @@ func CreateNewProject(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	// Create a new project3
 	project := models.Project{
-		OrganizationID: userOrganizationID,
-		Name:           requestBody.Name,
-		Description:    requestBody.Description,
-		StartAt:        time.Now(),
-		Status:         "In Progress",
-		CurrentSprint:  "1",
-		RepoURL:        "github.com/OWNER/REPO",
+		OrganizationID:  userOrganizationID,
+		Name:            requestBody.Name,
+		Description:     requestBody.Description,
+		StartAt:         time.Now(),
+		Status:          "In Progress",
+		CurrentSprint:   "1",
+		RepoURL:         "github.com/OWNER/REPO",
+		LatestVersionID: 1,
 	}
 	// Save the new project to the database
 	DB.Create(&project)
+	initVersion := models.Version{
+		Number:      "1.0.0",
+		Name:        "1.0.0",
+		ProjectID:   project.ID,
+		Description: "Initial version",
+	}
+	DB.Create(&initVersion)
+
+	project.LatestVersionID = initVersion.ID
+	DB.Save(&project)
 
 	newStages := []models.Stage{
 		{
