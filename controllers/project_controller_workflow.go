@@ -62,8 +62,10 @@ func GetProjectWorkflows(c *gin.Context) {
 				log.Println(err.Error())
 				c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse lastestWorkflowRunID to int"})
 			}
-
-			// log.Println("Last attempt number: ", lastAttemptNumber)
+			// log.Println("workflow ID  : ", workflow.ID)
+			// log.Println("workflow Name: ", workflow.Name)
+			// log.Println("Lastest workflow run ID: ", lastestWorkflowRunID)
+			// log.Println("Last attempt number  : ", lastAttemptNumber)
 			var wf models.Workflow
 			result := DB.Where("workflow_id = ? AND project_id = ?", workflow.ID, project.ID).First(&wf)
 			if result.RowsAffected == 0 {

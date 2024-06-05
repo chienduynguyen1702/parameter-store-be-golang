@@ -782,7 +782,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	var usedAgent models.Agent
 	if err := DB.
 		Preload("Agents", "stage_id = ? AND environment_id = ?", updatedStageID, updatedEnvironmentID).
-		// Preload("Agents.Workflow").
+		Preload("Agents.Workflow").
 		First(&project, updatedProjectID).Error; err != nil {
 		return http.StatusInternalServerError, 0, "Failed to get project to rerun cicd", err
 	}
@@ -791,7 +791,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 	} else {
 		usedAgent = project.Agents[0]
 		// log.Println("Agents of project", project.Agents)
-		if usedAgent.WorkflowName == "" {
+		if usedAgent.Workflow.Name == "" {
 			return http.StatusBadRequest, 0, "Failed to get agent workflow name to rerun cicd", nil
 		}
 	}
@@ -807,6 +807,7 @@ func rerunCICDWorkflow(updatedProjectID uint, updatedStageID uint, updatedEnviro
 		return http.StatusNotFound, 0, "Failed to parse repo URL to rerun cicd", err
 	}
 	startTime := time.Now()
+	// log.Println("usedAgent.WorkflowName in rerunCICDWorkflow", usedAgent.Workflow.Name)
 	responseStatusCode, responseMessage, err := github.RerunWorkFlow(githubRepository.Owner, githubRepository.Name, usedAgent.WorkflowName, project.RepoApiToken)
 	latency := time.Since(startTime)
 

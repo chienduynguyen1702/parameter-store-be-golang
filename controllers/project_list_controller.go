@@ -114,7 +114,8 @@ func CreateNewProject(c *gin.Context) {
 
 	project.LatestVersionID = initVersion.ID
 	DB.Save(&project)
-
+	// remove versionid 1 from project
+	// DB.Delete()
 	newStages := []models.Stage{
 		{
 			Name:        "Build",
