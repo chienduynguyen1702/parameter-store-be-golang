@@ -195,11 +195,24 @@ func Validate(c *gin.Context) {
 	}
 	// set login time
 	validatedUser := user.(models.User)
-
+	// retrieve project_id that user is admin of
+	// find user
+	var checkUser models.User
+	if err := DB.Preload("UserRoleProjects").First(&checkUser, validatedUser.ID).Error; err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Failed to validate user"})
+		return
+	}
+	var projectIDs []uint
+	for _, urp := range checkUser.UserRoleProjects {
+		if urp.RoleID == 2 {
+			projectIDs = append(projectIDs, urp.ProjectID)
+		}
+	}
 	responseLogedInUser.Username = validatedUser.Username
 	responseLogedInUser.Email = validatedUser.Email
 	responseLogedInUser.OrganizationID = validatedUser.OrganizationID
 	responseLogedInUser.IsOrganizationAdmin = validatedUser.IsOrganizationAdmin
+	responseLogedInUser.IsAdminOfProjects = projectIDs
 
 	// log.Println("user: %v", validatedUser)
 	// if err := DB.First(&validatedUser, validatedUser.ID).Error; err != nil {
