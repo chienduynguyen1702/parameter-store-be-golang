@@ -48,7 +48,9 @@ func GetAgents(c *gin.Context) {
 	}
 	var agents []models.Agent
 	DB.Preload("Stage").Preload("Environment").Preload("Workflow").
-		Where("project_id = ? AND is_archived != ?", projectID, true).Find(&agents)
+		Where("project_id = ? AND is_archived != ?", projectID, true).
+		Order("agents.environment_id DESC").
+		Order("agents.stage_id DESC").Find(&agents)
 	totalAgents := len(agents)
 	page := c.Query("page")
 	limit := c.Query("limit")

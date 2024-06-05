@@ -80,7 +80,9 @@ func GetProjectParameters(c *gin.Context) {
 			Joins("LEFT JOIN environments ON parameters.environment_id = environments.id").
 			Where("environments.name IN (?)", filteredEnvironment)
 	}
-	query = query.Where("parameters.is_archived = ? AND parameters.project_id = ?", false, projectID)
+	query = query.Where("parameters.is_archived = ? AND parameters.project_id = ?", false, projectID).
+		Order("parameters.environment_id DESC").
+		Order("parameters.stage_id DESC")
 	query.Find(&parameters)
 	// fmt.Println("Debug query parameters", parameters)
 	// for _, p := range parameters {
