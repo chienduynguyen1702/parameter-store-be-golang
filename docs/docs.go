@@ -17,6 +17,11 @@ const docTemplate = `{
     "paths": {
         "/api/v1/agents/auth-parameters": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get parameter by auth agent",
                 "consumes": [
                     "application/json"
@@ -61,8 +66,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/agents/download": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Download agent script",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Agents"
+                ],
+                "summary": "Download agent script",
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Agent script downloaded\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to download agent script\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/agents/{agent_id}/rerun-workflow": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Rerun workflow by agent",
                 "consumes": [
                     "application/json"
@@ -159,6 +209,11 @@ const docTemplate = `{
         },
         "/api/v1/auth/logout": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Logout a user",
                 "consumes": [
                     "application/json"
@@ -286,6 +341,11 @@ const docTemplate = `{
         },
         "/api/v1/envs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all environments",
                 "consumes": [
                     "application/json"
@@ -488,6 +548,9 @@ const docTemplate = `{
         "/api/v1/organizations/{organization_id}": {
             "put": {
                 "security": [
+                    {
+                        "ApiKeyAuth": []
+                    },
                     {
                         "ApiKeyAuth": []
                     }
@@ -870,6 +933,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/agents": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get agents of project",
                 "consumes": [
                     "application/json"
@@ -915,6 +983,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create new agent",
                 "consumes": [
                     "application/json"
@@ -968,6 +1041,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/agents/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get archived agents of project",
                 "consumes": [
                     "application/json"
@@ -1015,6 +1093,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/agents/{agent_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get agent detail",
                 "consumes": [
                     "application/json"
@@ -1064,6 +1147,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update agent",
                 "consumes": [
                     "application/json"
@@ -1124,6 +1212,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/agents/{agent_id}/archive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive agent",
                 "consumes": [
                     "application/json"
@@ -1175,6 +1268,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/agents/{agent_id}/unarchive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unarchive agent",
                 "consumes": [
                     "application/json"
@@ -1226,6 +1324,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/dashboard/logs": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get project dashboard logs",
                 "consumes": [
                     "application/json"
@@ -1294,6 +1397,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/dashboard/totals": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get dashboard data",
                 "consumes": [
                     "application/json"
@@ -1338,6 +1446,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/environments": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all environments in a project",
                 "consumes": [
                     "application/json"
@@ -1380,6 +1493,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create a environment in a project",
                 "consumes": [
                     "application/json"
@@ -1433,6 +1551,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/environments/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all archived environments in a project",
                 "consumes": [
                     "application/json"
@@ -1477,6 +1600,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/environments/{environment_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get a environment in a project",
                 "consumes": [
                     "application/json"
@@ -1526,6 +1654,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update a environment in a project",
                 "consumes": [
                     "application/json"
@@ -1586,6 +1719,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/environments/{environment_id}/archive": {
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive a environment in a project",
                 "consumes": [
                     "application/json"
@@ -1637,6 +1775,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/environments/{environment_id}/unarchive": {
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unarchive a environment in a project",
                 "consumes": [
                     "application/json"
@@ -1688,6 +1831,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/overview": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get project overview",
                 "consumes": [
                     "application/json"
@@ -1730,6 +1878,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update project information",
                 "consumes": [
                     "application/json"
@@ -1783,6 +1936,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/overview/add-user": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Add user to project include role",
                 "consumes": [
                     "application/json"
@@ -1836,6 +1994,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/overview/remove-user/{user_id}": {
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Remove user from project",
                 "consumes": [
                     "application/json"
@@ -1887,6 +2050,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/overview/update-user/{user_id}": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update user in project",
                 "consumes": [
                     "application/json"
@@ -1998,6 +2166,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get project parameters",
                 "consumes": [
                     "application/json"
@@ -2043,6 +2216,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create new parameter",
                 "consumes": [
                     "application/json"
@@ -2096,6 +2274,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters/": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get latest parameter",
                 "consumes": [
                     "application/json"
@@ -2143,6 +2326,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters/apply": {
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Apply parameters in project",
                 "consumes": [
                     "application/json"
@@ -2187,6 +2375,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get archived parameters",
                 "consumes": [
                     "application/json"
@@ -2284,8 +2477,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/parameters/download-template": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Download execel template parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/octet-stream"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Download execel template parameters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Parameter"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/parameters/{parameter_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get parameter by ID",
                 "consumes": [
                     "application/json"
@@ -2335,6 +2573,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update parameter",
                 "consumes": [
                     "application/json"
@@ -2395,6 +2638,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters/{parameter_id}/archive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive parameter",
                 "consumes": [
                     "application/json"
@@ -2446,6 +2694,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unarchive parameter",
                 "consumes": [
                     "application/json"
@@ -2497,6 +2750,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/stages": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all stages in a project",
                 "consumes": [
                     "application/json"
@@ -2539,6 +2797,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create a stage in a project",
                 "consumes": [
                     "application/json"
@@ -2592,6 +2855,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/stages/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all archived stages in a project",
                 "consumes": [
                     "application/json"
@@ -2636,6 +2904,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/stages/{stage_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get a stage in a project",
                 "consumes": [
                     "application/json"
@@ -2685,6 +2958,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update a stage in a project",
                 "consumes": [
                     "application/json"
@@ -2745,6 +3023,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/stages/{stage_id}/archive": {
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive a stage in a project",
                 "consumes": [
                     "application/json"
@@ -2796,6 +3079,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/stages/{stage_id}/unarchive": {
             "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Unarchive a stage in a project",
                 "consumes": [
                     "application/json"
@@ -2847,6 +3135,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/tracking": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get project tracking",
                 "consumes": [
                     "application/json"
@@ -2891,6 +3184,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/versions": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get versions of project",
                 "consumes": [
                     "application/json"
@@ -2936,6 +3234,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create new version",
                 "consumes": [
                     "application/json"
@@ -2989,6 +3292,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/workflows": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get project workflows",
                 "consumes": [
                     "application/json"
@@ -3033,6 +3341,11 @@ const docTemplate = `{
         },
         "/api/v1/projects/{project_id}/workflows/{workflow_id}/run": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get workflow process",
                 "consumes": [
                     "application/json"
@@ -3084,6 +3397,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/roles": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "List roles and its permissions",
                 "consumes": [
                     "application/json"
@@ -3119,6 +3437,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/users": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "List users",
                 "consumes": [
                     "application/json"
@@ -3152,6 +3475,11 @@ const docTemplate = `{
                 }
             },
             "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Create user",
                 "consumes": [
                     "application/json"
@@ -3198,6 +3526,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/users/archived": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "List archived users",
                 "consumes": [
                     "application/json"
@@ -3233,6 +3566,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/users/{user_id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get user by ID",
                 "consumes": [
                     "application/json"
@@ -3275,6 +3613,11 @@ const docTemplate = `{
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update user information",
                 "consumes": [
                     "application/json"
@@ -3326,6 +3669,11 @@ const docTemplate = `{
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Delete user including all its data in user_project_role table",
                 "consumes": [
                     "application/json"
@@ -3370,6 +3718,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/users/{user_id}/archive": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Archive user",
                 "consumes": [
                     "application/json"
@@ -3414,6 +3767,11 @@ const docTemplate = `{
         },
         "/api/v1/settings/users/{user_id}/restore": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Restore archived user",
                 "consumes": [
                     "application/json"
@@ -3458,6 +3816,11 @@ const docTemplate = `{
         },
         "/api/v1/stages": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get all stages",
                 "consumes": [
                     "application/json"

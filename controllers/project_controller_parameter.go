@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/xuri/excelize/v2"
 )
 
 type parameterResponse struct {
@@ -960,4 +961,87 @@ func ApplyParametersInProject(c *gin.Context) {
 		"latency": latency,
 		"message": "Parameters applied. Started rerun cicd. Check github actions of the project's repo.",
 	})
+}
+
+// DownloadExecelTemplateParameters godoc
+// @Summary Download execel template parameters
+// @Description Download execel template parameters
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce octet-stream
+// @Param project_id path string true "Project ID"
+// @Success 200 {array} models.Parameter
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/parameters/download-template [get]
+func DownloadExecelTemplateParameters(c *gin.Context) {
+	project_id := c.Param("project_id")
+
+	var project models.Project
+	if err := DB.
+		Preload("Stages", "is_archived = ?", false).
+		Preload("Environments", "is_archived = ?", false).
+		First(&project, project_id).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+
+	// Create a new file
+	// log.Println("Creating file")
+	stages := project.Stages
+	envs := project.Environments
+	// fmt.Println("stages", stages)
+	// fmt.Println("envs", envs)
+
+	newFile := excelize.NewFile()
+
+	// file data to first sheet of created file
+	newFile.SetSheetName("Sheet1", "Parameters")
+
+	// set header of file
+	// | Parameter Name | Value | Description | Stage | Environment |
+	newFile.SetCellValue("Parameters", "A1", "Parameter Name")
+	newFile.SetCellValue("Parameters", "B1", "Value")
+	newFile.SetCellValue("Parameters", "C1", "Description")
+	newFile.SetCellValue("Parameters", "D1", "Stage")
+	newFile.SetCellValue("Parameters", "E1", "Environment")
+
+	// create template parameters by envs and stages in project
+	row := 2
+	for _, env := range envs {
+		for _, stage := range stages {
+			newFile.SetCellValue("Parameters", "A"+strconv.Itoa(row), "KEY_NAME"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "B"+strconv.Itoa(row), "value"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "C"+strconv.Itoa(row), "description"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "D"+strconv.Itoa(row), stage.Name)
+			newFile.SetCellValue("Parameters", "E"+strconv.Itoa(row), env.Name)
+			row++
+			newFile.SetCellValue("Parameters", "A"+strconv.Itoa(row), "KEY_NAME"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "B"+strconv.Itoa(row), "value"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "C"+strconv.Itoa(row), "description"+strconv.Itoa(row))
+			newFile.SetCellValue("Parameters", "D"+strconv.Itoa(row), stage.Name)
+			newFile.SetCellValue("Parameters", "E"+strconv.Itoa(row), env.Name)
+			row++
+		}
+	}
+	// Set active sheet of the workbook.
+	// newFile.SetActiveSheet(0)
+
+	// Save the file
+	filepath := fmt.Sprintf("Param-Template-%s.xlsx", project.Name)
+	if err := newFile.SaveAs(filepath); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write file"})
+		return
+	}
+	newFile.Close()
+	// set header to sen excel file
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename="+filepath)
+	c.Header("Content-Type", "application/octet-stream")
+	c.Header("Content-Transfer-Encoding", "binary")
+	// send file
+	c.File(filepath)
+	err := os.Remove(filepath)
+	if err != nil {
+		log.Println("Failed to remove file")
+	}
 }

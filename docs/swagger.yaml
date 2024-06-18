@@ -445,6 +445,8 @@ paths:
           description: '{"error": "Failed to rerun workflow by agent"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Rerun workflow by agent
       tags:
       - Agents
@@ -475,7 +477,34 @@ paths:
           description: '{"error": "Failed to retrieve parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get parameter by auth agent
+      tags:
+      - Agents
+  /api/v1/agents/download:
+    get:
+      consumes:
+      - application/json
+      description: Download agent script
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Agent script downloaded"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to download agent script"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Download agent script
       tags:
       - Agents
   /api/v1/auth/login:
@@ -533,6 +562,8 @@ paths:
           description: '{"error": "Failed to logout user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Logout a user
       tags:
       - Auth
@@ -616,6 +647,8 @@ paths:
           description: '{"error": "Failed to list environments"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all environments
       tags:
       - Environments
@@ -677,6 +710,7 @@ paths:
           schema:
             type: string
       security:
+      - ApiKeyAuth: []
       - ApiKeyAuth: []
       summary: Update organization information
       tags:
@@ -994,6 +1028,8 @@ paths:
           description: '{"error": "Failed to get agents"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get agents of project
       tags:
       - Project Detail / Agents
@@ -1028,6 +1064,8 @@ paths:
           description: '{"error": "Failed to create agent"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create new agent
       tags:
       - Project Detail / Agents
@@ -1062,6 +1100,8 @@ paths:
           description: '{"error": "Failed to get agent by ID"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get agent detail
       tags:
       - Project Detail / Agents
@@ -1101,6 +1141,8 @@ paths:
           description: '{"error": "Failed to update agent"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update agent
       tags:
       - Project Detail / Agents
@@ -1135,6 +1177,8 @@ paths:
           description: '{"error": "Failed to archive agent"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive agent
       tags:
       - Project Detail / Agents
@@ -1169,6 +1213,8 @@ paths:
           description: '{"error": "Failed to unarchive agent"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Unarchive agent
       tags:
       - Project Detail / Agents
@@ -1200,6 +1246,8 @@ paths:
           description: '{"error": "Failed to get agents"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get archived agents of project
       tags:
       - Project Detail / Agents
@@ -1245,6 +1293,8 @@ paths:
           description: '{"error": "Failed to get project dashboard logs"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get project dashboard logs
       tags:
       - Project Detail / Dashboard
@@ -1274,6 +1324,8 @@ paths:
           description: '{"error": "Failed to get dashboard data"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get dashboard data
       tags:
       - Project Detail / Dashboard
@@ -1303,6 +1355,8 @@ paths:
           description: '{"error": "Failed to list environments"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all environments in a project
       tags:
       - Project Detail / Environments
@@ -1338,6 +1392,8 @@ paths:
           description: '{"error": "Failed to create environment"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create a environment in a project
       tags:
       - Project Detail / Environments
@@ -1372,6 +1428,8 @@ paths:
           description: '{"error": "Failed to get environment"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get a environment in a project
       tags:
       - Project Detail / Environments
@@ -1412,6 +1470,8 @@ paths:
           description: '{"error": "Failed to update environment"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update a environment in a project
       tags:
       - Project Detail / Environments
@@ -1446,6 +1506,8 @@ paths:
           description: '{"error": "Failed to archive environment"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive a environment in a project
       tags:
       - Project Detail / Environments
@@ -1480,6 +1542,8 @@ paths:
           description: '{"error": "Failed to unarchive environment"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Unarchive a environment in a project
       tags:
       - Project Detail / Environments
@@ -1509,6 +1573,8 @@ paths:
           description: '{"error": "Failed to list archived environments"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all archived environments in a project
       tags:
       - Project Detail / Environments
@@ -1538,6 +1604,8 @@ paths:
           description: '{"error": "Failed to get project detail"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get project overview
       tags:
       - Project Detail / Overview
@@ -1572,6 +1640,8 @@ paths:
           description: '{"error": "Failed to update project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update project information
       tags:
       - Project Detail / Overview
@@ -1607,6 +1677,8 @@ paths:
           description: '{"error": "Failed to add user to project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Add user to project include role
       tags:
       - Project Detail / Overview
@@ -1641,6 +1713,8 @@ paths:
           description: '{"error": "Failed to remove user from project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Remove user from project
       tags:
       - Project Detail / Overview
@@ -1681,6 +1755,8 @@ paths:
           description: '{"error": "Failed to update user in project"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update user in project
       tags:
       - Project Detail / Overview
@@ -1746,6 +1822,8 @@ paths:
           description: '{"error": "Failed to get project parameters"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get project parameters
       tags:
       - Project Detail / Parameters
@@ -1780,6 +1858,8 @@ paths:
           description: '{"error": "Failed to create parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create new parameter
       tags:
       - Project Detail / Parameters
@@ -1811,6 +1891,8 @@ paths:
           description: '{"error": "Failed to get latest parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get latest parameter
       tags:
       - Project Detail / Parameters
@@ -1845,6 +1927,8 @@ paths:
           description: '{"error": "Failed to get parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get parameter by ID
       tags:
       - Project Detail / Parameters
@@ -1884,6 +1968,8 @@ paths:
           description: '{"error": "Failed to update parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update parameter
       tags:
       - Project Detail / Parameters
@@ -1918,6 +2004,8 @@ paths:
           description: '{"error": "Failed to archive parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive parameter
       tags:
       - Project Detail / Parameters
@@ -1952,6 +2040,8 @@ paths:
           description: '{"error": "Failed to unarchive parameter"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Unarchive parameter
       tags:
       - Project Detail / Parameters
@@ -1981,6 +2071,8 @@ paths:
           description: '{"error": "Failed to apply parameters"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Apply parameters in project
       tags:
       - Project Detail / Parameters
@@ -2012,6 +2104,8 @@ paths:
           description: '{"error": "Failed to get archived parameters"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get archived parameters
       tags:
       - Project Detail / Parameters
@@ -2048,6 +2142,31 @@ paths:
       summary: Download lastest parameters in project
       tags:
       - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/download-template:
+    get:
+      consumes:
+      - application/json
+      description: Download execel template parameters
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      produces:
+      - application/octet-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Parameter'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Download execel template parameters
+      tags:
+      - Project Detail / Parameters
   /api/v1/projects/{project_id}/stages:
     get:
       consumes:
@@ -2074,6 +2193,8 @@ paths:
           description: '{"error": "Failed to list stages"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all stages in a project
       tags:
       - Project Detail / Stages
@@ -2108,6 +2229,8 @@ paths:
           description: '{"error": "Failed to create stage"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create a stage in a project
       tags:
       - Project Detail / Stages
@@ -2142,6 +2265,8 @@ paths:
           description: '{"error": "Failed to get stage"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get a stage in a project
       tags:
       - Project Detail / Stages
@@ -2181,6 +2306,8 @@ paths:
           description: '{"error": "Failed to update stage"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update a stage in a project
       tags:
       - Project Detail / Stages
@@ -2215,6 +2342,8 @@ paths:
           description: '{"error": "Failed to archive stage"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive a stage in a project
       tags:
       - Project Detail / Stages
@@ -2249,6 +2378,8 @@ paths:
           description: '{"error": "Failed to unarchive stage"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Unarchive a stage in a project
       tags:
       - Project Detail / Stages
@@ -2278,6 +2409,8 @@ paths:
           description: '{"error": "Failed to list archived stages"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all archived stages in a project
       tags:
       - Project Detail / Stages
@@ -2307,6 +2440,8 @@ paths:
           description: '{"error": "Failed to get project tracking"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get project tracking
       tags:
       - Project Detail / Tracking
@@ -2338,6 +2473,8 @@ paths:
           description: '{"error": "Failed to get versions"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get versions of project
       tags:
       - Project Detail / Versions
@@ -2372,6 +2509,8 @@ paths:
           description: '{"error": "Failed to create version"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create new version
       tags:
       - Project Detail / Versions
@@ -2401,6 +2540,8 @@ paths:
           description: '{"error": "Failed to get project workflows"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get project workflows
       tags:
       - Project Detail / Workflows
@@ -2435,6 +2576,8 @@ paths:
           description: '{"error": "Failed to get workflow process"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get workflow process
       tags:
       - Project Detail / Workflows
@@ -2458,6 +2601,8 @@ paths:
           description: '{"error": "Failed to list roles"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: List roles
       tags:
       - Setting / Role
@@ -2481,6 +2626,8 @@ paths:
           description: '{"error": "Failed to list users"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: List users
       tags:
       - Setting / User
@@ -2510,6 +2657,8 @@ paths:
           description: '{"error": "Failed to create user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Create user
       tags:
       - Setting / User
@@ -2539,6 +2688,8 @@ paths:
           description: '{"error": "Failed to delete user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Delete user
       tags:
       - Setting / User
@@ -2567,6 +2718,8 @@ paths:
           description: '{"error": "Failed to get user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get user by ID
       tags:
       - Setting / User
@@ -2602,6 +2755,8 @@ paths:
           description: '{"error": "Failed to update user information"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Update user information
       tags:
       - Setting / User
@@ -2631,6 +2786,8 @@ paths:
           description: '{"error": "Failed to archive user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Archive user
       tags:
       - Setting / User
@@ -2660,6 +2817,8 @@ paths:
           description: '{"error": "Failed to unarchive user"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Restore archived user
       tags:
       - Setting / User
@@ -2683,6 +2842,8 @@ paths:
           description: '{"error": "Failed to list archived users"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: List archived users
       tags:
       - Setting / User
@@ -2706,6 +2867,8 @@ paths:
           description: '{"error": "Failed to list stages"}'
           schema:
             type: string
+      security:
+      - ApiKeyAuth: []
       summary: Get all stages
       tags:
       - Stages
