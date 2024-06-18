@@ -63,6 +63,7 @@ func setupGroupProject(r *gin.RouterGroup) {
 			parameterGroup.PATCH("/:parameter_id/unarchive", middleware.RequiredIsAdmin, controllers.UnarchiveParameter)
 
 			parameterGroup.GET("/download-template", controllers.DownloadExecelTemplateParameters)
+			parameterGroup.POST("/upload", middleware.RequiredIsAdmin, controllers.UploadParameters)
 		}
 		trackingGroup := projectGroup.Group("/tracking")
 		{

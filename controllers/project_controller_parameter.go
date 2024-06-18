@@ -8,6 +8,7 @@ import (
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -1044,4 +1045,218 @@ func DownloadExecelTemplateParameters(c *gin.Context) {
 	if err != nil {
 		log.Println("Failed to remove file")
 	}
+}
+
+type UploadFileParamContent struct {
+	Name        string `json:"name"`
+	Value       string `json:"value"`
+	Description string `json:"description"`
+	Stage       string `json:"stage"`
+	Environment string `json:"environment"`
+
+	StageID       uint
+	EnvironmentID uint
+}
+
+// UploadParameters godoc
+// @Summary Upload parameters
+// @Description Upload parameters
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param file formData uploadFile true "File"
+// @Success 200 string {string} json "{"message": "Parameters uploaded"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to upload parameters"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/parameters/upload [post]
+func UploadParameters(c *gin.Context) {
+	startTime := time.Now()
+	projectID := c.Param("project_id")
+	file, err := c.FormFile("uploadFile")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to get file"})
+		return
+	}
+	// get user from context
+	user, exist := c.Get("user")
+	if !exist {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// modeling user
+	u := user.(models.User)
+	// get project by ID
+	var project models.Project
+	if err := DB.
+		Preload("Stages", "is_archived = ?", false).
+		Preload("Environments", "is_archived = ?", false).
+		First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+
+	// Get stages and environments of project
+	stages := project.Stages
+	envs := project.Environments
+
+	// Open the file
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to open file"})
+		return
+	}
+	defer src.Close()
+	// Read the file
+	xlsx, err := excelize.OpenReader(src)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read file"})
+		return
+	}
+	// Get all the rows in the Sheet1.
+	rows, err := xlsx.GetRows("Parameters")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get rows"})
+		return
+	}
+	// get row bind to []UploadFileParamContent
+	var uploadFileParamContents []UploadFileParamContent
+	for i, row := range rows {
+		if i == 0 {
+			continue
+		}
+		findingStageID := findStageID(stages, row[3])
+		if findingStageID == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Failed to find stage name %s in row %d", row[3], i)})
+			return
+		}
+		findingEnvID := findEnvironmentID(envs, row[4])
+		if findingEnvID == 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Failed to find environment name %s in row %d", row[4], i)})
+			return
+		}
+		uploadFileParamContent := UploadFileParamContent{
+			Name:          row[0],
+			Value:         row[1],
+			Description:   row[2],
+			Stage:         row[3],
+			Environment:   row[4],
+			StageID:       findingStageID,
+			EnvironmentID: findingEnvID,
+		}
+		uploadFileParamContents = append(uploadFileParamContents, uploadFileParamContent)
+	}
+
+	// Get the latest version of project
+	var latestVersion models.Version
+	if err := DB.
+		Preload("Parameters").
+		Preload("Parameters.Stage").
+		Preload("Parameters.Environment").
+		Last(&latestVersion, "project_id = ?", projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get latest version"})
+		return
+	}
+	// Get all parameters of the latest version
+	parameters := latestVersion.Parameters
+	// Check if the parameter is already exist in the latest version, if not, insert it else overwrite it
+	insertCount := 0
+	overwriteCount := 0
+	for _, uploadFileParamContent := range uploadFileParamContents {
+		var isExist bool
+		for _, parameter := range parameters {
+			if parameter.Name == uploadFileParamContent.Name &&
+				parameter.StageID == uploadFileParamContent.StageID &&
+				parameter.EnvironmentID == uploadFileParamContent.EnvironmentID {
+				//
+				isExist = true
+				parameter.Value = uploadFileParamContent.Value
+				parameter.EditedAt = time.Now().UTC()
+				parameter.Description = uploadFileParamContent.Description
+				overwriteCount++
+				break
+			}
+		}
+		if isExist {
+			continue
+		}
+		newParameter := models.Parameter{
+			Name:          uploadFileParamContent.Name,
+			Value:         uploadFileParamContent.Value,
+			ProjectID:     project.ID,
+			StageID:       uploadFileParamContent.StageID,
+			EnvironmentID: uploadFileParamContent.EnvironmentID,
+			IsApplied:     false,
+			Description:   uploadFileParamContent.Description,
+		}
+		// Append the new parameter to the latest version's Parameters slice
+		latestVersion.Parameters = append(latestVersion.Parameters, newParameter)
+		insertCount++
+	}
+	// Save the new parameter to the database
+	if err := DB.Save(&latestVersion).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save parameters"})
+		return
+	}
+
+	// rerun github actions workflow if project.AutoUpdate is true
+	if project.AutoUpdate {
+		// Get project by ID to get agent workflow name
+		wg := &sync.WaitGroup{}
+		for _, ufpc := range uploadFileParamContents {
+			wg.Add(1)
+			go rerunCICDWorkflowWithGoRoutine(project.ID, ufpc.StageID, ufpc.EnvironmentID, u.ID, wg)
+		}
+		wg.Wait()
+	} else {
+		projectLogByUser(project.ID, "Upload Parameters", "Parameters uploaded", http.StatusCreated, 0, u.ID)
+		c.JSON(http.StatusCreated, gin.H{
+			"status":  http.StatusCreated,
+			"message": "Parameters uploaded",
+		})
+		return
+	}
+	latency := time.Since(startTime)
+	projectLogByUser(project.ID, "Upload Parameters", "Parameters uploaded", http.StatusCreated, latency, u.ID)
+	c.JSON(http.StatusCreated, gin.H{
+		"status":  http.StatusCreated,
+		"latency": latency,
+		"message": "Parameters uploaded. Started rerun cicd. Check github actions of the project's repo.",
+	})
+
+}
+
+func findStageID(stages []models.Stage, stageName string) uint {
+	for _, stage := range stages {
+		if stage.Name == stageName {
+			return stage.ID
+		}
+	}
+	return 0
+}
+
+func findEnvironmentID(envs []models.Environment, envName string) uint {
+	for _, env := range envs {
+		if env.Name == envName {
+			return env.ID
+		}
+	}
+	return 0
+}
+
+func rerunCICDWorkflowWithGoRoutine(projectID uint, stageID uint, environmentID uint, userID uint, wg *sync.WaitGroup) {
+	// Get project by ID to get agent workflow name
+	responseStatusCode, _, _, err := rerunCICDWorkflow(projectID, stageID, environmentID)
+	if responseStatusCode == 403 {
+		log.Println("Parameters uploaded, but failed to rerun workflow: Workflow is already running. Check github actions of the project's repo.")
+		return
+	}
+	if err != nil {
+		log.Println("Failed to rerun workflow")
+		return
+	}
+	projectLogByUser(projectID, "Rerun CICD", "Parameters uploaded", http.StatusCreated, 0, userID)
+
+	wg.Done()
 }
