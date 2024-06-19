@@ -8,7 +8,7 @@ import (
 )
 
 func TestMain(t *testing.T) {
-	err := godotenv.Load("../.env.test")
+	err := godotenv.Load("../param.test")
 	if err != nil {
 		panic("Error loading .env.test file for test")
 	}
