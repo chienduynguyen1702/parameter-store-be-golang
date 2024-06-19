@@ -44,16 +44,16 @@ func SetupV1Router() *gin.Engine {
 	docs.SwaggerInfo.Title = "Parameter Store Backend API"
 	docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
 	docs.SwaggerInfo.Version = "1.0"
-	if os.Getenv("ENVIRONMENT") == "dev" {
-		docs.SwaggerInfo.Host = "localhost:" + os.Getenv("PORT")
-		docs.SwaggerInfo.Schemes = []string{"http", "https"}
-	} else if os.Getenv("ENVIRONMENT") == "production" {
-		docs.SwaggerInfo.Host = "parameter-store-be-golang.up.railway.app"
-		docs.SwaggerInfo.Schemes = []string{"https"}
-	} else if os.Getenv("ENVIRONMENT") == "datn-server" {
-		docs.SwaggerInfo.Host = os.Getenv("HOSTNAME")
-		docs.SwaggerInfo.Schemes = []string{"https"}
+
+	docs.SwaggerInfo.Host = os.Getenv("HOSTNAME_URL")
+	var swaggerSchemes []string
+	schemes := os.Getenv("SWAGGER_SCHEME")
+
+	if schemes == "" { // default to http and https
+		swaggerSchemes = []string{"http", "https"}
 	}
+
+	docs.SwaggerInfo.Schemes = swaggerSchemes
 
 	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	return r
