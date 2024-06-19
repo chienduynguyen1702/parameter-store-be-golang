@@ -56,6 +56,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
+      - name: Get build parameters
+        id: get_build_parameters
+        run: |
+          export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
+          ./scripts/get-parameters.sh -o .env
+          cat .env 
 
       - name: Build and publish Docker image to GitHub Container Registry
         uses: docker/build-push-action@v3
