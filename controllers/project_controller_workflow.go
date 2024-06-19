@@ -81,8 +81,13 @@ func GetProjectWorkflows(c *gin.Context) {
 				}
 				DB.Create(&wf)
 			} else {
+				// update the workflow
+				wf.Name = workflow.Name
 				wf.AttemptNumber = lastAttemptNumber
 				wf.LastWorkflowRunID = lastestWorkflowRunID
+				wf.State = workflow.State
+				wf.Path = workflow.Path
+
 				DB.Save(&wf)
 			}
 		}
