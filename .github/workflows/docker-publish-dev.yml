@@ -62,18 +62,6 @@ jobs:
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
           ./scripts/get-parameters.sh -o .env
           cat .env 
-
-      - name: Build and publish Docker image to GitHub Container Registry
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: ./docker/Dockerfile 
-          push: true
-          tags: |
-            ghcr.io/chienduynguyen1702/parameter-store-be-dev:${{ env.SHORT_SHA }}
-            ghcr.io/chienduynguyen1702/parameter-store-be-dev:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
       - name: Get test parameters
         id: get_test_parameters
         run: |
@@ -88,6 +76,18 @@ jobs:
           # echo "Running 10 test cases..."
           # echo "Result: 15/15 passed."
           # echo "Test passed successfully!"
+
+      - name: Build and publish Docker image to GitHub Container Registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/Dockerfile 
+          push: true
+          tags: |
+            ghcr.io/chienduynguyen1702/parameter-store-be-dev:${{ env.SHORT_SHA }}
+            ghcr.io/chienduynguyen1702/parameter-store-be-dev:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   deploy:
     name: Deploy to remote server
     needs: build-and-push-image-docker-to-ghcr
