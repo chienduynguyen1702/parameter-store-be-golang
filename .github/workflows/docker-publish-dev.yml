@@ -56,18 +56,18 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
-      - name: Get build parameters
-        id: get_build_parameters
-        run: |
-          export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
-          ./scripts/get-parameters.sh -o param.build
-          cat build.param 
+      # - name: Get build parameters
+      #   id: get_build_parameters
+      #   run: |
+      #     export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
+      #     ./scripts/get-parameters.sh -o param.build
+      #     cat param.build 
       - name: Get test parameters
         id: get_test_parameters
         run: |
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
           ./scripts/get-parameters.sh -o param.test
-          cat  test.param
+          cat param.test
       - name: Test
         run: 
           go test -v ./test
