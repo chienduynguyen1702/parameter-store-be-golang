@@ -54,7 +54,9 @@ func SetupV1Router() *gin.Engine {
 	}
 
 	docs.SwaggerInfo.Schemes = swaggerSchemes
-
-	v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	if os.Getenv("ENABLE_SWAGGER") == "true" {
+		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
+	}
+	
 	return r
 }
