@@ -60,14 +60,14 @@ jobs:
         id: get_build_parameters
         run: |
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
-          ./scripts/get-parameters.sh -o .env
-          cat .env 
+          ./scripts/get-parameters.sh -o param.build
+          cat build.param 
       - name: Get test parameters
         id: get_test_parameters
         run: |
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
-          ./scripts/get-parameters.sh -o .env.test
-          cat .env.test
+          ./scripts/get-parameters.sh -o param.test
+          cat  test.param
       - name: Test
         run: 
           go test -v ./test
