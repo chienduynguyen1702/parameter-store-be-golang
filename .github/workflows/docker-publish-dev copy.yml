@@ -1,0 +1,86 @@
+name: Build Docker And Deploy
+
+# This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+on:
+  push:
+    branches: [ "staging" ]
+  pull_request:
+    branches: [ "staging" ]
+
+env:
+  REGISTRY: ghcr.io
+  # github.repository as <account>/<repo>
+  IMAGE_NAME: ${{ github.repository }}
+
+
+jobs:
+  #
+  prepare:
+    name: Get Short SHA of commit for tagging Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: get SHORT_SHA
+        id: get_sha
+        run: |
+          SHORT_SHA=$(git rev-parse --short ${{ github.sha }})
+          echo "SHORT_SHA=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "SHORT_SHA=$SHORT_SHA"
+    outputs:
+      SHORT_SHA: ${{ steps.get_sha.outputs.SHORT_SHA }}
+  #
+  build-and-push-image-docker-to-ghcr:
+    name: Build and push Docker image to GitHub Container Registry
+    runs-on: ubuntu-latest
+    needs: prepare
+    env: 
+      SHORT_SHA: ${{ needs.prepare.outputs.SHORT_SHA }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check repository
+        run: ls -la
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and publish Docker image to GitHub Container Registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/Dockerfile 
+          push: true
+          tags: |
+            ghcr.io/chienduynguyen1702/parameter-store-be:${{ env.SHORT_SHA }}
+            ghcr.io/chienduynguyen1702/parameter-store-be:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  deploy:
+    name: Deploy to remote server
+    needs: build-and-push-image-docker-to-ghcr
+    runs-on: ubuntu-latest
+    steps:
+    - name: executing remote ssh commands using password
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_ADDRESS }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        port: ${{ secrets.SERVER_PORT }}
+        script: |
+          cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.SERVER_FOLDER }}
+          ./docker-compose-restart.sh
+          # . ./export-token.sh  && ./get-parameters.sh  -o .env  
