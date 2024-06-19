@@ -87,6 +87,6 @@ jobs:
         password: ${{ secrets.SERVER_PASSWORD }}
         port: ${{ secrets.SERVER_PORT }}
         script: |
-          cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.SERVER_FOLDER }}
+          cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.SERVER_STAGING_FOLDER }}
+          . ./export-token.sh  && ./get-parameters.sh  -o .env  
           ./docker-compose-restart.sh
-          # . ./export-token.sh  && ./get-parameters.sh  -o .env  
