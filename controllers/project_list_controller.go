@@ -42,6 +42,7 @@ func ListProjects(c *gin.Context) {
 		ID        uint   `json:"id"`
 		Name      string `json:"name"`
 		UserCount int64  `json:"users_count"`
+		Status    string `json:"status"`
 	}
 	var projectListResponses []projectListResponse
 
@@ -53,6 +54,7 @@ func ListProjects(c *gin.Context) {
 			ID:        projects[i].ID,
 			Name:      projects[i].Name,
 			UserCount: userCount,
+			Status:    projects[i].Status,
 		})
 	}
 
