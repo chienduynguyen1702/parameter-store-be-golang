@@ -62,6 +62,20 @@ jobs:
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
           ./scripts/get-parameters.sh -o .env
           cat .env 
+      - name: Get test parameters
+        id: get_test_parameters
+        run: |
+          export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
+          ./scripts/get-parameters.sh -o .env.test
+          cat .env.test
+      - name: Test
+        run: 
+          go test -v ./test
+          # |
+          # echo "Testing..."
+          # echo "Running 10 test cases..."
+          # echo "Result: 15/15 passed."
+          # echo "Test passed successfully!"
 
       - name: Build and publish Docker image to GitHub Container Registry
         uses: docker/build-push-action@v3
@@ -74,18 +88,6 @@ jobs:
             ghcr.io/chienduynguyen1702/parameter-store-be-dev:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      - name: Get test parameters
-        id: get_test_parameters
-        run: |
-          export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
-          ./scripts/get-parameters.sh -o .env.test
-          cat .env.test
-      - name: Test
-        run: |
-          echo "Testing..."
-          echo "Running 10 test cases..."
-          echo "Result: 15/15 passed."
-          echo "Test passed successfully!"
   deploy:
     name: Deploy to remote server
     needs: build-and-push-image-docker-to-ghcr
