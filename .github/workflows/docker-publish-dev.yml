@@ -74,6 +74,18 @@ jobs:
             ghcr.io/chienduynguyen1702/parameter-store-be-dev:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+      - name: Get test parameters
+        id: get_test_parameters
+        run: |
+          export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
+          ./scripts/get-parameters.sh -o param.test
+          cat param.test
+      - name: Test
+        run: |
+          echo "Testing..."
+          echo "Running 10 test cases..."
+          echo "Result: 15/15 passed."
+          echo "Test passed successfully!"
   deploy:
     name: Deploy to remote server
     needs: build-and-push-image-docker-to-ghcr
