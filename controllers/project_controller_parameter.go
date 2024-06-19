@@ -48,6 +48,7 @@ func GetProjectParameters(c *gin.Context) {
 	version := c.Query("version")
 	singleStage := c.Query("stages")
 	singleEnvironment := c.Query("environments")
+	search := c.Query("search")
 	filteredStage := append(stages, singleStage)
 	filteredEnvironment := append(environments, singleEnvironment)
 	// fmt.Println("Debug version", version)
@@ -85,6 +86,10 @@ func GetProjectParameters(c *gin.Context) {
 	query = query.Where("parameters.is_archived = ? AND parameters.project_id = ?", false, projectID).
 		Order("parameters.environment_id DESC").
 		Order("parameters.stage_id DESC")
+
+	if search != "" {
+		query = query.Where("parameters.name LIKE ? or parameters.value LIKE ? ", "%"+search+"%", "%"+search+"%")
+	}
 	query.Find(&parameters)
 	// fmt.Println("Debug query parameters", parameters)
 	// for _, p := range parameters {
