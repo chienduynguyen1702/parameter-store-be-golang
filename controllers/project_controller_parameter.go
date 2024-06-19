@@ -420,6 +420,7 @@ func CreateParameter(c *gin.Context) {
 		Stage:         findingStage,
 		Environment:   findingEnvironment,
 		IsApplied:     false,
+		EditedAt:      time.Now().UTC(),
 		Description:   newParameterBody.Description,
 	}
 
@@ -1189,6 +1190,7 @@ func UploadParameters(c *gin.Context) {
 			EnvironmentID: uploadFileParamContent.EnvironmentID,
 			IsApplied:     false,
 			Description:   uploadFileParamContent.Description,
+			EditedAt:      time.Now().UTC(),
 		}
 		// Append the new parameter to the latest version's Parameters slice
 		latestVersion.Parameters = append(latestVersion.Parameters, newParameter)
