@@ -81,11 +81,13 @@ jobs:
           ./scripts/get-parameters.sh -o .env.test
           cat .env.test
       - name: Test
-        run: |
-          echo "Testing..."
-          echo "Running 10 test cases..."
-          echo "Result: 15/15 passed."
-          echo "Test passed successfully!"
+        run: 
+          go test -v ./test
+          # |
+          # echo "Testing..."
+          # echo "Running 10 test cases..."
+          # echo "Result: 15/15 passed."
+          # echo "Test passed successfully!"
   deploy:
     name: Deploy to remote server
     needs: build-and-push-image-docker-to-ghcr
