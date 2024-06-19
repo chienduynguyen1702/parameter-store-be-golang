@@ -1,4 +1,4 @@
-name: Build Docker And Deploy Dev
+name: Build Docker And Deploy Staging
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
@@ -7,9 +7,9 @@ name: Build Docker And Deploy Dev
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "staging" ]
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "staging" ]
 
 env:
   REGISTRY: ghcr.io
