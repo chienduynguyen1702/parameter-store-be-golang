@@ -70,8 +70,8 @@ jobs:
           file: ./docker/Dockerfile 
           push: true
           tags: |
-            ghcr.io/chienduynguyen1702/parameter-store-be:${{ env.SHORT_SHA }}
-            ghcr.io/chienduynguyen1702/parameter-store-be:latest
+            ghcr.io/chienduynguyen1702/parameter-store-be-dev:${{ env.SHORT_SHA }}
+            ghcr.io/chienduynguyen1702/parameter-store-be-dev:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
   deploy:
