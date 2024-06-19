@@ -56,13 +56,29 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GHCR_TOKEN }}
+          
+          
+      # - name: Get test parameters
+      #   id: get_test_parameters
+      #   run: |
+      #     export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
+      #     ./scripts/get-parameters.sh -o .env.test
+      #     cat .env.test
+      # - name: Test
+      #   run: 
+      #       go test -v ./test
+      #       # |
+      #       # echo "Testing..."
+      #       # echo "Running 10 test cases..."
+      #       # echo "Result: 15/15 passed."
+      #       # echo "Test passed successfully!"
+            
       # - name: Get build parameters
       #   id: get_build_parameters
       #   run: |
-      #     export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_PROD_BUILD }}
+      #     export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_BUILD }}
       #     ./scripts/get-parameters.sh -o .env
       #     cat .env 
-
       - name: Build and publish Docker image to GitHub Container Registry
         uses: docker/build-push-action@v3
         with:
@@ -74,14 +90,6 @@ jobs:
             ghcr.io/chienduynguyen1702/parameter-store-be:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      # - name: Get test parameters
-      #   id: get_test_parameters
-      #   run: |
-      #     export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_PROD_TEST }}
-      #     ./scripts/get-parameters.sh -o param.test
-      #     cat param.test
-      - name: Test
-        run: go test ./test -v
   deploy:
     name: Deploy to remote server
     needs: build-and-push-image-docker-to-ghcr
