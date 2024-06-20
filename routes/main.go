@@ -36,6 +36,7 @@ func SetupV1Router() *gin.Engine {
 		setupGroupAgent(v1)
 		setupGroupStage(v1)
 		setupGroupEnvironment(v1)
+		setupGroupTestAPI(v1)
 	}
 	if os.Getenv("GIN_MODE") == "release" {
 		gin.SetMode(gin.ReleaseMode)
@@ -45,7 +46,7 @@ func SetupV1Router() *gin.Engine {
 	docs.SwaggerInfo.Description = "This is a simple API for Parameter Store Backend."
 	docs.SwaggerInfo.Version = "1.0"
 
-	docs.SwaggerInfo.Host = os.Getenv("HOSTNAME_URL")
+	docs.SwaggerInfo.Host = os.Getenv("SWAGGER_HOST")
 	var swaggerSchemes []string
 	schemes := os.Getenv("SWAGGER_SCHEME")
 
@@ -57,6 +58,6 @@ func SetupV1Router() *gin.Engine {
 	if os.Getenv("ENABLE_SWAGGER") == "true" {
 		v1.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 	}
-	
+
 	return r
 }

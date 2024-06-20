@@ -2517,6 +2517,90 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/parameters/upload": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload parameters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Upload parameters",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "environment",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "environmentID",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "stage",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "stageID",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "name": "value",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"Parameters uploaded\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to upload parameters\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/parameters/{parameter_id}": {
             "get": {
                 "security": [
@@ -3853,6 +3937,100 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/test/get-file-content": {
+            "put": {
+                "description": "Get the content of a file in a github repository",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Test / Github"
+                ],
+                "summary": "Get the content of a file in a github repository",
+                "operationId": "get-file-content",
+                "parameters": [
+                    {
+                        "description": "Get the content of a file in a github repository",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.getFileContentBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/test/update-secrets": {
+            "put": {
+                "description": "Update a secret in a github repository",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Test / Github"
+                ],
+                "summary": "Update a secret in a github repository",
+                "operationId": "update-secrets",
+                "parameters": [
+                    {
+                        "description": "Update a secret in a github repository",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.updateSecretBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -4054,6 +4232,23 @@ const docTemplate = `{
                 }
             }
         },
+        "controllers.getFileContentBody": {
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.organizationBody": {
             "type": "object",
             "required": [
@@ -4127,6 +4322,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.updateSecretBody": {
+            "type": "object",
+            "properties": {
+                "encrypted_value": {
+                    "type": "string"
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "secret_name": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "value": {
                     "type": "string"
                 }
             }

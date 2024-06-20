@@ -131,6 +131,17 @@ definitions:
     required:
     - name
     type: object
+  controllers.getFileContentBody:
+    properties:
+      owner:
+        type: string
+      path:
+        type: string
+      repo:
+        type: string
+      token:
+        type: string
+    type: object
   controllers.organizationBody:
     properties:
       alias_name:
@@ -181,6 +192,21 @@ definitions:
         type: string
     required:
     - name
+    type: object
+  controllers.updateSecretBody:
+    properties:
+      encrypted_value:
+        type: string
+      owner:
+        type: string
+      repo:
+        type: string
+      secret_name:
+        type: string
+      token:
+        type: string
+      value:
+        type: string
     type: object
   controllers.userRequestBody:
     properties:
@@ -2167,6 +2193,58 @@ paths:
       summary: Download execel template parameters
       tags:
       - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/upload:
+    post:
+      consumes:
+      - application/json
+      description: Upload parameters
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - in: formData
+        name: description
+        type: string
+      - in: formData
+        name: environment
+        type: string
+      - in: formData
+        name: environmentID
+        type: integer
+      - in: formData
+        name: name
+        type: string
+      - in: formData
+        name: stage
+        type: string
+      - in: formData
+        name: stageID
+        type: integer
+      - in: formData
+        name: value
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameters uploaded"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to upload parameters"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Upload parameters
+      tags:
+      - Project Detail / Parameters
   /api/v1/projects/{project_id}/stages:
     get:
       consumes:
@@ -2872,6 +2950,68 @@ paths:
       summary: Get all stages
       tags:
       - Stages
+  /api/v1/test/get-file-content:
+    put:
+      consumes:
+      - application/json
+      description: Get the content of a file in a github repository
+      operationId: get-file-content
+      parameters:
+      - description: Get the content of a file in a github repository
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.getFileContentBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get the content of a file in a github repository
+      tags:
+      - Test / Github
+  /api/v1/test/update-secrets:
+    put:
+      consumes:
+      - application/json
+      description: Update a secret in a github repository
+      operationId: update-secrets
+      parameters:
+      - description: Update a secret in a github repository
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.updateSecretBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update a secret in a github repository
+      tags:
+      - Test / Github
 securityDefinitions:
   ApiKeyAuth:
     in: header

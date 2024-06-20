@@ -1071,7 +1071,7 @@ type UploadFileParamContent struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param file formData uploadFile true "File"
+// @Param file formData UploadFileParamContent true "File"
 // @Success 200 string {string} json "{"message": "Parameters uploaded"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to upload parameters"}"
