@@ -64,6 +64,8 @@ func setupGroupProject(r *gin.RouterGroup) {
 
 			parameterGroup.GET("/download-template", controllers.DownloadExecelTemplateParameters)
 			parameterGroup.POST("/upload", middleware.RequiredIsAdmin, controllers.UploadParameters)
+			parameterGroup.GET("/:parameter_id/search-in-repo", controllers.SearchParameterInRepo)
+			parameterGroup.GET("/:parameter_id/get-file-content", controllers.TestGetFileContent)
 		}
 		trackingGroup := projectGroup.Group("/tracking")
 		{

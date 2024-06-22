@@ -34,6 +34,12 @@ type parameterResponse struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
+// @Param page query string false "Page number"
+// @Param limit query string false "Limit number"
+// @Param stages query array false "Stages"
+// @Param environments query array false "Environments"
+// @Param version query string false "Version"
+// @Param search query string false "Search"
 // @Success 200 {array} models.Parameter
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to get project parameters"}"
@@ -1071,7 +1077,7 @@ type UploadFileParamContent struct {
 // @Accept json
 // @Produce json
 // @Param project_id path string true "Project ID"
-// @Param file formData uploadFile true "File"
+// @Param file formData controllers.UploadFileParamContent true "File"
 // @Success 200 string {string} json "{"message": "Parameters uploaded"}"
 // @Failure 400 string {string} json "{"error": "Bad request"}"
 // @Failure 500 string {string} json "{"error": "Failed to upload parameters"}"
@@ -1266,4 +1272,149 @@ func rerunCICDWorkflowWithGoRoutine(projectID uint, stageID uint, environmentID 
 	projectLogByUser(projectID, "Rerun CICD", "Parameters uploaded", http.StatusCreated, 0, userID)
 
 	wg.Done()
+}
+
+type ParamPosition struct {
+	ParameterName string
+	Path          []struct {
+		FileName   string
+		LineNumber []int
+	}
+}
+
+// SearchParameterInRepo godoc
+// @Summary Search parameter in repo
+// @Description Search parameter in repo
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param parameter_id path string true "Parameter ID"
+// @Success 200 {array} models.Parameter
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to search parameters"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/parameters/{parameter_id}/search-in-repo [get]
+func SearchParameterInRepo(c *gin.Context) {
+	projectID := c.Param("project_id")
+	parameterID := c.Param("parameter_id")
+
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	if project.RepoApiToken == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo api token"})
+		return
+	}
+	if project.RepoURL == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo URL"})
+		return
+	}
+	githubRepository, err := github.ParseRepoURL(project.RepoURL)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repo URL"})
+		return
+	}
+	// Get parameter by ID
+	var parameter models.Parameter
+	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter in project"})
+		return
+	}
+	// Get parameter name
+	parameterName := parameter.Name
+	// Search parameter in repo
+	searchResult, err := github.SearchCodeInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, parameterName)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search parameter in repo"})
+		return
+	}
+	// var pathFiles []string
+	var pP ParamPosition
+	pP.ParameterName = parameterName
+
+	// wait group
+	var wg sync.WaitGroup
+	for _, item := range searchResult.Items {
+		wg.Add(1)
+		go func(item github.SearchCodeInRepoItem) {
+			defer wg.Done()
+			log.Println(item.Path)
+			// pathFiles = append(pathFiles, item.Path)
+
+			fileAsString, err := github.GetFileContent(githubRepository.Owner, githubRepository.Name, item.Path, project.RepoApiToken)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search parameter in repo"})
+				return
+			}
+			lines := github.FindStringByLineNumber(fileAsString, parameterName)
+			pP.Path = append(pP.Path, struct {
+				FileName   string
+				LineNumber []int
+			}{FileName: item.Path, LineNumber: lines})
+
+		}(item)
+
+	}
+
+	wg.Wait()
+	log.Println(pP)
+
+	c.JSON(http.StatusOK, gin.H{"searchResult": searchResult})
+}
+
+// GetFileContent godoc
+// @Summary Get file content
+// @Description Get file content
+// @Tags Project Detail / Parameters
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param parameter_id path string true "Parameter ID"
+// @Param path query string false "Path file"
+// @Success 200 string {string} json "{"file as string": "fileAsString"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get file content"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/parameters/{parameter_id}/get-file-content [get]
+func TestGetFileContent(c *gin.Context) {
+	projectID := c.Param("project_id")
+	parameterID := c.Param("parameter_id")
+	path := c.Query("path")
+
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	if project.RepoApiToken == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo api token"})
+		return
+	}
+	if project.RepoURL == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo URL"})
+		return
+	}
+	githubRepository, err := github.ParseRepoURL(project.RepoURL)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repo URL"})
+		return
+	}
+	// Get parameter by ID
+	var parameter models.Parameter
+	if err := DB.Where("project_id = ? AND id = ?", projectID, parameterID).First(&parameter).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter in project"})
+		return
+	}
+	// Get parameter name
+	// parameterName := parameter.Name
+	// Search parameter in repo
+	fileAsString, err := github.GetFileContent(githubRepository.Owner, githubRepository.Name, path, project.RepoApiToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to search parameter in repo"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"file as string": fileAsString})
 }
