@@ -1805,6 +1805,30 @@ paths:
         name: project_id
         required: true
         type: string
+      - description: Page number
+        in: query
+        name: page
+        type: string
+      - description: Limit number
+        in: query
+        name: limit
+        type: string
+      - description: Stages
+        in: query
+        name: stages
+        type: array
+      - description: Environments
+        in: query
+        name: environments
+        type: array
+      - description: Version
+        in: query
+        name: version
+        type: string
+      - description: Search
+        in: query
+        name: search
+        type: string
       produces:
       - application/json
       responses:
@@ -2009,6 +2033,84 @@ paths:
       summary: Archive parameter
       tags:
       - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/{parameter_id}/get-file-content:
+    get:
+      consumes:
+      - application/json
+      description: Get file content
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      - description: Path file
+        in: query
+        name: path
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"file as string": "fileAsString"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get file content"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get file content
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/{parameter_id}/search-in-repo:
+    get:
+      consumes:
+      - application/json
+      description: Search parameter in repo
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Parameter ID
+        in: path
+        name: parameter_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Parameter'
+            type: array
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to search parameters"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Search parameter in repo
+      tags:
+      - Project Detail / Parameters
   /api/v1/projects/{project_id}/parameters/{parameter_id}/unarchive:
     put:
       consumes:
@@ -2165,6 +2267,58 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Download execel template parameters
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/upload:
+    post:
+      consumes:
+      - application/json
+      description: Upload parameters
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - in: formData
+        name: description
+        type: string
+      - in: formData
+        name: environment
+        type: string
+      - in: formData
+        name: environmentID
+        type: integer
+      - in: formData
+        name: name
+        type: string
+      - in: formData
+        name: stage
+        type: string
+      - in: formData
+        name: stageID
+        type: integer
+      - in: formData
+        name: value
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "Parameters uploaded"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to upload parameters"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Upload parameters
       tags:
       - Project Detail / Parameters
   /api/v1/projects/{project_id}/stages:
