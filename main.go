@@ -55,7 +55,7 @@ func main() {
 		go controllers.ScheduleWorkflowCheck()
 	}
 	// if os.Getenv("ENABLE_HEALTH_CHECK") == "true" {
-	go controllers.AutoUpdateParameterUsingInFile()
+	// go controllers.AutoUpdateParameterUsingInFile()
 	// }/
 	if os.Getenv("ENABLE_HTTPS_LOCAL") == "true" {
 		log.Println("Server is running on port", port, "in", os.Getenv("GIN_MODE"), "gin mode with HTTPS")

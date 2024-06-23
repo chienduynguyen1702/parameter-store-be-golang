@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"parameter-store-be/models"
+	"parameter-store-be/modules/github"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -131,6 +133,7 @@ func Login(c *gin.Context) {
 			projectIDs = append(projectIDs, urp.ProjectID)
 		}
 	}
+	var responseLogedInUser responseLogedInUser
 	responseLogedInUser.Username = user.Username
 	responseLogedInUser.Email = user.Email
 	responseLogedInUser.OrganizationID = user.OrganizationID
@@ -166,7 +169,98 @@ func Login(c *gin.Context) {
 
 }
 
-var responseLogedInUser struct {
+type LoginWithGithubBody struct {
+	Code string `json:"code"`
+}
+
+// LoginWithGithub logs in a user with github, if successful, set cookie header
+// LoginWithGithub godoc
+// @Summary Login a user with github
+// @Description Login a user with github
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body controllers.LoginWithGithubBody true "User login with github request"
+// @Success 200 string {string} json "{"message": "User logged in successfully", "user": {email: "email", organization_id: "organization_id"}}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 401 string {string} json "{"error": "Unauthorized"}"
+// @Failure 500 string {string} json "{"error": "Failed to login user"}"
+// @Router /api/v1/auth/login/github [post]
+func LoginWithGithub(c *gin.Context) {
+	var body LoginWithGithubBody
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println("body: ", body)
+	// get access token
+	accessToken, err := github.GetAccessToken(body.Code)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get access token"})
+		return
+	}
+	fmt.Println("accessToken: ", accessToken)
+	// get user info
+	userInfo, err := github.GetGitUserInfo(accessToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+	// check if user exists
+	var user models.User
+	if err := DB.Where("email = ?", userInfo.Email).First(&user).Error; err != nil {
+		// create user
+		newOrganization := models.Organization{
+			Name: userInfo.Login,
+		}
+		if err := DB.Create(&newOrganization).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register organization"})
+			return
+		}
+		newUser := models.User{
+			Email:               userInfo.Email,
+			Username:            userInfo.Login,
+			OrganizationID:      newOrganization.ID,
+			IsOrganizationAdmin: true,
+		}
+		if err := DB.Create(&newUser).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+			return
+		}
+	}
+	// Generate a JWT token
+	jwtToken, err := generateJWTToken(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create token for user"})
+		return
+	}
+	// Set the JWT token in a cookie
+	c.SetSameSite(http.SameSiteNoneMode)
+	// c.SetCookie(
+	// 	"Authorization",
+	// 	jwtToken,
+	// 	3600*24*30,
+	// 	"",
+	// 	os.Getenv("COOKIE_DOMAIN"),
+	// 	true,
+	// 	true,
+	// )
+	c.Header("Authorization", jwtToken)
+	var responseLogedInUser responseLogedInUser
+	responseLogedInUser.Username = user.Username
+	responseLogedInUser.Email = user.Email
+	responseLogedInUser.OrganizationID = user.OrganizationID
+	responseLogedInUser.IsOrganizationAdmin = user.IsOrganizationAdmin
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "User logged in successfully",
+		"status:": "success",
+		"token":   jwtToken,
+		"user":    responseLogedInUser,
+	})
+}
+
+type responseLogedInUser struct {
 	Username            string `json:"username"`
 	Email               string `json:"email"`
 	OrganizationID      uint   `json:"organization_id"`
@@ -208,6 +302,7 @@ func Validate(c *gin.Context) {
 			projectIDs = append(projectIDs, urp.ProjectID)
 		}
 	}
+	var responseLogedInUser responseLogedInUser
 	responseLogedInUser.Username = validatedUser.Username
 	responseLogedInUser.Email = validatedUser.Email
 	responseLogedInUser.OrganizationID = validatedUser.OrganizationID
