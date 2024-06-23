@@ -1507,58 +1507,60 @@ func CheckParameterUsing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"is_using_at_file": resultSearch})
 }
 
-func FindParameterUsingInFile() {
-	log.Println("FindParameterUsingInFile")
-	var projects []models.Project
-	if err := DB.Find(&projects).Error; err != nil {
-		log.Println("Failed to get projects")
-		return
-	}
-	for _, project := range projects {
-		fmt.Println("Starting Project", project.Name)
+func AutoUpdateParameterUsingInFile() {
+	for {
+		log.Println("FindParameterUsingInFile")
+		var projects []models.Project
+		if err := DB.Find(&projects).Error; err != nil {
+			log.Println("Failed to get projects")
+			return
+		}
+		for _, project := range projects {
+			fmt.Println("Starting Project", project.Name)
 
-		if project.RepoApiToken == "" {
-			log.Println("Failed to get repo api token in project", project.Name)
-			continue
-		}
-		if project.RepoURL == "" {
-			log.Println("Failed to get repo URL in project", project.Name)
-			continue
-		}
-		githubRepository, err := github.ParseRepoURL(project.RepoURL)
-		if err != nil {
-			log.Println("Failed to parse repo URL in project", project.Name)
-			continue
-		}
-		// Get all parameters of the project
-		var parameters []models.Parameter
-		if err := DB.Where("project_id = ?", project.ID).Find(&parameters).Error; err != nil {
-			log.Println("Failed to get parameters in project", project.Name)
-			continue
-		}
-		// Get all content of the files
-		for _, param := range parameters {
-			log.Println("")
-			log.Println("Starting Parameter", param.Name)
-			time.Sleep(6 * time.Second)
-
-			// Get all files in the repo
-			resultSearch := FindCodeInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, param.Name)
-			if resultSearch == "" {
-				log.Println("Failed to find parameter", param.Name)
+			if project.RepoApiToken == "" {
+				log.Println("Failed to get repo api token in project", project.Name)
 				continue
 			}
-
-			param.IsUsingAtFile = resultSearch
-			if err := DB.Save(&param).Error; err != nil {
-				log.Println("Failed to save parameter", param.Name)
-				return
+			if project.RepoURL == "" {
+				log.Println("Failed to get repo URL in project", project.Name)
+				continue
 			}
-			log.Println("Saved parameter", param.Name)
+			githubRepository, err := github.ParseRepoURL(project.RepoURL)
+			if err != nil {
+				log.Println("Failed to parse repo URL in project", project.Name)
+				continue
+			}
+			// Get all parameters of the project
+			var parameters []models.Parameter
+			if err := DB.Where("project_id = ?", project.ID).Find(&parameters).Error; err != nil {
+				log.Println("Failed to get parameters in project", project.Name)
+				continue
+			}
+			// Get all content of the files
+			for _, param := range parameters {
+				log.Println("")
+				log.Println("Starting Parameter", param.Name)
+				time.Sleep(6 * time.Second)
+
+				// Get all files in the repo
+				resultSearch := FindCodeInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, param.Name)
+				if resultSearch == "" {
+					log.Println("Failed to find parameter", param.Name)
+					continue
+				}
+
+				param.IsUsingAtFile = resultSearch
+				if err := DB.Save(&param).Error; err != nil {
+					log.Println("Failed to save parameter", param.Name)
+					return
+				}
+				log.Println("Saved parameter", param.Name)
+			}
+			log.Println("=>>>>>>>>>> Finished project", project.Name)
 		}
-		log.Println("=>>>>>>>>>> Finished project", project.Name)
+		log.Println("Finished")
 	}
-	log.Println("Finished")
 }
 
 func FindCodeInRepo(owner, repo, token, paramName string) string {
