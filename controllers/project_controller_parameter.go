@@ -147,6 +147,31 @@ func GetParameterByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get parameter"})
 		return
 	}
+	var project models.Project
+	if err := DB.First(&project, projectID).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get project"})
+		return
+	}
+	if project.RepoApiToken == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo api token"})
+		return
+	}
+	if project.RepoURL == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get repo URL"})
+		return
+	}
+	githubRepository, err := github.ParseRepoURL(project.RepoURL)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to parse repo URL"})
+		return
+	}
+	// Get all files in the repo
+	resultSearch := FindCodeAndFileContentInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, parameter.Name)
+	if resultSearch == "" {
+		log.Println("Failed to find parameter", parameter.Name)
+		c.JSON(http.StatusOK, gin.H{"is_using_at_file": resultSearch})
+		return
+	}
 	p := parameterResponse{
 		ID:            parameter.ID,
 		StageID:       parameter.StageID,
@@ -157,7 +182,7 @@ func GetParameterByID(c *gin.Context) {
 		Value:         parameter.Value,
 		ProjectID:     parameter.ProjectID,
 		Description:   parameter.Description,
-		IsUsingAtFile: parameter.IsUsingAtFile,
+		IsUsingAtFile: resultSearch,
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"data": gin.H{
@@ -1452,6 +1477,7 @@ type UsingAt struct {
 	FileName     string `json:"file_name"`
 	FileHTMLPath string `json:"file_html_path"`
 	LineNumber   []int  `json:"line_number"`
+	FileContent  string `json:"file_content"`
 }
 type CheckParamUsingBody struct {
 	ParameterName string `json:"parameter_name"`
@@ -1497,7 +1523,7 @@ func CheckParameterUsing(c *gin.Context) {
 		return
 	}
 	// Get all files in the repo
-	resultSearch := FindCodeInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, checkParamUsingBody.ParameterName)
+	resultSearch := FindCodeAndFileContentInRepo(githubRepository.Owner, githubRepository.Name, project.RepoApiToken, checkParamUsingBody.ParameterName)
 	if resultSearch == "" {
 		log.Println("Failed to find parameter", checkParamUsingBody.ParameterName)
 		c.JSON(http.StatusOK, gin.H{"is_using_at_file": resultSearch})
@@ -1592,6 +1618,53 @@ func FindCodeInRepo(owner, repo, token, paramName string) string {
 			FileName:     item.Path,
 			FileHTMLPath: item.HTMLURL,
 			LineNumber:   lines,
+			// FileContent:  fileContent,
+		}
+		usingAtTotal = append(usingAtTotal, usingAt)
+	}
+
+	// remove redundunt usingAt
+	// marshal slice of usingAt to json string and set to param.IsUsingAtFile
+	usingAtJSON, err := json.Marshal(usingAtTotal)
+	if err != nil {
+		log.Println("Failed to marshal usingAt to json")
+		return ""
+	}
+	log.Println(paramName, "is in using ", string(usingAtJSON))
+	return string(usingAtJSON)
+}
+
+func FindCodeAndFileContentInRepo(owner, repo, token, paramName string) string {
+
+	// Get all files in the repo
+	searchCodeInRepoResponse, err := github.SearchCodeInRepo(owner, repo, token, paramName)
+	if err != nil {
+		log.Println("Failed to get files in repo")
+		return ""
+	}
+	// total := len(searchCodeInRepoResponse.Items)
+	// log.Println("Total files in repo", total)
+	var usingAtTotal []UsingAt
+	for _, item := range searchCodeInRepoResponse.Items {
+		fileContent, err := github.GetFileContent(owner, repo, item.Path, token)
+		log.Println("FileContent", fileContent)
+		if err != nil {
+			log.Println("Failed to get file content")
+			return ""
+		}
+
+		// Find parameter in file
+		lines := github.FindStringByLineNumber(fileContent, paramName)
+		if len(lines) > 0 {
+			// log.Printf("Found parameter %s in file %s\n", paramName, item.Path)
+		} else {
+			continue
+		}
+		usingAt := UsingAt{
+			FileName:     item.Path,
+			FileHTMLPath: item.HTMLURL,
+			LineNumber:   lines,
+			FileContent:  fileContent,
 		}
 		usingAtTotal = append(usingAtTotal, usingAt)
 	}
