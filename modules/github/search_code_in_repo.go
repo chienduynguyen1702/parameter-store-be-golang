@@ -70,6 +70,11 @@ func SearchCodeInRepo(owner, repo, token, searchStr string) (SearchCodeInRepoRes
 		log.Printf("error unmarshalling response body: %v", err)
 		return SearchCodeInRepoResponse{}, err
 	}
-
+	if searchCodeInRepoResponse.TotalCount == 0 {
+		log.Println("No search result found")
+	}
+	if searchCodeInRepoResponse.IncompleteResults {
+		log.Println("Search results are incomplete")
+	}
 	return searchCodeInRepoResponse, nil
 }

@@ -54,6 +54,9 @@ func main() {
 	if os.Getenv("ENABLE_HEALTH_CHECK") == "true" {
 		go controllers.ScheduleWorkflowCheck()
 	}
+	// if os.Getenv("ENABLE_HEALTH_CHECK") == "true" {
+	go controllers.FindParameterUsingInFile()
+	// }/
 	if os.Getenv("ENABLE_HTTPS_LOCAL") == "true" {
 		log.Println("Server is running on port", port, "in", os.Getenv("GIN_MODE"), "gin mode with HTTPS")
 		r.RunTLS(":"+port, os.Getenv("CERT_FILE_PATH"), os.Getenv("KEY_FILE_PATH"))
