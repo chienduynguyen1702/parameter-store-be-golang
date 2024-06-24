@@ -322,7 +322,7 @@ func DownloadLatestParameters(c *gin.Context) {
 		if !isIn(filteredEnvironment, environment.Name) {
 			continue
 		}
-		_, err := file.WriteString(fmt.Sprintf("\n########## ENVIRONMENT : %s ###########\n", environment.Name))
+		_, err := file.WriteString(fmt.Sprintf("\n########## ENVS : %s ###########\n", environment.Name))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to write environment to file"})
 			return
@@ -1395,7 +1395,7 @@ func SearchParameterInRepo(c *gin.Context) {
 		wg.Add(1)
 		go func(item github.SearchCodeInRepoItem) {
 			defer wg.Done()
-			log.Println(item.Path)
+			// log.Println(item.Path)
 			// pathFiles = append(pathFiles, item.Path)
 
 			fileAsString, err := github.GetFileContent(githubRepository.Owner, githubRepository.Name, item.Path, project.RepoApiToken)
@@ -1414,7 +1414,7 @@ func SearchParameterInRepo(c *gin.Context) {
 	}
 
 	wg.Wait()
-	log.Println(pP)
+	// log.Println(pP)
 
 	c.JSON(http.StatusOK, gin.H{"searchResult": searchResult})
 }
@@ -1529,7 +1529,7 @@ func CheckParameterUsing(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"is_using_at_file": resultSearch})
 		return
 	}
-	log.Println(checkParamUsingBody.ParameterName, "is in using ", resultSearch)
+	// log.Println(checkParamUsingBody.ParameterName, "is in using ", resultSearch)
 	c.JSON(http.StatusOK, gin.H{"is_using_at_file": resultSearch})
 }
 
@@ -1630,7 +1630,7 @@ func FindCodeInRepo(owner, repo, token, paramName string) string {
 		log.Println("Failed to marshal usingAt to json")
 		return ""
 	}
-	log.Println(paramName, "is in using ", string(usingAtJSON))
+	// log.Println(paramName, "is in using ", string(usingAtJSON))
 	return string(usingAtJSON)
 }
 
@@ -1647,7 +1647,7 @@ func FindCodeAndFileContentInRepo(owner, repo, token, paramName string) string {
 	var usingAtTotal []UsingAt
 	for _, item := range searchCodeInRepoResponse.Items {
 		fileContent, err := github.GetFileContent(owner, repo, item.Path, token)
-		log.Println("FileContent", fileContent)
+		// log.Println("FileContent", fileContent)
 		if err != nil {
 			log.Println("Failed to get file content")
 			return ""
@@ -1676,6 +1676,6 @@ func FindCodeAndFileContentInRepo(owner, repo, token, paramName string) string {
 		log.Println("Failed to marshal usingAt to json")
 		return ""
 	}
-	log.Println(paramName, "is in using ", string(usingAtJSON))
+	// log.Println(paramName, "is in using ", string(usingAtJSON))
 	return string(usingAtJSON)
 }
