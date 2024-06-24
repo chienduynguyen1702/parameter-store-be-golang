@@ -207,6 +207,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/auth/login/github": {
+            "post": {
+                "description": "Login a user with github",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login a user with github",
+                "parameters": [
+                    {
+                        "description": "User login with github request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controllers.LoginWithGithubBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"message\": \"User logged in successfully\", \"user\": {email: \"email\", organization_id: \"organization_id\"}}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "{\"error\": \"Unauthorized\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to login user\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/logout": {
             "post": {
                 "security": [
@@ -2461,6 +2513,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/parameters/check-using": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get file content",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Parameters"
+                ],
+                "summary": "Get file content",
+                "parameters": [
+                    {
+                        "description": "parameter name",
+                        "name": "parameter_name",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/controllers.CheckParamUsingBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"file as string\": \"fileAsString\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get file content\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/parameters/download": {
             "get": {
                 "security": [
@@ -4097,6 +4199,14 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.CheckParamUsingBody": {
+            "type": "object",
+            "properties": {
+                "parameter_name": {
+                    "type": "string"
+                }
+            }
+        },
         "controllers.CreateNewVersion.versionName": {
             "type": "object",
             "properties": {
@@ -4147,6 +4257,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "controllers.LoginWithGithubBody": {
+            "type": "object",
+            "properties": {
+                "code": {
                     "type": "string"
                 }
             }
@@ -4547,6 +4665,9 @@ const docTemplate = `{
                 },
                 "is_archived": {
                     "type": "boolean"
+                },
+                "is_using_at_file": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

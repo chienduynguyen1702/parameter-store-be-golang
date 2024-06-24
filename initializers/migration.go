@@ -14,16 +14,16 @@ func Migration(db *gorm.DB) error {
 		log.Println("Failed to migrate Organization models")
 		return err
 	}
-	err = db.AutoMigrate(&models.Project{})
+	err = db.AutoMigrate(&models.Version{}, &models.Project{})
 	if err != nil {
 		log.Println("Failed to migrate Project models")
 		return err
 	}
-	err = db.AutoMigrate(&models.Version{})
-	if err != nil {
-		log.Println("Failed to migrate Version models")
-		return err
-	}
+	// err = db.AutoMigrate(&models.Version{})
+	// if err != nil {
+	// 	log.Println("Failed to migrate Version models")
+	// 	return err
+	// }
 	db.Migrator().CreateIndex(&models.Version{}, "agent_name_project_id")
 	err = db.AutoMigrate(&models.Stage{})
 	if err != nil {

@@ -1,4 +1,9 @@
 definitions:
+  controllers.CheckParamUsingBody:
+    properties:
+      parameter_name:
+        type: string
+    type: object
   controllers.CreateNewVersion.versionName:
     properties:
       description:
@@ -34,6 +39,11 @@ definitions:
     - email
     - organization_name
     - password
+    type: object
+  controllers.LoginWithGithubBody:
+    properties:
+      code:
+        type: string
     type: object
   controllers.Register.registerRequestBody:
     properties:
@@ -300,6 +310,8 @@ definitions:
         type: boolean
       is_archived:
         type: boolean
+      is_using_at_file:
+        type: string
       name:
         type: string
       project_id:
@@ -540,6 +552,41 @@ paths:
           schema:
             type: string
       summary: Login a user
+      tags:
+      - Auth
+  /api/v1/auth/login/github:
+    post:
+      consumes:
+      - application/json
+      description: Login a user with github
+      parameters:
+      - description: User login with github request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.LoginWithGithubBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"message": "User logged in successfully", "user": {email:
+            "email", organization_id: "organization_id"}}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "401":
+          description: '{"error": "Unauthorized"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to login user"}'
+          schema:
+            type: string
+      summary: Login a user with github
       tags:
       - Auth
   /api/v1/auth/logout:
@@ -2209,6 +2256,37 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get archived parameters
+      tags:
+      - Project Detail / Parameters
+  /api/v1/projects/{project_id}/parameters/check-using:
+    post:
+      consumes:
+      - application/json
+      description: Get file content
+      parameters:
+      - description: parameter name
+        in: body
+        name: parameter_name
+        schema:
+          $ref: '#/definitions/controllers.CheckParamUsingBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"file as string": "fileAsString"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get file content"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get file content
       tags:
       - Project Detail / Parameters
   /api/v1/projects/{project_id}/parameters/download:
