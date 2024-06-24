@@ -1395,7 +1395,7 @@ func SearchParameterInRepo(c *gin.Context) {
 		wg.Add(1)
 		go func(item github.SearchCodeInRepoItem) {
 			defer wg.Done()
-			log.Println(item.Path)
+			// log.Println(item.Path)
 			// pathFiles = append(pathFiles, item.Path)
 
 			fileAsString, err := github.GetFileContent(githubRepository.Owner, githubRepository.Name, item.Path, project.RepoApiToken)
@@ -1414,7 +1414,7 @@ func SearchParameterInRepo(c *gin.Context) {
 	}
 
 	wg.Wait()
-	log.Println(pP)
+	// log.Println(pP)
 
 	c.JSON(http.StatusOK, gin.H{"searchResult": searchResult})
 }
