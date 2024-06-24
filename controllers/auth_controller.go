@@ -212,6 +212,7 @@ func LoginWithGithub(c *gin.Context) {
 		// create user
 		newOrganization := models.Organization{
 			Name: userInfo.Login,
+			EstablishmentDate: time.Now(),
 		}
 		if err := DB.Create(&newOrganization).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register organization"})
