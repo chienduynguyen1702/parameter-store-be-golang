@@ -23,4 +23,8 @@ type User struct {
 	LastLogin           time.Time `gorm:"type:timestamp;" json:"last_login"`
 
 	UserRoleProjects []UserRoleProject `gorm:"foreignKey:UserID" json:"user_role_projects"`
+
+	Organization      Organization `gorm:"foreignKey:OrganizationID" json:"organization"`
+	IsGitHubUser      bool         `gorm:"default:false" json:"is_github_user"`
+	GithubAccessToken string       `gorm:"type:varchar(255);" json:"github_access_token"`
 }

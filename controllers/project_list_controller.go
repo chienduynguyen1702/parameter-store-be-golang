@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"parameter-store-be/models"
+	"parameter-store-be/modules/github"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -109,7 +112,6 @@ func CreateNewProject(c *gin.Context) {
 	initVersion := models.Version{
 		Number:      "1.0.0",
 		Name:        "1.0.0",
-		ProjectID:   project.ID,
 		Description: "Initial version",
 	}
 	DB.Create(&initVersion)
@@ -165,13 +167,6 @@ func CreateNewProject(c *gin.Context) {
 	for _, environment := range newEnvironment {
 		DB.Create(&environment)
 	}
-	newVersion := models.Version{
-		Number:      "1.0.0",
-		Name:        "1.0.0",
-		ProjectID:   project.ID,
-		Description: "Initial version",
-	}
-	DB.Create(&newVersion)
 
 	c.JSON(http.StatusOK, gin.H{"project": project})
 }
@@ -373,4 +368,204 @@ func UnarchiveProject(c *gin.Context) {
 	DB.Save(&project)
 
 	c.JSON(http.StatusOK, gin.H{"message": "Project unarchived"})
+}
+
+// ListGithubRepos godoc
+// @Summary List github repos
+// @Description List github repos
+// @Tags Project List
+// @Accept json
+// @Produce json
+// @Success 200 string {string} json "{"total": "total", "repositories": "repositories"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to list repository by github user"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/project-list/github-repos [get]
+func ListGithubRepos(c *gin.Context) {
+	userInContext, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	user := userInContext.(models.User)
+	if user.OrganizationID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+		return
+	}
+	repositories, err := github.GetUserRepos(user.Username, user.GithubAccessToken)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list repository by github user"})
+		return
+	}
+	// for i := 0; i < len(repositories); i++ {
+	// 	fmt.Println(repositories[i].Name)
+	// }
+	c.JSON(http.StatusOK, gin.H{
+		"total":        len(repositories),
+		"repositories": repositories,
+	})
+}
+
+type ImportReposToProjectRequest struct {
+	ID       uint   `json:"id"`
+	Name     string `json:"name" `
+	FullName string `json:"full_name" `
+	HTMLURL  string `json:"html_url" `
+}
+
+// ImportReposToProject godoc
+// @Summary Import repos to project
+// @Description Import repos to project
+// @Tags Project List
+// @Accept json
+// @Produce json
+// @Param request body ImportReposToProjectRequest true "Import Repos To Project Request"
+func ImportReposToProject(c *gin.Context) {
+	var request []ImportReposToProjectRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	// Retrieve user from context
+	user, exists := c.Get("user")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from context"})
+		return
+	}
+	// Type assertion to extract organization ID
+	userOrganizationID := user.(models.User).OrganizationID
+	if userOrganizationID == 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization ID from user"})
+		return
+	}
+	accessToken := user.(models.User).GithubAccessToken
+	for i := 0; i < len(request); i++ {
+		// fmt.Println(request[i].ID)
+		// fmt.Println(request[i].Name)
+		// fmt.Println(request[i].FullName)
+		// fmt.Println(request[i].HTMLURL)
+		githuburl := fmt.Sprintf("github.com/%s", request[i].FullName)
+		err := CreateRepoToProject(userOrganizationID, request[i].Name, githuburl, accessToken)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to import repos to project"})
+			return
+		}
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "Repos imported to project"})
+}
+
+func CreateRepoToProject(orgID uint, projectName, projectURL, projectAPIToken string) error {
+	var findingProject models.Project
+	DB.Where("repo_url = ?", projectURL).First(&findingProject)
+	if findingProject.ID != 0 {
+		fmt.Println("Project already exists")
+		return nil
+	}
+	// Create a new project
+	project := models.Project{
+		OrganizationID: orgID,
+		Name:           projectName,
+		RepoURL:        projectURL,
+		RepoApiToken:   projectAPIToken,
+		Status:         "In Progress",
+	}
+	DB.Create(&project)
+	newVersion := models.Version{
+		Number:      "1.0.0",
+		Name:        "1.0.0",
+		Description: "Initial version",
+		ProjectID:   project.ID,
+	}
+	DB.Create(&newVersion)
+	// save latest version id to project
+	project.LatestVersionID = newVersion.ID
+	DB.Save(&project)
+
+	// Create new stages
+	newStages := []models.Stage{
+		{
+			Name:        "Build",
+			Description: "Build stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Test",
+			Description: "Test stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Release",
+			Description: "Release stage",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Deploy",
+			Description: "Deploy stage",
+			ProjectID:   project.ID,
+		},
+	}
+	for _, stage := range newStages {
+		DB.Create(&stage)
+	}
+
+	newEnvironment := []models.Environment{
+		{
+
+			Name:        "Development",
+			Description: "Development environment",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Staging",
+			Description: "Staging environment",
+			ProjectID:   project.ID,
+		},
+		{
+			Name:        "Production",
+			Description: "Production environment",
+			ProjectID:   project.ID,
+		},
+	}
+	for _, environment := range newEnvironment {
+		DB.Create(&environment)
+	}
+	repo, err := github.ParseRepoURL(projectURL)
+	if err != nil {
+		fmt.Println(err)
+	}
+	log.Println(repo.Owner, repo.Name, projectAPIToken)
+	colaborator, err := github.ListRepositoryColaborator(repo.Owner, repo.Name, projectAPIToken)
+	if err != nil {
+		fmt.Println(err)
+	}
+	var urps []models.UserRoleProject
+	for _, colab := range colaborator {
+		fmt.Println(colab.Login, colab.Email, colab.Permissions.Admin)
+		user := models.User{
+			Username:       colab.Login,
+			Email:          colab.Email,
+			OrganizationID: orgID,
+		}
+		var urp models.UserRoleProject
+		if err := DB.Where("email = ?", colab.Email).First(&user).Error; err != nil {
+			DB.Create(&user)
+		}
+
+		if colab.Permissions.Admin { // check if user is admin in the repo
+			urp = models.UserRoleProject{
+				UserID:    user.ID,
+				ProjectID: project.ID,
+				RoleID:    2,
+			}
+		} else {
+			urp = models.UserRoleProject{ // user is not admin in the repo
+				UserID:    user.ID,
+				ProjectID: project.ID,
+				RoleID:    3,
+			}
+		}
+		urps = append(urps, urp)
+	}
+	DB.Create(&urps)
+	return nil
 }

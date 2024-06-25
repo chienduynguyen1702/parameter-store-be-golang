@@ -77,7 +77,7 @@ func CreateNewVersion(c *gin.Context) {
 	}
 	// copy latest version to new version, except name
 	newVersion := models.Version{
-		ProjectID:   uintProjectID,
+		// ProjectID:   uintProjectID,
 		Number:      v.Number,
 		Description: v.Description,
 		Name:        v.Number,

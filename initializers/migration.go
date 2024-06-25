@@ -1,6 +1,7 @@
 package initializers
 
 import (
+	"fmt"
 	"log"
 	"parameter-store-be/models"
 
@@ -14,17 +15,23 @@ func Migration(db *gorm.DB) error {
 		log.Println("Failed to migrate Organization models")
 		return err
 	}
-	err = db.AutoMigrate(&models.Version{}, &models.Project{})
+	err = db.AutoMigrate(&models.Project{})
 	if err != nil {
 		log.Println("Failed to migrate Project models")
 		return err
 	}
-	// err = db.AutoMigrate(&models.Version{})
-	// if err != nil {
-	// 	log.Println("Failed to migrate Version models")
-	// 	return err
-	// }
-	db.Migrator().CreateIndex(&models.Version{}, "agent_name_project_id")
+	// Kiểm tra xem bảng `projects` đã được tạo thành công chưa
+	if db.Migrator().HasTable(&models.Project{}) {
+		err = db.AutoMigrate(&models.Version{})
+		if err != nil {
+			log.Println("Failed to migrate Version models")
+			return err
+		}
+	} else {
+		log.Println("Table `projects` does not exist")
+		return fmt.Errorf("table `projects` does not exist")
+	}
+	// db.Migrator().CreateIndex(&models.Version{}, "agent_name_project_id")
 	err = db.AutoMigrate(&models.Stage{})
 	if err != nil {
 		log.Println("Failed to migrate Stage models")
