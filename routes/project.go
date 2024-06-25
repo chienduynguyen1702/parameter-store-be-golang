@@ -100,5 +100,13 @@ func setupGroupProject(r *gin.RouterGroup) {
 			environmentGroup.PATCH("/:environment_id/archive", middleware.RequiredIsAdmin, controllers.ArchiveEnvironmentInProject)
 			environmentGroup.PATCH("/:environment_id/unarchive", middleware.RequiredIsAdmin, controllers.UnarchiveEnvironmentInProject)
 		}
+		// githubGroup := projectGroup.Group("/github")
+		// {
+		// githubGroup.POST("/repositories", controllers.ListRepositoryByGithubUser)
+		// githubGroup.GET("/repos", controllers.GetProjectGithubRepos)
+		// githubGroup.GET("/repos/:repo_id", controllers.GetProjectGithubRepoDetail)
+		// githubGroup.POST("/repos/:repo_id/apply", middleware.RequiredIsAdmin, controllers.ApplyParametersFromGithubRepo)
+		// }
 	}
+	r.POST("/projects/github/repositories", controllers.ListRepositoryByGithubUser)
 }

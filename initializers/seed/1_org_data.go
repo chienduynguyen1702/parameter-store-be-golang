@@ -3,7 +3,6 @@ package seed
 import (
 	"log"
 	"parameter-store-be/models"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -135,235 +134,235 @@ func SeedDatabase(db *gorm.DB) error {
 
 	log.Printf("\nDefault roles and permission data are seeded.\n")
 
-	stages := []models.Stage{
-		{
-			Name:        "Build",
-			Description: "Build stage",
-		},
-		{
-			Name:        "Test",
-			Description: "Test stage",
-		},
-		{
-			Name:        "Release",
-			Description: "Release stage",
-		},
-		{
-			Name:        "Deploy",
-			Description: "Deploy stage",
-		},
-	}
-	// if err := db.Create(&stages).Error; err != nil {
+	// stages := []models.Stage{
+	// 	{
+	// 		Name:        "Build",
+	// 		Description: "Build stage",
+	// 	},
+	// 	{
+	// 		Name:        "Test",
+	// 		Description: "Test stage",
+	// 	},
+	// 	{
+	// 		Name:        "Release",
+	// 		Description: "Release stage",
+	// 	},
+	// 	{
+	// 		Name:        "Deploy",
+	// 		Description: "Deploy stage",
+	// 	},
+	// }
+	// // if err := db.Create(&stages).Error; err != nil {
+	// // 	return err
+	// // }
+	// defaultStages = stages
+	// log.Printf("\nnDefault stages data is seeded.\n")
+
+	// envs := []models.Environment{
+	// 	{
+	// 		Name:        "Development",
+	// 		Description: "Development environment",
+	// 	},
+	// 	{
+	// 		Name:        "Testing",
+	// 		Description: "Testing environment",
+	// 	},
+	// 	{
+	// 		Name:        "Staging",
+	// 		Description: "Staging environment",
+	// 	},
+	// 	{
+	// 		Name:        "Production",
+	// 		Description: "Production environment",
+	// 	},
+	// }
+	// // if err := db.Create(&envs).Error; err != nil {
+	// // 	return err
+	// // }
+	// defaultEnvironments = envs
+	// log.Printf("\nDefault evironments data is seeded.\n")
+
+	// //////////////////////////////////////////// Sample Org Data ////////////////////////////////////////////
+
+	// organization := models.Organization{
+	// 	Name:              "HUST",
+	// 	AliasName:         "Hanoi University of Science and Technology",
+	// 	Address:           "1 Dai Co Viet, Hanoi",
+	// 	EstablishmentDate: time.Date(1956, time.Month(10), 10, 0, 0, 0, 0, time.UTC),
+	// 	Description:       "Hanoi University of Science and Technology (HUST) is a multidisciplinary technical university located in Hanoi, Vietnam. It was founded on October 10, 1956, and is one of the two largest technical universities in Vietnam.",
+	// }
+	// if err := db.Create(&organization).Error; err != nil {
 	// 	return err
 	// }
-	defaultStages = stages
-	log.Printf("\nnDefault stages data is seeded.\n")
+	// sampleOrganizations = organization
 
-	envs := []models.Environment{
-		{
-			Name:        "Development",
-			Description: "Development environment",
-		},
-		{
-			Name:        "Testing",
-			Description: "Testing environment",
-		},
-		{
-			Name:        "Staging",
-			Description: "Staging environment",
-		},
-		{
-			Name:        "Production",
-			Description: "Production environment",
-		},
-	}
-	// if err := db.Create(&envs).Error; err != nil {
+	// log.Printf("\nDefault organization data is seeded.\n")
+	// //////////////////////////////////////////// Sample Users ////////////////////////////////////////////
+	// admin := models.User{
+	// 	Username:            "admin",
+	// 	Email:               "admin@gmail.com",
+	// 	Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
+	// 	OrganizationID:      sampleOrganizations.ID,
+	// 	IsOrganizationAdmin: true,
+	// 	Phone:               "0123456789",
+	// 	LastLogin:           time.Now(),
+	// }
+	// user1 := models.User{
+	// 	Username:            "user1",
+	// 	Email:               "user1@gmail.com",
+	// 	Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
+	// 	OrganizationID:      sampleOrganizations.ID,
+	// 	IsOrganizationAdmin: false,
+	// 	Phone:               "0123451231",
+	// 	LastLogin:           time.Now(),
+	// }
+	// user2 := models.User{
+	// 	Username:            "user2",
+	// 	Email:               "user2@gmail.com",
+	// 	Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
+	// 	OrganizationID:      sampleOrganizations.ID,
+	// 	IsOrganizationAdmin: false,
+	// 	Phone:               "0123451232",
+	// 	LastLogin:           time.Now(),
+	// }
+	// if err := db.Create(&admin).Error; err != nil {
 	// 	return err
 	// }
-	defaultEnvironments = envs
-	log.Printf("\nDefault evironments data is seeded.\n")
+	// if err := db.Create(&user1).Error; err != nil {
+	// 	return err
+	// }
+	// if err := db.Create(&user2).Error; err != nil {
+	// 	return err
+	// }
+	// sampleAdmin = admin
+	// sampleUsers1 = user1
+	// sampleUsers2 = user2
+	// log.Printf("\nDefault user data is seeded.\n")
 
-	//////////////////////////////////////////// Sample Org Data ////////////////////////////////////////////
+	// projects := []models.Project{
+	// 	{
+	// 		Name:           "Parameter Store",
+	// 		StartAt:        time.Now(),
+	// 		Description:    "Parameter Store is a project to store parameters",
+	// 		CurrentSprint:  "1",
+	// 		Status:         "In Progress",
+	// 		RepoURL:        "github.com/parameter-store",
+	// 		OrganizationID: sampleOrganizations.ID,
+	// 		Address:        "SoICT, HUST",
+	// 		Stages:         defaultStages,
+	// 		Environments:   defaultEnvironments,
+	// 	},
+	// 	{
+	// 		Name:           "Parameter Store 2",
+	// 		StartAt:        time.Now(),
+	// 		Description:    "Parameter Store is a project to store parameters",
+	// 		CurrentSprint:  "1",
+	// 		Status:         "In Progress",
+	// 		RepoURL:        "github.com/parameter-store",
+	// 		OrganizationID: sampleOrganizations.ID,
+	// 		Address:        "SoICT, HUST",
+	// 		Stages:         defaultStages,
+	// 		Environments:   defaultEnvironments,
+	// 	},
+	// 	{
+	// 		Name:           "Parameter Store 3",
+	// 		StartAt:        time.Now(),
+	// 		Description:    "Parameter Store is a project to store parameters",
+	// 		CurrentSprint:  "1",
+	// 		Status:         "In Progress",
+	// 		RepoURL:        "github.com/parameter-store",
+	// 		OrganizationID: sampleOrganizations.ID,
+	// 		Address:        "SoICT, HUST",
+	// 		Stages:         defaultStages,
+	// 		Environments:   defaultEnvironments,
+	// 	},
+	// }
+	// if err := db.Create(&projects).Error; err != nil {
+	// 	return err
+	// }
+	// sampleProjects = projects
+	// log.Printf("\nDefault project data is seeded.\n")
 
-	organization := models.Organization{
-		Name:              "HUST",
-		AliasName:         "Hanoi University of Science and Technology",
-		Address:           "1 Dai Co Viet, Hanoi",
-		EstablishmentDate: time.Date(1956, time.Month(10), 10, 0, 0, 0, 0, time.UTC),
-		Description:       "Hanoi University of Science and Technology (HUST) is a multidisciplinary technical university located in Hanoi, Vietnam. It was founded on October 10, 1956, and is one of the two largest technical universities in Vietnam.",
-	}
-	if err := db.Create(&organization).Error; err != nil {
-		return err
-	}
-	sampleOrganizations = organization
+	// upr := []models.UserRoleProject{
+	// 	// project 1
+	// 	{
+	// 		UserID:    sampleAdmin.ID,
+	// 		ProjectID: sampleProjects[0].ID,
+	// 		RoleID:    defaultRoles[1].ID,
+	// 	},
+	// 	{
+	// 		UserID:    sampleUsers1.ID,
+	// 		ProjectID: sampleProjects[0].ID,
+	// 		RoleID:    defaultRoles[2].ID,
+	// 	},
 
-	log.Printf("\nDefault organization data is seeded.\n")
-	//////////////////////////////////////////// Sample Users ////////////////////////////////////////////
-	admin := models.User{
-		Username:            "admin",
-		Email:               "admin@gmail.com",
-		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      sampleOrganizations.ID,
-		IsOrganizationAdmin: true,
-		Phone:               "0123456789",
-		LastLogin:           time.Now(),
-	}
-	user1 := models.User{
-		Username:            "user1",
-		Email:               "user1@gmail.com",
-		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      sampleOrganizations.ID,
-		IsOrganizationAdmin: false,
-		Phone:               "0123451231",
-		LastLogin:           time.Now(),
-	}
-	user2 := models.User{
-		Username:            "user2",
-		Email:               "user2@gmail.com",
-		Password:            "$2a$10$qdi5VjamNQsbgisE7ijEx.McxvM5eQzCcDmvDosm5cSDhwkznMOCa", // 123123
-		OrganizationID:      sampleOrganizations.ID,
-		IsOrganizationAdmin: false,
-		Phone:               "0123451232",
-		LastLogin:           time.Now(),
-	}
-	if err := db.Create(&admin).Error; err != nil {
-		return err
-	}
-	if err := db.Create(&user1).Error; err != nil {
-		return err
-	}
-	if err := db.Create(&user2).Error; err != nil {
-		return err
-	}
-	sampleAdmin = admin
-	sampleUsers1 = user1
-	sampleUsers2 = user2
-	log.Printf("\nDefault user data is seeded.\n")
+	// 	// project 2
+	// 	{
+	// 		UserID:    sampleAdmin.ID,
+	// 		ProjectID: sampleProjects[1].ID,
+	// 		RoleID:    defaultRoles[1].ID,
+	// 	},
+	// 	{
+	// 		UserID:    sampleUsers1.ID,
+	// 		ProjectID: sampleProjects[1].ID,
+	// 		RoleID:    defaultRoles[2].ID,
+	// 	},
 
-	projects := []models.Project{
-		{
-			Name:           "Parameter Store",
-			StartAt:        time.Now(),
-			Description:    "Parameter Store is a project to store parameters",
-			CurrentSprint:  "1",
-			Status:         "In Progress",
-			RepoURL:        "github.com/parameter-store",
-			OrganizationID: sampleOrganizations.ID,
-			Address:        "SoICT, HUST",
-			Stages:         defaultStages,
-			Environments:   defaultEnvironments,
-		},
-		{
-			Name:           "Parameter Store 2",
-			StartAt:        time.Now(),
-			Description:    "Parameter Store is a project to store parameters",
-			CurrentSprint:  "1",
-			Status:         "In Progress",
-			RepoURL:        "github.com/parameter-store",
-			OrganizationID: sampleOrganizations.ID,
-			Address:        "SoICT, HUST",
-			Stages:         defaultStages,
-			Environments:   defaultEnvironments,
-		},
-		{
-			Name:           "Parameter Store 3",
-			StartAt:        time.Now(),
-			Description:    "Parameter Store is a project to store parameters",
-			CurrentSprint:  "1",
-			Status:         "In Progress",
-			RepoURL:        "github.com/parameter-store",
-			OrganizationID: sampleOrganizations.ID,
-			Address:        "SoICT, HUST",
-			Stages:         defaultStages,
-			Environments:   defaultEnvironments,
-		},
-	}
-	if err := db.Create(&projects).Error; err != nil {
-		return err
-	}
-	sampleProjects = projects
-	log.Printf("\nDefault project data is seeded.\n")
+	// 	// project 3
+	// 	{
+	// 		UserID:    sampleAdmin.ID,
+	// 		ProjectID: sampleProjects[2].ID,
+	// 		RoleID:    defaultRoles[1].ID,
+	// 	},
+	// 	{
+	// 		UserID:    sampleUsers2.ID,
+	// 		ProjectID: sampleProjects[2].ID,
+	// 		RoleID:    defaultRoles[2].ID,
+	// 	},
+	// }
 
-	upr := []models.UserRoleProject{
-		// project 1
-		{
-			UserID:    sampleAdmin.ID,
-			ProjectID: sampleProjects[0].ID,
-			RoleID:    defaultRoles[1].ID,
-		},
-		{
-			UserID:    sampleUsers1.ID,
-			ProjectID: sampleProjects[0].ID,
-			RoleID:    defaultRoles[2].ID,
-		},
+	// for _, upr := range upr {
+	// 	if err := db.Create(&upr).Error; err != nil {
+	// 		return err
+	// 	}
+	// }
 
-		// project 2
-		{
-			UserID:    sampleAdmin.ID,
-			ProjectID: sampleProjects[1].ID,
-			RoleID:    defaultRoles[1].ID,
-		},
-		{
-			UserID:    sampleUsers1.ID,
-			ProjectID: sampleProjects[1].ID,
-			RoleID:    defaultRoles[2].ID,
-		},
+	// log.Printf("\nDefault relation user project role is seed\n")
 
-		// project 3
-		{
-			UserID:    sampleAdmin.ID,
-			ProjectID: sampleProjects[2].ID,
-			RoleID:    defaultRoles[1].ID,
-		},
-		{
-			UserID:    sampleUsers2.ID,
-			ProjectID: sampleProjects[2].ID,
-			RoleID:    defaultRoles[2].ID,
-		},
-	}
-
-	for _, upr := range upr {
-		if err := db.Create(&upr).Error; err != nil {
-			return err
-		}
-	}
-
-	log.Printf("\nDefault relation user project role is seed\n")
-
-	vers := []models.Version{
-		{
-			Name:        "v1.0",
-			Description: "Version 1.0",
-			ProjectID:   sampleProjects[0].ID,
-		},
-		{
-			Name:        "v1.5",
-			Description: "Version 1.5",
-			ProjectID:   sampleProjects[0].ID,
-		},
-		{
-			Name:        "v1.0",
-			Description: "Version 1.0",
-			ProjectID:   sampleProjects[1].ID,
-		},
-		{
-			Name:        "v1.5",
-			Description: "Version 1.5",
-			ProjectID:   sampleProjects[1].ID,
-		},
-		{
-			Name:        "v1.0",
-			Description: "Version 1.0",
-			ProjectID:   sampleProjects[2].ID,
-		},
-		{
-			Name:        "v1.5",
-			Description: "Version 1.5",
-			ProjectID:   sampleProjects[2].ID,
-		},
-	}
-	if err := db.Create(&vers).Error; err != nil {
-		return err
-	}
+	// vers := []models.Version{
+	// 	{
+	// 		Name:        "v1.0",
+	// 		Description: "Version 1.0",
+	// 		ProjectID:   sampleProjects[0].ID,
+	// 	},
+	// 	{
+	// 		Name:        "v1.5",
+	// 		Description: "Version 1.5",
+	// 		ProjectID:   sampleProjects[0].ID,
+	// 	},
+	// 	{
+	// 		Name:        "v1.0",
+	// 		Description: "Version 1.0",
+	// 		ProjectID:   sampleProjects[1].ID,
+	// 	},
+	// 	{
+	// 		Name:        "v1.5",
+	// 		Description: "Version 1.5",
+	// 		ProjectID:   sampleProjects[1].ID,
+	// 	},
+	// 	{
+	// 		Name:        "v1.0",
+	// 		Description: "Version 1.0",
+	// 		ProjectID:   sampleProjects[2].ID,
+	// 	},
+	// 	{
+	// 		Name:        "v1.5",
+	// 		Description: "Version 1.5",
+	// 		ProjectID:   sampleProjects[2].ID,
+	// 	},
+	// }
+	// if err := db.Create(&vers).Error; err != nil {
+	// 	return err
+	// }
 	return nil
 }

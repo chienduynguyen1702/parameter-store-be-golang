@@ -12,25 +12,25 @@ func RunSeed(db *gorm.DB) error {
 		return err
 	}
 
-	// 2 - Seed data for test project
-	if err := seed.SeedDataTestProjectUser(db); err != nil {
-		return err
-	}
+	// // 2 - Seed data for test project
+	// if err := seed.SeedDataTestProjectUser(db); err != nil {
+	// 	return err
+	// }
 
-	// 3 - Seed version, params for test project
-	if err := seed.SeedDataTestProjectVersion(db); err != nil {
-		return err
-	}
+	// // 3 - Seed version, params for test project
+	// if err := seed.SeedDataTestProjectVersion(db); err != nil {
+	// 	return err
+	// }
 
-	// 4 - Seed params for test project
-	if err := seed.SeedDataTestParam(db); err != nil {
-		return err
-	}
+	// // 4 - Seed params for test project
+	// if err := seed.SeedDataTestParam(db); err != nil {
+	// 	return err
+	// }
 
-	// 5 - Seed agent for test project
-	if err := seed.SeedAgent(db); err != nil {
-		return err
-	}
+	// // 5 - Seed agent for test project
+	// if err := seed.SeedAgent(db); err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
