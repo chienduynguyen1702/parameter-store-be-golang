@@ -489,7 +489,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	DB.Save(&agent)
 	startTime := time.Now()
 	var project models.Project
-	if err := DB.Debug().
+	if err := DB.
 		Preload("LatestVersion").
 		Preload("LatestVersion.Parameters",
 			"stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false,
