@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type agentResponse struct {
@@ -488,9 +489,15 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	DB.Save(&agent)
 	startTime := time.Now()
 	var project models.Project
-	if err := DB.
+	if err := DB.Debug().
 		Preload("LatestVersion").
-		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
+		Preload("LatestVersion.Parameters",
+			"stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false,
+			func(db *gorm.DB) *gorm.DB { // order by parameter name
+				db = db.Order("parameters.name asc")
+				return db
+			},
+		).
 		First(&project, agent.ProjectID).Error; err != nil {
 
 		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
