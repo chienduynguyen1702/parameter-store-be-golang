@@ -154,3 +154,49 @@ func GetWorkflowProcess(c *gin.Context) {
 		},
 	})
 }
+
+// GetWorkflowLogs is a function to get workflow history
+// @Summary Get workflow history
+// @Description Get workflow history
+// @Tags Project Detail / Workflows
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param workflow_id path string true "Workflow ID"
+// @Success 200 string {string} json "{"workflow": "workflow"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get workflow history"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/workflows/{workflow_id}/logs [get]
+func GetWorkflowLogs(c *gin.Context) {
+	projectID := c.Param("project_id")
+	workflowID := c.Param("workflow_id")
+	// fmt.Println("Project ID: ", projectID)
+	// fmt.Println("Workflow ID: ", workflowID)
+	var prj models.Project
+	if err := DB.Preload("Workflows", "workflow_id = ? ", workflowID).Preload("Workflows.Logs").First(&prj, projectID).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
+		return
+	}
+
+	// debug
+	// fmt.Println("prj: ", prj)
+
+	var workflow models.Workflow
+	var workflowLogs []models.WorkflowLog
+	if len(prj.Workflows) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Workflow not found"})
+		return
+	} else { // assign workflow and workflowLogs
+		workflow = prj.Workflows[0]
+		workflowLogs = prj.Workflows[0].Logs
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": gin.H{
+			"workflows": workflow,
+			"logs":      workflowLogs,
+		},
+	})
+}

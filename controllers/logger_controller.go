@@ -31,7 +31,7 @@ func rerunLog(projectID uint, agentID uint, responseStatus int, message string, 
 	DB.Create(&log)
 }
 
-func agentLog(agent models.Agent, project models.Project, action string, message string, responseStatusCode int, latency time.Duration) {
+func agentLog(agent models.Agent, project models.Project, action string, message string, responseStatusCode int, latency time.Duration, workflowlogID uint, pulledParameters []models.Parameter) {
 	log := models.AgentLog{
 		AgentID:        agent.ID,
 		Agent:          agent,
@@ -41,8 +41,28 @@ func agentLog(agent models.Agent, project models.Project, action string, message
 		Message:        message,
 		ResponseStatus: responseStatusCode,
 		Latency:        int(latency.Milliseconds()),
+
+		ExecutedInWorkflowLogID: workflowlogID,
 	}
 	DB.Create(&log)
+	if responseStatusCode == 200 {
+		var pulledParameterLogs []models.AgentPullParameterLog
+		for _, parameter := range pulledParameters {
+			each := models.AgentPullParameterLog{
+				AgentLogID:    log.ID,
+				AgentID:       agent.ID,
+				ProjectID:     project.ID,
+				StageID:       agent.StageID,
+				EnvironmentID: agent.EnvironmentID,
+
+				ParameterID:    parameter.ID,
+				ParameterValue: parameter.Value,
+				ParameterName:  parameter.Name,
+			}
+			pulledParameterLogs = append(pulledParameterLogs, each)
+		}
+		DB.Create(&pulledParameterLogs)
+	}
 }
 
 func projectLogByUser(projectID uint, action string, message string, responseStatusCode int, latency time.Duration, userID uint) {

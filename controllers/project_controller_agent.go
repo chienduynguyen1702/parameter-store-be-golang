@@ -477,7 +477,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	var agent models.Agent
-	result := DB.Where("api_token = ?", reqBody.ApiToken).First(&agent)
+	result := DB.Where("api_token = ?", reqBody.ApiToken).
+		Preload("Workflow").
+		Preload("Workflow.Logs", "state != ?", "completed").
+		First(&agent)
 	if result.Error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":  http.StatusUnauthorized,
@@ -500,7 +503,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		).
 		First(&project, agent.ProjectID).Error; err != nil {
 
-		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
+		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime), agent.Workflow.Logs[0].ID, nil)
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "Failed to get project by agent",
@@ -509,7 +512,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	if len(project.LatestVersion.Parameters) == 0 {
-		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime))
+		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime), agent.Workflow.Logs[0].ID, nil)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Failed to get parameter by agent: Not found any parameters.",
@@ -521,7 +524,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		DB.Save(&parameter)
 	}
 	latency := time.Since(startTime)
-	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)
+
+	// debug
+	// fmt.Println("Workflow Logs calling agent", agent.Workflow.Logs[0])
+	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency, agent.Workflow.Logs[0].ID, project.LatestVersion.Parameters)
 
 	// Create a new file
 	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, project.LatestVersion.Number)
