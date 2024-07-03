@@ -14,6 +14,11 @@ type AgentLog struct {
 	Message        string `gorm:"type:text" json:"message"`
 	Latency        int    `gorm:"not null" json:"latency"`
 
+	ExecutedInWorkflowLogID uint        `json:"executed_in_workflow_log_id"`
+	ExecutedInWorkflowLog   WorkflowLog `gorm:"foreignKey:ExecutedInWorkflowLogID; references:ID" json:"executed_in_workflow_log"`
+
+	AgentPullParameterLog []AgentPullParameterLog `gorm:"foreignKey:AgentLogID; references:ID" json:"agent_pull_parameter_log"`
+
 	Project Project `json:"project"`
 	Agent   Agent   `json:"agent"`
 }

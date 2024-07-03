@@ -2777,6 +2777,42 @@ paths:
       summary: Get project workflows
       tags:
       - Project Detail / Workflows
+  /api/v1/projects/{project_id}/workflows/{workflow_id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get workflow history
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Workflow ID
+        in: path
+        name: workflow_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"workflow": "workflow"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get workflow history"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get workflow history
+      tags:
+      - Project Detail / Workflows
   /api/v1/projects/{project_id}/workflows/{workflow_id}/run:
     get:
       consumes:
