@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GetProjectWorkflows is a function to get project workflows
@@ -174,7 +175,13 @@ func GetWorkflowLogs(c *gin.Context) {
 	// fmt.Println("Project ID: ", projectID)
 	// fmt.Println("Workflow ID: ", workflowID)
 	var prj models.Project
-	if err := DB.Preload("Workflows", "workflow_id = ? ", workflowID).Preload("Workflows.Logs").First(&prj, projectID).Error; err != nil {
+	if err := DB.
+		Preload("Workflows", "workflow_id = ? ", workflowID).
+		Preload("Workflows.Logs",
+			func(db *gorm.DB) *gorm.DB { // order by workflow_log created_at desc
+				db = db.Order("workflow_logs.created_at desc")
+				return db
+			}).First(&prj, projectID).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
 		return
@@ -262,7 +269,7 @@ func GetDiffParameterInWorkflowLog(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		// "current":  curentWorkflowLog,
 		// "previous": previousWorkflowLog,
-		"diff":     diff,
+		"diff": diff,
 	})
 
 }
