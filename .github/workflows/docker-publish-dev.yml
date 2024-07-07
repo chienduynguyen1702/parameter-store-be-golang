@@ -68,8 +68,8 @@ jobs:
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
           ./scripts/get-parameters-dev-server.sh -o dev.param.test
           cat dev.param.test
-          # ./scripts/get-parameters.sh -o param.test
-          # cat param.test
+          ./scripts/get-parameters.sh -o param.test
+          cat param.test
       - name: Test
         run: 
           go test -v ./test
@@ -104,6 +104,6 @@ jobs:
         port: ${{ secrets.SERVER_PORT }}
         script: |
           cd /home/${{ secrets.SERVER_USERNAME }}/${{ secrets.SERVER_STAGING_FOLDER }}
-          # . ./export-token.sh  && ./get-parameters.sh  -o .env  
+          . ./export-token.sh  && ./get-parameters.sh  -o .env  
           . ./export-token.sh  && ./get-parameters-dev-server.sh  -o .env.dev.server  
           ./docker-compose-restart.sh
