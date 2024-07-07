@@ -3738,6 +3738,69 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/projects/{project_id}/workflows/{workflow_id}/logs/{workflow_log_id}/diff-parameter": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get diff parameter pulled by agent in 2 nearest workflow log",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Project Detail / Workflows"
+                ],
+                "summary": "Get diff parameter in workflow log",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Project ID",
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workflow ID",
+                        "name": "workflow_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workflow Log ID",
+                        "name": "workflow_log_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{\"workflow\": \"workflow\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "{\"error\": \"Bad request\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "{\"error\": \"Failed to get diff parameter in workflow log\"}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/projects/{project_id}/workflows/{workflow_id}/run": {
             "get": {
                 "security": [
@@ -4647,6 +4710,115 @@ const docTemplate = `{
                 }
             }
         },
+        "models.AgentLog": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "agent": {
+                    "$ref": "#/definitions/models.Agent"
+                },
+                "agent_id": {
+                    "type": "integer"
+                },
+                "agent_pull_parameter_log": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AgentPullParameterLog"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "executed_in_workflow_log": {
+                    "$ref": "#/definitions/models.WorkflowLog"
+                },
+                "executed_in_workflow_log_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latency": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "project": {
+                    "$ref": "#/definitions/models.Project"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "response_status": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.AgentPullParameterLog": {
+            "type": "object",
+            "properties": {
+                "agent_id": {
+                    "type": "integer"
+                },
+                "agent_log_id": {
+                    "type": "integer"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "environment": {
+                    "$ref": "#/definitions/models.Environment"
+                },
+                "environment_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "parameter": {
+                    "$ref": "#/definitions/models.Parameter"
+                },
+                "parameter_id": {
+                    "type": "integer"
+                },
+                "parameter_name": {
+                    "type": "string"
+                },
+                "parameter_value": {
+                    "type": "string"
+                },
+                "project": {
+                    "$ref": "#/definitions/models.Project"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "stage": {
+                    "$ref": "#/definitions/models.Stage"
+                },
+                "stage_id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Environment": {
             "type": "object",
             "properties": {
@@ -4750,6 +4922,224 @@ const docTemplate = `{
                 }
             }
         },
+        "models.Permission": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Project": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "agents": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Agent"
+                    }
+                },
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "description": "foreign key to user model",
+                    "type": "string"
+                },
+                "auto_update": {
+                    "type": "boolean"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "current_sprint": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "environments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Environment"
+                    }
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_archived": {
+                    "type": "boolean"
+                },
+                "latest_version": {
+                    "$ref": "#/definitions/models.Version"
+                },
+                "latest_version_id": {
+                    "type": "integer"
+                },
+                "logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.ProjectLog"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Parameter"
+                    }
+                },
+                "repo_api_token": {
+                    "type": "string"
+                },
+                "repo_url": {
+                    "type": "string"
+                },
+                "stages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Stage"
+                    }
+                },
+                "start_at": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user_role": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserRoleProject"
+                    }
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Version"
+                    }
+                },
+                "workflows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Workflow"
+                    }
+                }
+            }
+        },
+        "models.ProjectLog": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "latency": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string"
+                },
+                "project": {
+                    "$ref": "#/definitions/models.Project"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "response_status": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "description": "Agent   Agent   ` + "`" + `json:\"agent\"` + "`" + `",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.User"
+                        }
+                    ]
+                },
+                "user_id": {
+                    "description": "AgentID        uint   ` + "`" + `gorm:\"foreignKey:AgentID\" json:\"agent_id\"` + "`" + `\nIsByUser       bool   ` + "`" + `gorm:\"default:false\" json:\"is_by_user\"` + "`" + `",
+                    "type": "integer"
+                }
+            }
+        },
+        "models.Role": {
+            "type": "object",
+            "required": [
+                "description",
+                "name",
+                "permissions"
+            ],
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "permissions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Permission"
+                    }
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "models.Stage": {
             "type": "object",
             "properties": {
@@ -4785,6 +5175,100 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "archived_at": {
+                    "type": "string"
+                },
+                "archived_by": {
+                    "description": "foreign key to user model",
+                    "type": "string"
+                },
+                "avatar_url": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_archived": {
+                    "type": "boolean"
+                },
+                "is_organization_admin": {
+                    "description": "Assuming this field represents the ID of the organization the user is an admin of",
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "description": "foreign key to organization model",
+                    "type": "integer"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user_role_projects": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.UserRoleProject"
+                    }
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserRoleProject": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "$ref": "#/definitions/gorm.DeletedAt"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "project_id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "$ref": "#/definitions/models.Role"
+                },
+                "role_id": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.User"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -4863,6 +5347,12 @@ const docTemplate = `{
         "models.WorkflowLog": {
             "type": "object",
             "properties": {
+                "agent_logs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.AgentLog"
+                    }
+                },
                 "attempt_number": {
                     "type": "integer"
                 },

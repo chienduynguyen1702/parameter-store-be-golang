@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
+	"sort"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // GetProjectWorkflows is a function to get project workflows
@@ -174,7 +176,13 @@ func GetWorkflowLogs(c *gin.Context) {
 	// fmt.Println("Project ID: ", projectID)
 	// fmt.Println("Workflow ID: ", workflowID)
 	var prj models.Project
-	if err := DB.Preload("Workflows", "workflow_id = ? ", workflowID).Preload("Workflows.Logs").First(&prj, projectID).Error; err != nil {
+	if err := DB.
+		Preload("Workflows", "workflow_id = ? ", workflowID).
+		Preload("Workflows.Logs",
+			func(db *gorm.DB) *gorm.DB { // order by workflow_log created_at desc
+				db = db.Order("workflow_logs.created_at desc")
+				return db
+			}).First(&prj, projectID).Error; err != nil {
 		log.Println(err)
 		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
 		return
@@ -199,4 +207,154 @@ func GetWorkflowLogs(c *gin.Context) {
 			"logs":      workflowLogs,
 		},
 	})
+}
+
+// GetDiffParameterInWorkflowLog is a function to get diff parameter in workflow log, pulled by agent
+// @Summary Get diff parameter in workflow log
+// @Description Get diff parameter pulled by agent in 2 nearest workflow log
+// @Tags Project Detail / Workflows
+// @Accept json
+// @Produce json
+// @Param project_id path string true "Project ID"
+// @Param workflow_id path string true "Workflow ID"
+// @Param workflow_log_id path string true "Workflow Log ID"
+// @Success 200 string {string} json "{"workflow": "workflow"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to get diff parameter in workflow log"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/{project_id}/workflows/{workflow_id}/logs/{workflow_log_id}/diff-parameter [get]
+func GetDiffParameterInWorkflowLog(c *gin.Context) {
+	projectID := c.Param("project_id")
+	workflowID := c.Param("workflow_id")
+	workflowLogID := c.Param("workflow_log_id")
+	var project models.Project
+	if err := DB.
+		Preload("Workflows", "workflow_id = ? ", workflowID).
+		Preload("Workflows.Logs", "id = ?", workflowLogID).
+		Preload("Workflows.Logs.AgentLogs").
+		Preload("Workflows.Logs.AgentLogs.Agent").
+		Preload("Workflows.Logs.AgentLogs.Agent.Stage").
+		Preload("Workflows.Logs.AgentLogs.AgentPullParameterLog").
+		First(&project, projectID).Error; err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Failed to get project"})
+	}
+	var curentWorkflowLog models.WorkflowLog
+	if len(project.Workflows) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Workflow not found"})
+		return
+	} else if len(project.Workflows[0].Logs) == 0 { // assign workflow and workflowLogs
+		c.JSON(http.StatusNotFound, gin.H{"error": "Workflow log not found"})
+		return
+	} else {
+		curentWorkflowLog = project.Workflows[0].Logs[0]
+	}
+
+	var previousWorkflowLog models.WorkflowLog
+
+	err := DB.Where("workflow_id = ? AND ((workflow_run_id < ?) OR (workflow_run_id = ? AND attempt_number < ?))",
+		workflowID, curentWorkflowLog.WorkflowRunId, curentWorkflowLog.WorkflowRunId, curentWorkflowLog.AttemptNumber).
+		Order("workflow_run_id DESC, attempt_number DESC").
+		Preload("AgentLogs").
+		Preload("AgentLogs.Agent").
+		Preload("AgentLogs.Agent.Stage").
+		Preload("AgentLogs.AgentPullParameterLog").
+		First(&previousWorkflowLog).Error
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Previous workflow log not found"})
+		return
+	}
+	diff := getDiffParameterBetween2WorkflowLogs(curentWorkflowLog, previousWorkflowLog)
+
+	c.JSON(http.StatusOK, gin.H{
+		// "current":  curentWorkflowLog,
+		// "previous": previousWorkflowLog,
+		"diff": diff,
+	})
+
+}
+
+type ParameterDiffBetweenWorkflow struct {
+	Stages []stagesBetweenWorkflow `json:"stages"`
+}
+type stagesBetweenWorkflow struct {
+	ID         uint                             `json:"id"`
+	Name       string                           `json:"name"`
+	Parameters []parameterChangeBetweenWorkflow `json:"parameters"`
+}
+
+type parameterChangeBetweenWorkflow struct {
+	Name          string `json:"name"`
+	CurrentValue  string `json:"current_value"`
+	PreviousValue string `json:"previous_value"`
+}
+
+func getDiffParameterBetween2WorkflowLogs(first, second models.WorkflowLog) ParameterDiffBetweenWorkflow {
+	var stages []stagesBetweenWorkflow
+	stageMap := make(map[string]*stagesBetweenWorkflow)
+
+	// Process the first workflow log
+	for _, agentLog := range first.AgentLogs {
+		stageName := agentLog.Agent.Stage.Name
+		stageID := agentLog.Agent.Stage.ID
+		if _, exists := stageMap[stageName]; !exists {
+			stageMap[stageName] = &stagesBetweenWorkflow{
+				ID:         stageID,
+				Name:       stageName,
+				Parameters: []parameterChangeBetweenWorkflow{},
+			}
+		}
+		for _, parameter := range agentLog.AgentPullParameterLog {
+			param := parameterChangeBetweenWorkflow{
+				Name:          parameter.ParameterName,
+				CurrentValue:  parameter.ParameterValue,
+				PreviousValue: "",
+			}
+			stageMap[stageName].Parameters = append(stageMap[stageName].Parameters, param)
+		}
+	}
+
+	// Process the second workflow log
+	for _, agentLog := range second.AgentLogs {
+		stageName := agentLog.Agent.Stage.Name
+		if _, exists := stageMap[stageName]; !exists {
+			stageMap[stageName] = &stagesBetweenWorkflow{
+				Name:       stageName,
+				Parameters: []parameterChangeBetweenWorkflow{},
+			}
+		}
+		for _, parameter := range agentLog.AgentPullParameterLog {
+			updated := false
+			for i, param := range stageMap[stageName].Parameters {
+				if param.Name == parameter.ParameterName {
+					stageMap[stageName].Parameters[i].PreviousValue = parameter.ParameterValue
+					updated = true
+					break
+				}
+			}
+			if !updated {
+				param := parameterChangeBetweenWorkflow{
+					Name:          parameter.ParameterName,
+					CurrentValue:  "",
+					PreviousValue: parameter.ParameterValue,
+				}
+				stageMap[stageName].Parameters = append(stageMap[stageName].Parameters, param)
+			}
+		}
+	}
+
+	// Convert the map to a slice
+	for _, stage := range stageMap {
+		stages = append(stages, *stage)
+	}
+	// Sort the stages slice by stage name
+	sort.Slice(stages, func(i, j int) bool {
+		return stages[i].ID < stages[j].ID
+	})
+
+	parameterDiff := ParameterDiffBetweenWorkflow{
+		Stages: stages,
+	}
+	return parameterDiff
 }
