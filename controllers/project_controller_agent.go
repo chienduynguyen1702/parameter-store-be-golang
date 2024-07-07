@@ -492,6 +492,12 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	DB.Save(&agent)
 	startTime := time.Now()
 	var project models.Project
+	var foundWorkflowLogsID uint
+	if agent.Workflow.Logs != nil && len(agent.Workflow.Logs) > 0 {
+		foundWorkflowLogsID = agent.Workflow.Logs[0].ID
+	} else {
+		foundWorkflowLogsID = 1 // temp workflow logs id for agent pull without workflow logs is running
+	}
 	if err := DB.
 		Preload("LatestVersion").
 		Preload("LatestVersion.Parameters",
@@ -503,7 +509,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		).
 		First(&project, agent.ProjectID).Error; err != nil {
 
-		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime), agent.Workflow.Logs[0].ID, nil)
+		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime), foundWorkflowLogsID, nil)
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "Failed to get project by agent",
@@ -512,7 +518,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	if len(project.LatestVersion.Parameters) == 0 {
-		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime), agent.Workflow.Logs[0].ID, nil)
+		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime), foundWorkflowLogsID, nil)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Failed to get parameter by agent: Not found any parameters.",
@@ -527,7 +533,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 
 	// debug
 	// fmt.Println("Workflow Logs calling agent", agent.Workflow.Logs[0])
-	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency, agent.Workflow.Logs[0].ID, project.LatestVersion.Parameters)
+	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency, foundWorkflowLogsID, project.LatestVersion.Parameters)
 
 	// Create a new file
 	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, project.LatestVersion.Number)
