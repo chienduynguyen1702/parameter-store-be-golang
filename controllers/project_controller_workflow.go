@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"parameter-store-be/models"
 	"parameter-store-be/modules/github"
+	"sort"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -278,6 +279,7 @@ type ParameterDiffBetweenWorkflow struct {
 	Stages []stagesBetweenWorkflow `json:"stages"`
 }
 type stagesBetweenWorkflow struct {
+	ID         uint                             `json:"id"`
 	Name       string                           `json:"name"`
 	Parameters []parameterChangeBetweenWorkflow `json:"parameters"`
 }
@@ -295,8 +297,10 @@ func getDiffParameterBetween2WorkflowLogs(first, second models.WorkflowLog) Para
 	// Process the first workflow log
 	for _, agentLog := range first.AgentLogs {
 		stageName := agentLog.Agent.Stage.Name
+		stageID := agentLog.Agent.Stage.ID
 		if _, exists := stageMap[stageName]; !exists {
 			stageMap[stageName] = &stagesBetweenWorkflow{
+				ID:         stageID,
 				Name:       stageName,
 				Parameters: []parameterChangeBetweenWorkflow{},
 			}
@@ -344,6 +348,10 @@ func getDiffParameterBetween2WorkflowLogs(first, second models.WorkflowLog) Para
 	for _, stage := range stageMap {
 		stages = append(stages, *stage)
 	}
+	// Sort the stages slice by stage name
+	sort.Slice(stages, func(i, j int) bool {
+		return stages[i].ID < stages[j].ID
+	})
 
 	parameterDiff := ParameterDiffBetweenWorkflow{
 		Stages: stages,
