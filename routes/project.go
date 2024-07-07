@@ -25,6 +25,8 @@ func setupGroupProject(r *gin.RouterGroup) {
 		workflowGroup := projectGroup.Group("/workflows")
 		{
 			workflowGroup.GET("/", controllers.GetProjectWorkflows)
+			workflowGroup.GET("/:workflow_id/logs", controllers.GetWorkflowLogs)
+			workflowGroup.GET("/:workflow_id/logs/:workflow_log_id/diff-parameter", controllers.GetDiffParameterInWorkflowLog)
 			workflowGroup.GET("/:workflow_id/run", controllers.GetWorkflowProcess)
 		}
 		dashboardGrop := projectGroup.Group("/dashboard")

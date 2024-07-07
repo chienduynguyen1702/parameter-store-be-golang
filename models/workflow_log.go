@@ -17,4 +17,6 @@ type WorkflowLog struct {
 	ProjectID     uint      `json:"project_id"`
 	// ProjectLogID  uint       `json:"project_log_id"`
 	// ProjectLog    ProjectLog `gorm:"foreignKey:ProjectLogID" json:"project_log"`
+
+	AgentLogs []AgentLog `gorm:"foreignKey:ExecutedInWorkflowLogID; references:ID" json:"agent_logs"`
 }

@@ -260,6 +260,78 @@ definitions:
       workflow_name:
         type: string
     type: object
+  models.AgentLog:
+    properties:
+      action:
+        type: string
+      agent:
+        $ref: '#/definitions/models.Agent'
+      agent_id:
+        type: integer
+      agent_pull_parameter_log:
+        items:
+          $ref: '#/definitions/models.AgentPullParameterLog'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      executed_in_workflow_log:
+        $ref: '#/definitions/models.WorkflowLog'
+      executed_in_workflow_log_id:
+        type: integer
+      id:
+        type: integer
+      latency:
+        type: integer
+      message:
+        type: string
+      path:
+        type: string
+      project:
+        $ref: '#/definitions/models.Project'
+      project_id:
+        type: integer
+      response_status:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  models.AgentPullParameterLog:
+    properties:
+      agent_id:
+        type: integer
+      agent_log_id:
+        type: integer
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      environment:
+        $ref: '#/definitions/models.Environment'
+      environment_id:
+        type: integer
+      id:
+        type: integer
+      parameter:
+        $ref: '#/definitions/models.Parameter'
+      parameter_id:
+        type: integer
+      parameter_name:
+        type: string
+      parameter_value:
+        type: string
+      project:
+        $ref: '#/definitions/models.Project'
+      project_id:
+        type: integer
+      stage:
+        $ref: '#/definitions/models.Stage'
+      stage_id:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
   models.Environment:
     properties:
       archived_at:
@@ -328,6 +400,152 @@ definitions:
       value:
         type: string
     type: object
+  models.Permission:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  models.Project:
+    properties:
+      address:
+        type: string
+      agents:
+        items:
+          $ref: '#/definitions/models.Agent'
+        type: array
+      archived_at:
+        type: string
+      archived_by:
+        description: foreign key to user model
+        type: string
+      auto_update:
+        type: boolean
+      createdAt:
+        type: string
+      current_sprint:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      environments:
+        items:
+          $ref: '#/definitions/models.Environment'
+        type: array
+      id:
+        type: integer
+      is_archived:
+        type: boolean
+      latest_version:
+        $ref: '#/definitions/models.Version'
+      latest_version_id:
+        type: integer
+      logs:
+        items:
+          $ref: '#/definitions/models.ProjectLog'
+        type: array
+      name:
+        type: string
+      organization_id:
+        type: integer
+      parameters:
+        items:
+          $ref: '#/definitions/models.Parameter'
+        type: array
+      repo_api_token:
+        type: string
+      repo_url:
+        type: string
+      stages:
+        items:
+          $ref: '#/definitions/models.Stage'
+        type: array
+      start_at:
+        type: string
+      status:
+        type: string
+      updatedAt:
+        type: string
+      user_role:
+        items:
+          $ref: '#/definitions/models.UserRoleProject'
+        type: array
+      versions:
+        items:
+          $ref: '#/definitions/models.Version'
+        type: array
+      workflows:
+        items:
+          $ref: '#/definitions/models.Workflow'
+        type: array
+    type: object
+  models.ProjectLog:
+    properties:
+      action:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      latency:
+        type: integer
+      message:
+        type: string
+      path:
+        type: string
+      project:
+        $ref: '#/definitions/models.Project'
+      project_id:
+        type: integer
+      response_status:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/models.User'
+        description: Agent   Agent   `json:"agent"`
+      user_id:
+        description: |-
+          AgentID        uint   `gorm:"foreignKey:AgentID" json:"agent_id"`
+          IsByUser       bool   `gorm:"default:false" json:"is_by_user"`
+        type: integer
+    type: object
+  models.Role:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      permissions:
+        items:
+          $ref: '#/definitions/models.Permission'
+        type: array
+      updatedAt:
+        type: string
+    required:
+    - description
+    - name
+    - permissions
+    type: object
   models.Stage:
     properties:
       archived_at:
@@ -352,6 +570,70 @@ definitions:
         type: integer
       updatedAt:
         type: string
+    type: object
+  models.User:
+    properties:
+      archived_at:
+        type: string
+      archived_by:
+        description: foreign key to user model
+        type: string
+      avatar_url:
+        type: string
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      email:
+        type: string
+      id:
+        type: integer
+      is_archived:
+        type: boolean
+      is_organization_admin:
+        description: Assuming this field represents the ID of the organization the
+          user is an admin of
+        type: boolean
+      last_login:
+        type: string
+      name:
+        type: string
+      organization_id:
+        description: foreign key to organization model
+        type: integer
+      password:
+        type: string
+      phone:
+        type: string
+      updatedAt:
+        type: string
+      user_role_projects:
+        items:
+          $ref: '#/definitions/models.UserRoleProject'
+        type: array
+      username:
+        type: string
+    type: object
+  models.UserRoleProject:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        $ref: '#/definitions/gorm.DeletedAt'
+      id:
+        type: integer
+      project_id:
+        type: integer
+      role:
+        $ref: '#/definitions/models.Role'
+      role_id:
+        type: integer
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
     type: object
   models.Version:
     properties:
@@ -405,6 +687,10 @@ definitions:
     type: object
   models.WorkflowLog:
     properties:
+      agent_logs:
+        items:
+          $ref: '#/definitions/models.AgentLog'
+        type: array
       attempt_number:
         type: integer
       createdAt:
@@ -2775,6 +3061,83 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Get project workflows
+      tags:
+      - Project Detail / Workflows
+  /api/v1/projects/{project_id}/workflows/{workflow_id}/logs:
+    get:
+      consumes:
+      - application/json
+      description: Get workflow history
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Workflow ID
+        in: path
+        name: workflow_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"workflow": "workflow"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get workflow history"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get workflow history
+      tags:
+      - Project Detail / Workflows
+  /api/v1/projects/{project_id}/workflows/{workflow_id}/logs/{workflow_log_id}/diff-parameter:
+    get:
+      consumes:
+      - application/json
+      description: Get diff parameter pulled by agent in 2 nearest workflow log
+      parameters:
+      - description: Project ID
+        in: path
+        name: project_id
+        required: true
+        type: string
+      - description: Workflow ID
+        in: path
+        name: workflow_id
+        required: true
+        type: string
+      - description: Workflow Log ID
+        in: path
+        name: workflow_log_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"workflow": "workflow"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to get diff parameter in workflow log"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Get diff parameter in workflow log
       tags:
       - Project Detail / Workflows
   /api/v1/projects/{project_id}/workflows/{workflow_id}/run:
