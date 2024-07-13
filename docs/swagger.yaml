@@ -27,6 +27,16 @@ definitions:
     - name
     - value
     type: object
+  controllers.ListRepositoryByGithubUserRequest:
+    properties:
+      token:
+        type: string
+      username:
+        type: string
+    required:
+    - token
+    - username
+    type: object
   controllers.Login.loginRequestBody:
     properties:
       email:
@@ -3176,6 +3186,38 @@ paths:
       summary: Get workflow process
       tags:
       - Project Detail / Workflows
+  /api/v1/projects/github/repositories:
+    post:
+      consumes:
+      - application/json
+      description: List repository by github user
+      parameters:
+      - description: List Repository By Github User Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.ListRepositoryByGithubUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{"repositories": "repositories"}'
+          schema:
+            type: string
+        "400":
+          description: '{"error": "Bad request"}'
+          schema:
+            type: string
+        "500":
+          description: '{"error": "Failed to list repository by github user"}'
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: List repository by github user
+      tags:
+      - Project
   /api/v1/settings/roles:
     get:
       consumes:

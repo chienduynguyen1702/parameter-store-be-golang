@@ -13,7 +13,8 @@ func setupGroupProjectList(r *gin.RouterGroup) {
 		projectListGroup.GET("/", controllers.ListProjects)
 		projectListGroup.POST("/", middleware.RequiredIsOrgAdmin, controllers.CreateNewProject)
 		// projectListGroup.DELETE("/:project_id", middleware.RequiredIsOrgAdmin, controllers.DeleteProject)
-
+		projectListGroup.GET("/github-repos", controllers.ListGithubRepos)
+		projectListGroup.POST("/github-repos", controllers.ImportReposToProject)
 		projectListGroup.GET("/archived", controllers.ListArchivedProjects)
 		projectListGroup.PATCH("/:project_id/archive", middleware.RequiredIsOrgAdmin, controllers.ArchiveProject)
 		projectListGroup.PATCH("/:project_id/unarchive", middleware.RequiredIsOrgAdmin, controllers.UnarchiveProject)

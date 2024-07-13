@@ -3,6 +3,7 @@ package controllers
 import (
 	"net/http"
 	"parameter-store-be/models"
+	"parameter-store-be/modules/github"
 
 	"github.com/gin-gonic/gin"
 )
@@ -57,4 +58,38 @@ func GetProjectAllInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"projects": project})
+}
+
+type ListRepositoryByGithubUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Token    string `json:"token" binding:"required"`
+}
+
+// ListRepositoryByGithubUser is a function to list repository by github user
+// @Summary List repository by github user
+// @Description List repository by github user
+// @Tags Project
+// @Accept json
+// @Produce json
+// @Param request body ListRepositoryByGithubUserRequest true "List Repository By Github User Request"
+// @Success 200 string {string} json "{"repositories": "repositories"}"
+// @Failure 400 string {string} json "{"error": "Bad request"}"
+// @Failure 500 string {string} json "{"error": "Failed to list repository by github user"}"
+// @Security ApiKeyAuth
+// @Router /api/v1/projects/github/repositories [post]
+func ListRepositoryByGithubUser(c *gin.Context) {
+	var request ListRepositoryByGithubUserRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	repositories, err := github.GetUserRepos(request.Username, request.Token)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to list repository by github user"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"total":        len(repositories),
+		"repositories": repositories,
+	})
 }

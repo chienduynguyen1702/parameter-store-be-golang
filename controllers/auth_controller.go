@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"parameter-store-be/models"
@@ -139,6 +138,7 @@ func Login(c *gin.Context) {
 	responseLogedInUser.OrganizationID = user.OrganizationID
 	responseLogedInUser.IsOrganizationAdmin = user.IsOrganizationAdmin
 	responseLogedInUser.IsAdminOfProjects = projectIDs
+	responseLogedInUser.IsGitHubUser = user.IsGitHubUser
 	// Generate a JWT token
 	jwtToken, err := generateJWTToken(user)
 	if err != nil {
@@ -192,26 +192,32 @@ func LoginWithGithub(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	fmt.Println("body: ", body)
+	// fmt.Println("body: ", body)
 	// get access token
 	accessToken, err := github.GetAccessToken(body.Code)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get access token"})
 		return
 	}
-	fmt.Println("accessToken: ", accessToken)
+	// log.Println("accessToken: ", accessToken)
 	// get user info
 	userInfo, err := github.GetGitUserInfo(accessToken)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
 		return
 	}
+	if userInfo.Login == "" {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user info"})
+		return
+	}
+	// log.Println("userInfo: ", userInfo)
 	// check if user exists
 	var user models.User
-	if err := DB.Where("email = ?", userInfo.Email).First(&user).Error; err != nil {
+	if err := DB.Where("username = ?", userInfo.Login).Preload("Organization").First(&user).Error; err != nil {
 		// create user
 		newOrganization := models.Organization{
-			Name: userInfo.Login,
+			Name:              userInfo.Login,
+			Description:       "Organization for " + userInfo.Login,
 			EstablishmentDate: time.Now(),
 		}
 		if err := DB.Create(&newOrganization).Error; err != nil {
@@ -219,13 +225,28 @@ func LoginWithGithub(c *gin.Context) {
 			return
 		}
 		newUser := models.User{
-			Email:               userInfo.Email,
+			Email:               userInfo.Login,
 			Username:            userInfo.Login,
 			OrganizationID:      newOrganization.ID,
 			IsOrganizationAdmin: true,
+			IsGitHubUser:        true,
+			GithubAccessToken:   accessToken,
 		}
 		if err := DB.Create(&newUser).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to register user"})
+			return
+		}
+	} else {
+
+		// else update user
+		user.Email = userInfo.Email
+		user.Username = userInfo.Login
+		user.IsGitHubUser = true
+		user.GithubAccessToken = accessToken
+		user.LastLogin = time.Now()
+
+		if err := DB.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user"})
 			return
 		}
 	}
@@ -252,6 +273,7 @@ func LoginWithGithub(c *gin.Context) {
 	responseLogedInUser.Email = user.Email
 	responseLogedInUser.OrganizationID = user.OrganizationID
 	responseLogedInUser.IsOrganizationAdmin = user.IsOrganizationAdmin
+	responseLogedInUser.IsGitHubUser = user.IsGitHubUser
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User logged in successfully",
@@ -266,6 +288,7 @@ type responseLogedInUser struct {
 	Email               string `json:"email"`
 	OrganizationID      uint   `json:"organization_id"`
 	IsOrganizationAdmin bool   `json:"is_organization_admin"`
+	IsGitHubUser        bool   `json:"is_github_user"`
 	IsAdminOfProjects   []uint `json:"is_admin_of_projects"`
 }
 
@@ -309,6 +332,7 @@ func Validate(c *gin.Context) {
 	responseLogedInUser.OrganizationID = validatedUser.OrganizationID
 	responseLogedInUser.IsOrganizationAdmin = validatedUser.IsOrganizationAdmin
 	responseLogedInUser.IsAdminOfProjects = projectIDs
+	responseLogedInUser.IsGitHubUser = validatedUser.IsGitHubUser
 
 	// log.Println("user: %v", validatedUser)
 	// if err := DB.First(&validatedUser, validatedUser.ID).Error; err != nil {
