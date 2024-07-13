@@ -14,10 +14,22 @@ import (
 )
 
 func SetupV1Router() *gin.Engine {
+	whiteList := []string{
+		"http://localhost:3000",
+		"http://localhost:3001",
+		"http://192.168.88.153:3000",
+		"https://parameter-store-fe-golang.up.railway.app",
+		os.Getenv("HOSTNAME_URL"),
+		os.Getenv("CLIENT_URL"),
+		"https://param-store.datn.live",
+		"https://chienduynguyen1702.github.io",
+		"http://localhost:" + os.Getenv("PORT"),
+	}
 	r := gin.Default()
+	
 	// CORS setup
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:3001", "http://192.168.88.153:3000", "https://parameter-store-fe-golang.up.railway.app", os.Getenv("HOSTNAME_URL"), "https://param-store.datn.live", "https://chienduynguyen1702.github.io", "http://localhost:" + os.Getenv("PORT")},
+		AllowOrigins:     whiteList,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length", "Content-Type", "Content-Description", "Content-Disposition"},

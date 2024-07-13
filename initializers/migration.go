@@ -77,6 +77,10 @@ func Migration(db *gorm.DB) error {
 	if err != nil {
 		log.Println("Failed to migrate AgentLog models")
 	}
+	err = db.AutoMigrate(&models.AgentPullParameterLog{})
+	if err != nil {
+		log.Println("Failed to migrate AgentPullParameterLog models")
+	}
 	err = db.AutoMigrate(&models.ProjectLog{})
 	if err != nil {
 		log.Println("Failed to migrate ProjectLog models")

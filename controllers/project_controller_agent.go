@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type agentResponse struct {
@@ -476,7 +477,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	var agent models.Agent
-	result := DB.Where("api_token = ?", reqBody.ApiToken).First(&agent)
+	result := DB.Where("api_token = ?", reqBody.ApiToken).
+		Preload("Workflow").
+		Preload("Workflow.Logs", "state != ?", "completed").
+		First(&agent)
 	if result.Error != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"status":  http.StatusUnauthorized,
@@ -488,12 +492,24 @@ func GetParameterByAuthAgent(c *gin.Context) {
 	DB.Save(&agent)
 	startTime := time.Now()
 	var project models.Project
+	var foundWorkflowLogsID uint
+	if agent.Workflow.Logs != nil && len(agent.Workflow.Logs) > 0 {
+		foundWorkflowLogsID = agent.Workflow.Logs[0].ID
+	} else {
+		foundWorkflowLogsID = 1 // temp workflow logs id for agent pull without workflow logs is running
+	}
 	if err := DB.
 		Preload("LatestVersion").
-		Preload("LatestVersion.Parameters", "stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false).
+		Preload("LatestVersion.Parameters",
+			"stage_id = ? AND environment_id = ? AND is_archived = ? ", agent.StageID, agent.EnvironmentID, false,
+			func(db *gorm.DB) *gorm.DB { // order by parameter name
+				db = db.Order("parameters.name asc")
+				return db
+			},
+		).
 		First(&project, agent.ProjectID).Error; err != nil {
 
-		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime))
+		agentLog(agent, project, "Get Parameter", "Failed to get project by agent", http.StatusNotFound, time.Since(startTime), foundWorkflowLogsID, nil)
 		c.JSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "Failed to get project by agent",
@@ -502,7 +518,7 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		return
 	}
 	if len(project.LatestVersion.Parameters) == 0 {
-		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime))
+		agentLog(agent, project, "Get Parameter", "Failed to get parameter by agent: Not found any parameters.", http.StatusNotFound, time.Since(startTime), foundWorkflowLogsID, nil)
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Failed to get parameter by agent: Not found any parameters.",
@@ -514,7 +530,10 @@ func GetParameterByAuthAgent(c *gin.Context) {
 		DB.Save(&parameter)
 	}
 	latency := time.Since(startTime)
-	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency)
+
+	// debug
+	// fmt.Println("Workflow Logs calling agent", agent.Workflow.Logs[0])
+	agentLog(agent, project, "Get Parameter", "Succeed: Parameter retrieved", http.StatusOK, latency, foundWorkflowLogsID, project.LatestVersion.Parameters)
 
 	// Create a new file
 	filepath := fmt.Sprintf("parameters-%s-Ver.%s.txt", project.Name, project.LatestVersion.Number)
