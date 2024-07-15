@@ -66,8 +66,8 @@ jobs:
         id: get_test_parameters
         run: |
           export PARAMETER_STORE_TOKEN=${{ secrets.AGENT_DEV_TEST }}
-          ./scripts/get-parameters-dev-server.sh -o dev.param.test
-          cat dev.param.test
+          # ./scripts/get-parameters-dev-server.sh -o dev.param.test
+          # cat dev.param.test
           ./scripts/get-parameters.sh -o param.test
           cat param.test
       - name: Test
